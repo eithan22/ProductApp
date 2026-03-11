@@ -17,7 +17,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Contex
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Orden> Ordenes { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
-        public DbSet<OrderDetails> DetalleOrden { get; set; }
+        public DbSet<OrderDetalle> DetalleOrden { get; set; }
 
         public DbSet<Cliente>Clientes { get; set; }
 

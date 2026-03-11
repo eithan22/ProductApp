@@ -19,4 +19,10 @@
     <ProjectReference Include="..\ProductApp.Infraesctructura\ProductApp.Infraesctructura.Persistencia.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Modulo Ventas\" />
+    <Folder Include="Controllers\Modulo Productos\" />
+    <Folder Include="Controllers\Modulo Usuarios\" />
+  </ItemGroup>
+
 </Project>
