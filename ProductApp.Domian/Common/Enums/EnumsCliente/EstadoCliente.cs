@@ -7,6 +7,7 @@ namespace ProductApp.Domian.Common.Enums.EnumsCliente
     public enum EstadoCliente
     {
         Pendiente = 0,
-        Registrado = 1
+        Activo = 1
+
     }
 }
