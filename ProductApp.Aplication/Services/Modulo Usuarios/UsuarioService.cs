@@ -1,8 +1,10 @@
-﻿using ProductApp.Aplication.Dtos.UsuarioDto;
+﻿using FluentValidation;
+using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface;
-using ProductApp.Aplication.Interface.BaseServices;
+using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
+using ProductApp.Infraesctructura.Persistencia.Repository;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,45 +13,46 @@ namespace ProductApp.Aplication.Services
 {
     public class UsuarioService : IUsuarioService
     {
-        public readonly IUsuarioRepository usuarioRepository;
+        public readonly IUsuarioRepository _usuarioRepository;
+        public readonly IMapperUsuario _mapperUsuario;
+        private readonly IValidator<CreateUsuarioDto> _createValidator;  
+        private readonly IValidator<UpdateUsuarioDto> _updateValidator;
 
-        public UsuarioService(IUsuarioRepository usuarioRepository)
+        public UsuarioService(IUsuarioRepository usuarioRepository, 
+            IMapperUsuario mapperUsuario,
+            IValidator<CreateUsuarioDto> createvalidator,
+            IValidator<UpdateUsuarioDto> updatevalidator)
+
         { 
-            this.usuarioRepository = usuarioRepository;
+            _usuarioRepository = usuarioRepository;
+            _mapperUsuario = mapperUsuario;
+            _createValidator = createvalidator;
+            _updateValidator = updatevalidator;
         }
 
 
         public async Task<UsuarioResponseDto> CreateAsync(CreateUsuarioDto dto)
         {
 
-            //validaciones
-            if(string.IsNullOrEmpty(dto.Nombre))
+           
+            
+            //validacion con fluent validation
+            var validationResult = await _createValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
             {
-                throw new Exception("El nombre es requerido");
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                throw new Exception($"Validación fallida: {errors}");
             }
 
-            
-            
-
             //crear entidad
-            var usuario = new Usuario
-            {
-                Nombre = dto.Nombre,
-                Email = dto.Email,
-                Password = dto.Password
 
-            };
-            
-            await usuarioRepository.CreateAsync(usuario);
+            var usuario = _mapperUsuario.MapToEntity(dto);
 
-                var usuarioResponseDto = new UsuarioResponseDto
-                {
-                    Id = usuario.Id,
-                    Nombre = usuario.Nombre,
-                    Email = usuario.Email,
-                    RolUsuario = usuario.RolUsuario.ToString(),
-                    EstadoUsuario = usuario.EstadoUsuario.ToString()
-                };
+            await _usuarioRepository.CreateAsync(usuario);
+
+            //respuesta
+              var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
 
             return usuarioResponseDto;
 
@@ -62,14 +65,14 @@ namespace ProductApp.Aplication.Services
             {
                 throw new Exception("Id no valido");
             }
-            var usuario = await usuarioRepository.GetByIdAsync(id);
+            var usuario = await _usuarioRepository.GetByIdAsync(id);
 
             if (usuario == null)
             {
                 throw new Exception("Usuario no encontrado");
             }
 
-            await usuarioRepository.DeleteAsync(id);
+            await _usuarioRepository.DeleteAsync(id);
 
         }
 
@@ -81,13 +84,13 @@ namespace ProductApp.Aplication.Services
                 throw new Exception("Id no valido");
             }
 
-            var usuario = await usuarioRepository.GetByIdAsync(id);
+            var usuario = await _usuarioRepository.GetByIdAsync(id);
             
             if (usuario == null)
             {
                 throw new Exception("Usuario no encontrado");
             }
-            await usuarioRepository.DisebleAsync(id);
+           // await _usuarioRepository.DisebleAsync(id);
 
 
         }
@@ -97,18 +100,11 @@ namespace ProductApp.Aplication.Services
         //No entiedo aun 
         public async Task<List<UsuarioResponseDto>> GetAllAsync()
         {
-            var usuarios = await usuarioRepository.GetAllAsync();
+            var usuarios = await _usuarioRepository.GetAllAsync();
 
             // Mapear con LINQ
             var usuarioResponseDtos = usuarios
-                .Select(u => new UsuarioResponseDto
-                {
-                    Id = u.Id,
-                    Nombre = u.Nombre,
-                    Email = u.Email,
-                    RolUsuario = u.RolUsuario.ToString(),
-                    EstadoUsuario = u.EstadoUsuario.ToString()
-                })
+                .Select(u => _mapperUsuario.ToDto(u))
                 .ToList();
 
             return usuarioResponseDtos;
@@ -123,7 +119,7 @@ namespace ProductApp.Aplication.Services
                 throw new Exception("Id no valido");
             }
 
-            var usuario = await usuarioRepository.GetByIdAsync(id);
+            var usuario = await _usuarioRepository.GetByIdAsync(id);
 
             //validad exixtencia
           
@@ -134,14 +130,7 @@ namespace ProductApp.Aplication.Services
 
             //mapear entidad a dto
 
-            var usuarioResponseDto = new UsuarioResponseDto
-            {
-                Id = usuario.Id,
-                Nombre = usuario.Nombre,
-                Email = usuario.Email,
-                RolUsuario = usuario.RolUsuario.ToString(),
-                EstadoUsuario = usuario.EstadoUsuario.ToString()
-            };
+            var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
 
             return usuarioResponseDto;
 
@@ -150,7 +139,18 @@ namespace ProductApp.Aplication.Services
 
         public async Task<UsuarioResponseDto> UpdateAsync(UpdateUsuarioDto dto)
         {
-            var usuario = await usuarioRepository.GetByIdAsync(dto.Id);
+            //validaciones de entrada del dto con fullent validation
+
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                throw new Exception($"Validación fallida: {errors}");
+            }
+
+
+            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
 
             if (usuario == null)
             {
@@ -158,22 +158,14 @@ namespace ProductApp.Aplication.Services
             }
 
             //moficicando la entidad existente
-           
-            usuario.Nombre = dto.Nombre;
-            usuario.Email = dto.Email;
+
+            _mapperUsuario.mapUpdate(dto, usuario);
 
             //guuardar los cambios en el repositorio
 
-            await usuarioRepository.UpdateAsync(usuario);
+            await _usuarioRepository.UpdateAsync(usuario);
 
-            var usuarioResponseDto = new UsuarioResponseDto
-            {
-                Id = usuario.Id,
-                Nombre = usuario.Nombre,
-                Email = usuario.Email,
-                RolUsuario = usuario.RolUsuario.ToString(),
-                EstadoUsuario = usuario.EstadoUsuario.ToString()
-            };
+            var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
 
             return usuarioResponseDto;
 

@@ -13,3 +13,4 @@ namespace ProductApp.Aplication.Dtos.UsuarioDto
 
     }
 }
+    

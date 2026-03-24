@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProductApp.Domian.Common.Enums.EnumsCliente;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,8 +15,10 @@ namespace ProductApp.Aplication.Dtos.ClienteDto
 
         public string Direccion { get; set; } = string.Empty;
 
+       
 
 
 
-    }
+
+        }
 }

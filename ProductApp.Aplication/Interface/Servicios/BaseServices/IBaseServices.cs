@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProductApp.Aplication.Interface.BaseServices
+namespace ProductApp.Aplication.Interface.Servicios.BaseServices
 {
     public interface IBaseServices<TResponsedto , TCreatedto, TUpdatedto>
     {

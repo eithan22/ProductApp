@@ -17,7 +17,7 @@ namespace ProductApp.Aplication.Dtos.ClienteDto
 
         public string Direccion { get; set; } = string.Empty;
 
-        public EstadoCliente estado { get; set; }
+        public EstadoCliente Estado{ get; set; }
 
 
     }
