@@ -17,5 +17,7 @@ namespace ProductApp.Aplication.Dtos.ClienteDto
         public string Telefono { get; set; } = string.Empty;
 
         public string Cedula { get; set; } = string.Empty;
+
+       
     }
 }

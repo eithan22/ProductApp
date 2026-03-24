@@ -12,5 +12,6 @@ namespace ProductApp.Domian.Common.Base
         public bool IsDisable { get; set; } = false;
 
 
+
     }
 }

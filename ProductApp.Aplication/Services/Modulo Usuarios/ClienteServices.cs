@@ -1,6 +1,9 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using FluentValidation;
+using Microsoft.IdentityModel.Tokens;
 using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;
+using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
+using ProductApp.Aplication.Interface.RulesBusinnes;
 using ProductApp.Domian.Common.Enums.EnumsCliente;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
@@ -13,41 +16,76 @@ namespace ProductApp.Aplication.Services
     public class ClienteServices : IClienteServices
     {
         private readonly IClienteRepository _clienteRepository;
+        private readonly IMapperCliente _mapperCliente;
+        private readonly IValidator<CreateClienteDto> _createValidator;
+        private readonly IValidator<UpdateClienteDto> _updateValidator;
+        private readonly IValidatorBusinessClientes _validatorBusinessClientes;
 
-        public ClienteServices(IClienteRepository clienterepositoy)
+        public ClienteServices(IClienteRepository clienterepository,
+            IMapperCliente mapperCliente,
+            IValidator<UpdateClienteDto> updateValidator,
+            IValidator<CreateClienteDto> createValidator,
+            IValidatorBusinessClientes validatorBusinessClientes
+
+
+            )
         {
-            _clienteRepository = clienterepositoy;
+            _clienteRepository = clienterepository;
+            _mapperCliente = mapperCliente;
+            _updateValidator = updateValidator;
+            _createValidator = createValidator;
+            _validatorBusinessClientes = validatorBusinessClientes;
         }
+
+        public async Task<List<ClienteResponseDto>> BuscarAsync(string? nombre, string? telefono, string? correo)
+        {
+           if (string.IsNullOrEmpty(nombre) && string.IsNullOrEmpty(telefono) && string.IsNullOrEmpty(correo))
+            {
+                throw new Exception("Debe proporcionar al menos un criterio de búsqueda");
+            }
+
+
+            var clientes = await _clienteRepository.BuscarAsync(nombre, telefono, correo);
+           
+            var clienteresponsedto = clientes.
+                Select(c => _mapperCliente.MapToClienteResponseDto(c))
+                .ToList();
+
+            return(clienteresponsedto);
+
+        }
+
+
+
 
         public async Task<ClienteResponseDto> CreateAsync(CreateClienteDto dto)
         {
-            var cliente = new Cliente
-            {
-                Nombre = dto.Nombre,
-                Email = dto.Correo,
-                Telefono = dto.Telefono,
-                Cedula = dto.Cedula,
-                Direccion = dto.Direccion,
-                Estado = EstadoCliente.Activo
+            // Validar el DTO utilizando FluentValidation
+            var validationResult = await _createValidator.ValidateAsync(dto);
 
-            };
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                throw new Exception($"Error de validación: {errors}");
+            }
+
+            //validar reglas de negocio
+            await  _validatorBusinessClientes.ValidarCreateClienteAsync(dto);
+
+            // Mapear el DTO a la entidad Cliente
+            var cliente = _mapperCliente.MapToCreateCliente(dto);
+
             await _clienteRepository.CreateAsync(cliente);
 
-            var clienteResponse = new ClienteResponseDto
-            {
-                Id = cliente.Id,
-                Nombre = cliente.Nombre,
-                Email = cliente.Email,
-                Telefono = cliente.Telefono,
-                Cedula = cliente.Cedula,
-                Direccion = cliente.Direccion,
-                estado = cliente.Estado
-            };
+            // Mapear la entidad Cliente a ClienteResponseDto
+            var clienteresponse = _mapperCliente.MapToClienteResponseDto(cliente);
 
-            return clienteResponse;
+            return clienteresponse;
 
         }
 
+
+        //delete fisico
         public async Task DeleteAsync(int id)
         {
             if (id <= 0)
@@ -63,6 +101,7 @@ namespace ProductApp.Aplication.Services
 
             }
 
+
             await _clienteRepository.DeleteAsync(id);
 
 
@@ -71,7 +110,7 @@ namespace ProductApp.Aplication.Services
 
         }
 
-
+        //delete logico
         public async Task DisableAsync(int id)
         {
             if (id <= 0)
@@ -79,13 +118,19 @@ namespace ProductApp.Aplication.Services
                 throw new Exception("El id no puede ser menor o igual a 0");
             }
 
-            var cliente = _clienteRepository.GetByIdAsync(id);
+
+            var cliente = await _clienteRepository.GetByIdAsync(id);
+
             if (cliente == null)
             {
                 throw new Exception("El cliente no fue encontrado");
             }
+            await _validatorBusinessClientes.ValidarDeleteClienteAsync(cliente);
 
-            await _clienteRepository.DisebleAsync(id);
+            cliente.Desactivar();
+
+            await _clienteRepository.UpdateAsync(cliente);
+
         }
 
 
@@ -94,16 +139,8 @@ namespace ProductApp.Aplication.Services
         {
             var clientes = await _clienteRepository.GetAllAsync();
 
-            var clienteresponsedto = clientes.Select(c => new ClienteResponseDto
-            {
-                Id = c.Id,
-                Nombre = c.Nombre,
-                Email = c.Email,
-                Telefono = c.Telefono,
-                Cedula = c.Cedula,
-                Direccion = c.Direccion,
-                estado = c.Estado
-            }).ToList();
+            var clienteresponsedto = clientes.Select(c => _mapperCliente.MapToClienteResponseDto(c))
+                .ToList();
 
             return clienteresponsedto;
 
@@ -124,22 +161,9 @@ namespace ProductApp.Aplication.Services
                 throw new Exception("El cliente no fue encontrado");
             }
 
-            var clienteResponsedto = new ClienteResponseDto
-            {
-                Id = cliente.Id,
-                Nombre = cliente.Nombre,
-                Email = cliente.Email,
-                Telefono = cliente.Telefono,
-                Cedula = cliente.Cedula,
-                Direccion = cliente.Direccion,
-                estado = cliente.Estado
-            };
+            var clienteResponsedto = _mapperCliente.MapToClienteResponseDto(cliente);
 
             return clienteResponsedto;
-
-
-
-
 
         }
 
@@ -147,6 +171,15 @@ namespace ProductApp.Aplication.Services
 
         public async Task<ClienteResponseDto> UpdateAsync(UpdateClienteDto dto)
         {
+            // Validar el DTO utilizando FluentValidation
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                throw new Exception($"Error de validación: {errors}");
+            }
+
 
             var cliente = await _clienteRepository.GetByIdAsync(dto.Id);
             if (cliente == null)
@@ -154,25 +187,13 @@ namespace ProductApp.Aplication.Services
                 throw new Exception("El cliente no fue encontrado");
             }
 
-            cliente.Nombre = dto.Nombre;
-            cliente.Email = dto.Correo;
-            cliente.Telefono = dto.Telefono;
-            cliente.Cedula = dto.Cedula;
-            cliente.Direccion = dto.Direccion;
-            cliente.Estado = EstadoCliente.Activo;
+              await _validatorBusinessClientes.ValidarUpdateClienteAsync(dto, cliente);
+
+            _mapperCliente.MapToUpdateCliente(dto, cliente);
 
             await _clienteRepository.UpdateAsync(cliente);
 
-            var clienteResponsedto = new ClienteResponseDto
-            {
-                Id = cliente.Id,
-                Nombre = cliente.Nombre,
-                Email = cliente.Email,
-                Telefono = cliente.Telefono,
-                Cedula = cliente.Cedula,
-                Direccion = cliente.Direccion,
-                estado = cliente.Estado
-            };
+            var clienteResponsedto = _mapperCliente.MapToClienteResponseDto(cliente);
 
             return clienteResponsedto;
 

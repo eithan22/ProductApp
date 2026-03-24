@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Services;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 
@@ -29,7 +30,11 @@ namespace ProductApp
                     );
             });
             
-           // builder.Services.AddScoped<ProductoServices, ProductoServices>();
+            builder.Services.AddScoped<ProductoServices, ProductoServices>();
+            builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+
+            
 
             var app = builder.Build();
 

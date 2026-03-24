@@ -4,6 +4,7 @@ using ProductApp.Domian.Interfaces.IGeneryRepos;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
@@ -12,7 +13,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
     {
 
         //Aun no comprendi la inyeccion de el context para los demas repositorios
-        private readonly AppDbContext _context;
+        protected readonly AppDbContext _context;
         protected  DbSet<T> Entity => _context.Set<T>();
 
 
@@ -32,6 +33,10 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
         }
 
+
+        // delete logico no se va a usar
+
+        /*
         public async Task DisebleAsync(int id)
         {
             var entity = await Entity.FindAsync(id);
@@ -43,6 +48,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
             }
         }
+        */
 
 
         public async Task DeleteAsync(int id)
@@ -87,5 +93,11 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
             await _context.SaveChangesAsync();
 
         }
+
+        public async Task<bool> ExisteAsync(Expression<Func<T, bool>> filtro)
+        {
+            return await _context.Set<T>().AnyAsync(filtro);
+        }
+
     }
 }

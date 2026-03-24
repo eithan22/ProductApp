@@ -7,12 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="16.0.0" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ProductApp.Domian\ProductApp.Domian.csproj" />
     <ProjectReference Include="..\ProductApp.Infraesctructura\ProductApp.Infraesctructura.Persistencia.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BusinessValidator\Modulo Productos\" />
+    <Folder Include="BusinessValidator\Modulo Ventas\" />
+    <Folder Include="Dtos\BaseDto\" />
+    <Folder Include="Validators\Modulo Producto\CategoriaValidator\" />
+    <Folder Include="Validators\Modulo Producto\InventarioValidator\" />
+    <Folder Include="Validators\Modulo Producto\ProductoValidator\" />
+    <Folder Include="Validators\Modulo Ventas\DetalleOrdenValidator\" />
+    <Folder Include="Validators\Modulo Ventas\PagoValidator\" />
+    <Folder Include="Validators\Modulo Ventas\OrdenValidator\" />
   </ItemGroup>
 
 </Project>
