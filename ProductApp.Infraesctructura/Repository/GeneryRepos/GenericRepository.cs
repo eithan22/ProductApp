@@ -36,7 +36,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
         // delete logico no se va a usar
 
-        /*
+        
         public async Task DisebleAsync(int id)
         {
             var entity = await Entity.FindAsync(id);
@@ -48,7 +48,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
             }
         }
-        */
+        
 
 
         public async Task DeleteAsync(int id)
@@ -66,7 +66,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
         public async Task<IEnumerable<T>> GetAllAsync()
         {
          var result =  await Entity.
-                Where(x => !x.IsDisable).
+         
                 ToListAsync();
 
             return result;

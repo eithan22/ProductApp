@@ -11,7 +11,7 @@ namespace ProductApp.Domian.Interfaces.IGeneryRepos
         Task<T> CreateAsync(T entity);
         Task<T?> GetByIdAsync(int id);
         Task UpdateAsync(T entity);
-       // Task DisebleAsync(int id);
+        Task DisebleAsync(int id);
         Task DeleteAsync(int id);
 
        Task<bool> ExisteAsync(Expression<Func<T, bool>> filtro);
