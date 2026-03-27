@@ -15,7 +15,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
                 .IsRequired()
                 .HasMaxLength(20);
 
-            builder.Property(c => c.Email)
+            builder.Property(c => c.Correo)
                 .IsRequired()
                 .HasMaxLength(30);
 

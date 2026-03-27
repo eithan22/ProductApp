@@ -22,7 +22,6 @@
   <ItemGroup>
     <Folder Include="Controllers\Modulo Ventas\" />
     <Folder Include="Controllers\Modulo Productos\" />
-    <Folder Include="Controllers\Modulo Usuarios\" />
   </ItemGroup>
 
 </Project>

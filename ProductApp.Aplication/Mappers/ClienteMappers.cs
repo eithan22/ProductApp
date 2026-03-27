@@ -12,17 +12,17 @@ public class ClienteMappers : IMapperCliente
 {
     public ClienteResponseDto MapToClienteResponseDto(Cliente cliente)
     {
-        var clienteResponse = new ClienteResponseDto
-        {
-            Id = cliente.Id,
-            Nombre = cliente.Nombre,
-            Email = cliente.Correo,
-            Telefono = cliente.Telefono,
-            Cedula = cliente.Cedula,
-            Direccion = cliente.Direccion,
-            Estado = cliente.Estado
+            var clienteResponse = new ClienteResponseDto
+            {
+                Id = cliente.Id,
+                Nombre = cliente.Nombre,
+                Email = cliente.Correo,
+                Telefono = cliente.Telefono,
+                Cedula = cliente.Cedula,
+                Direccion = cliente.Direccion,
+                Estado = cliente.Estado.ToString()
 
-        };
+            };
 
         return clienteResponse;
     }

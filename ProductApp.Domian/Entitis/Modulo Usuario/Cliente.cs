@@ -16,7 +16,7 @@ namespace ProductApp.Domian.Entitis
         public string Correo { get; private set; } = string.Empty;
         public string Telefono { get; private set; } = string.Empty;
 
-        public EstadoCliente Estado { get; private set; }
+        public EstadoCliente Estado { get; private set; } 
 
         public List<Orden> Ordenes { get; private set; } = new List<Orden>();
 

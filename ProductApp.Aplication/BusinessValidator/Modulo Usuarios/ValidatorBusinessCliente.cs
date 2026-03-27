@@ -9,11 +9,11 @@ using System.Text;
 
 namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 {
-    public class ValidatorBusinessCliente : IValidatorBusinessClientes
+    public class ValidatorBusinessClientes : IValidatorBusinessClientes
     {
         private readonly IClienteRepository _clienteRepository;
 
-        public ValidatorBusinessCliente(IClienteRepository clienteRepository)
+        public ValidatorBusinessClientes(IClienteRepository clienteRepository)
         {
             _clienteRepository = clienteRepository;
         }

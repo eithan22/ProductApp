@@ -6,7 +6,7 @@ namespace ProductApp.Aplication.Dtos.ClienteDto
 {
     public class UpdateClienteDto
     {
-        public int Id { get; set; }
+        public int Id { get; set; } // no se usa
 
         public string Nombre { get; set; } = string.Empty;
 

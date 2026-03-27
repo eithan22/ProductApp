@@ -17,7 +17,7 @@ namespace ProductApp.Aplication.Dtos.ClienteDto
 
         public string Direccion { get; set; } = string.Empty;
 
-        public EstadoCliente Estado{ get; set; }
+        public string Estado { get; set; } = string.Empty; //para poder mapearlo a string y mostrar si esta activo o desactivado sin el enum 
 
 
     }
