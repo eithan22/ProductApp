@@ -1,6 +1,7 @@
 ﻿using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface;
+using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Configuraciones;
@@ -21,7 +22,7 @@ namespace ProductApp.Aplication.Services
            
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id >= 0)
             {
@@ -36,12 +37,13 @@ namespace ProductApp.Aplication.Services
             }
 
             await _productorepository.DeleteAsync(id);
+            return OperationResultD<bool>.Success(true, "Producto eliminado exitosamente");
 
 
 
         }
 
-        public async Task DisableAsync(int id)
+        public async Task<OperationResultD<bool>> DisableAsync(int id)
         {
             var result = await _productorepository.GetByIdAsync(id);
 
@@ -52,10 +54,11 @@ namespace ProductApp.Aplication.Services
             }
 
             await _productorepository.DisebleAsync(id);
+            return OperationResultD<bool>.Success(true, "Producto deshabilitado exitosamente");
 
         }
 
-         public async Task<ProductoResponseDto> CreateAsync(CreateProductoDto dto)
+         public async Task<OperationResultD<ProductoResponseDto>> CreateAsync(CreateProductoDto dto)
         {
             var producto = new Producto
             {
@@ -81,7 +84,7 @@ namespace ProductApp.Aplication.Services
 
             };
 
-            return productoresponsedto;
+            return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto creado correctamente");
 
               
 
@@ -89,7 +92,7 @@ namespace ProductApp.Aplication.Services
 
         }
 
-       public async Task<List<ProductoResponseDto>>GetAllAsync()
+       public async Task<OperationResultD<List<ProductoResponseDto>>> GetAllAsync()
         {
             var productos = await _productorepository.GetAllAsync();
 
@@ -106,12 +109,12 @@ namespace ProductApp.Aplication.Services
 
                 }).ToList();
 
-               return productoresponsedto;
+               return OperationResultD<List<ProductoResponseDto>>.Success(productoresponsedto, "Productos obtenidos correctamente");
         }
 
         
 
-        public async Task<ProductoResponseDto> GetByIdAsync(int id)
+        public async Task<OperationResultD<ProductoResponseDto>> GetByIdAsync(int id)
         {
             if (id >= 0)
             {
@@ -136,14 +139,14 @@ namespace ProductApp.Aplication.Services
                 Estado = producto.Estado,
                 Categoria = producto.Categoria
             };
-            return productoresponsedto;
+            return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto obtenido correctamente");
 
 
 
            
         }
 
-         public async Task<ProductoResponseDto> UpdateAsync(UpdateProductoDto dto)
+         public async Task<OperationResultD<ProductoResponseDto>> UpdateAsync(UpdateProductoDto dto)
         {
            var producto = await _productorepository.GetByIdAsync(dto.Id);
 
@@ -170,7 +173,7 @@ namespace ProductApp.Aplication.Services
                 Categoria = producto.Categoria
             };
 
-            return productoresponsedto;
+            return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto actualizado correctamente");
         }
 
       

@@ -1,5 +1,7 @@
 ﻿using ProductApp.Aplication.Dtos.OrdenDto;
 using ProductApp.Aplication.Interface;
+using ProductApp.Aplication.Interface.Servicios.BaseServices;
+using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -16,33 +18,32 @@ namespace ProductApp.Aplication.Services
             _ordenRepository = ordenRepository;
         }
 
-
-        public Task<OrdenResponseDto> CreateAsync(CreateOrdenDto dto)
+        public Task<OperationResultD<OrdenResponseDto>> CreateAsync(CreateOrdenDto dto)
         {
             throw new NotImplementedException();
         }
 
-        public Task DeleteAsync(int id)
+        public Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task DisableAsync(int id)
+        public Task<OperationResultD<bool>> DisableAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<OrdenResponseDto>> GetAllAsync()
+        public Task<OperationResultD<List<OrdenResponseDto>>> GetAllAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<OrdenResponseDto> GetByIdAsync(int id)
+        public Task<OperationResultD<OrdenResponseDto>> GetByIdAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<OrdenResponseDto> UpdateAsync(UpdateOrdenDto dto)
+        public Task<OperationResultD<OrdenResponseDto>> UpdateAsync(UpdateOrdenDto dto)
         {
             throw new NotImplementedException();
         }

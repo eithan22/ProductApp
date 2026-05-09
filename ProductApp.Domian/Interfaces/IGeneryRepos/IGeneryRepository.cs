@@ -16,5 +16,9 @@ namespace ProductApp.Domian.Interfaces.IGeneryRepos
 
        Task<bool> ExisteAsync(Expression<Func<T, bool>> filtro);
 
+        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> filtro);
+
+
+
     }
 }

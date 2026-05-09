@@ -1,5 +1,7 @@
-﻿using ProductApp.Aplication.Dtos.UsuarioDto;
+﻿using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
+using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
+using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Entitis;
 using System;
 using System.Collections.Generic;
@@ -16,8 +18,13 @@ namespace ProductApp.Aplication.Mappers
             var usuario = new Usuario
             {
                 Nombre = dto.Nombre,
+                Edad = dto.Edad,
+                Username = dto.UserName,
                 Email = dto.Email,
-                Password = dto.Password
+                RolUsuario = dto.RolUsuario,
+                EstadoUsuario = EstadoUsuario.Activo
+
+
             };
             return usuario;
         }
@@ -30,6 +37,8 @@ namespace ProductApp.Aplication.Mappers
                 Id = usuario.Id,
                 Nombre = usuario.Nombre,
                 Email = usuario.Email,
+                UserName = usuario.Username,
+                Edad = usuario.Edad,
                 RolUsuario = usuario.RolUsuario.ToString(),
                 EstadoUsuario = usuario.EstadoUsuario.ToString()
             };
@@ -41,10 +50,27 @@ namespace ProductApp.Aplication.Mappers
         {
             usuario.Nombre = dto.Nombre;
             usuario.Email = dto.Email;
+            usuario.Username = dto.UserName;
+            usuario.Edad = dto.Edad;
+            usuario.RolUsuario = dto.RolUsuario;
             
+           
 
+        }
 
-
+        //transformar un RegisteDto a un Usuario
+        public Usuario MapFromRegisterDto(RegisteDto dto)
+        {
+            var usuario = new Usuario
+            {
+                Nombre = dto.Nombre,
+                Edad = dto.Edad,
+                Username = dto.UserName,
+                Email = dto.Email,
+                RolUsuario = RolUsuario.Vendedor, 
+                EstadoUsuario = EstadoUsuario.Activo
+            };
+            return usuario;
         }
     }
 }

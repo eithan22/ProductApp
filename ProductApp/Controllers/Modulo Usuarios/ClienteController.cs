@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;
+using ProductApp.Aplication.Result.ApiResponses;
 using ProductApp.Domian.Entitis;
 
 namespace ProductApp.Api.Controllers.Modulo_Usuarios
@@ -18,93 +20,148 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         }
 
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok("Bienvenido");
-
-        }
 
 
 
-        [HttpPost(" Create Clientes")]
+        [Authorize]
+        [HttpPost("CreateClientes")]
 
-        public async Task<IActionResult> CreateCliente([FromBody] CreateClienteDto dto)
+        public async Task<IActionResult> CreateCliente(CreateClienteDto dto)
         {
             try
             {
                 var result = await _clienteService.CreateAsync(dto);
-                return Ok(result);
+
+
+                if(!result.IsSuccess)
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+                
+                   
+                return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(result.Data, result.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensaje = ex.Message });
+                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
             }
 
         }
-
+        [Authorize]
         // get 
-        [HttpGet(" Get Clientes")]
+        [HttpGet("GetClientes")]
         public async Task<IActionResult> GetClientes()
         {
-            var clientes = await _clienteService.GetAllAsync();
-            return Ok(clientes);
+            try
+            {
+                var result = await _clienteService.GetAllAsync();
+                if (!result.IsSuccess)
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+
+                return Ok(ApiResponseT<List<ClienteResponseDto>>.SuccessResponse(result.Data, result.Message));
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
+
+            }
         }
 
-        [HttpGet("{id}")]
+
+
+        [Authorize]
+
+        [HttpGet("GetByIdClientes{id}")]
 
         public async Task<IActionResult> GetByIdClientes(int id)
         {
             try
             {
-               var clientes =  await _clienteService.GetByIdAsync(id);
-                return Ok(clientes);
+               var resut =  await _clienteService.GetByIdAsync(id);
+
+                if (!resut.IsSuccess)
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(resut.Message));
+
+
+                return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(resut.Data, resut.Message));
 
             }catch (Exception ex)
             {
-                return BadRequest(ex.Message); 
+                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message)); 
             }
 
         }
 
+        [Authorize]
 
-
-        [HttpDelete("{id}")]
+        [HttpDelete("DisableCliente{id}")]
         public async Task<IActionResult> DisableClientes(int id)
         {
 
             try
             {
-                await _clienteService.DisableAsync(id);
+              var result=  await _clienteService.DisableAsync(id);
 
-                return Ok("Cliente deshabilitado");
+                if(!result.IsSuccess)
+                    return BadRequest(ApiResponse.FailureResponse(result.Message));
+
+                return Ok(ApiResponse.SuccessResponse(result.Message)); //no usamos data porque solo queremos indicar que se deshabilito correctamente
 
             }
             catch (Exception ex) 
             { 
-                return BadRequest(new {mensaje = ex.Message});
+                return BadRequest(ApiResponse.FailureResponse(ex.Message));
             
             }
             
         }
 
-        [HttpPut("{id}")]
 
-        public async Task<IActionResult> UpdateCliente(int id ,[FromBody] UpdateClienteDto dto)
+        [Authorize]
+
+        [HttpPut("UpdateCliente{id}")]
+
+        public async Task<IActionResult> UpdateCliente(int id ,UpdateClienteDto dto)
         {
             try
             {
                 dto.Id = id;
 
-                await _clienteService.UpdateAsync( dto);
-                return Ok("Cliente Actualizado");
+               var result = await _clienteService.UpdateAsync(dto);
+                if(!result.IsSuccess)
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+                return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(result.Data, result.Message));//no usamos data porque solo queremos indicar que se actualizo correctamente
 
             }
             catch (Exception ex) 
             { 
-                return BadRequest(new {mesaje = ex.Message}); 
+                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message)); 
             }
 
+        }
+
+        [Authorize]
+
+        [HttpGet("GetBuscar")]
+
+        public async Task<IActionResult> BuscarAsync(string? nombre, string? telefono, string? correo)
+        {
+            try
+            {
+                var result = await _clienteService.BuscarAsync(nombre, telefono, correo);
+                if(!result.IsSuccess)
+                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+                return Ok(ApiResponseT<List<ClienteResponseDto>>.SuccessResponse(result.Data, result.Message));
+            }
+            catch (Exception ex)
+            {
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
+
+                }
+            }
         }
 
 
@@ -113,4 +170,4 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
 
     }
-}
+

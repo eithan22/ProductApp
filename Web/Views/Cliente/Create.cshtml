@@ -1,0 +1,91 @@
+﻿@model Web.Models.ClienteModels.CreateClienteModel
+
+@{
+    ViewData["Title"] = "Crear Cliente";
+}
+
+<div class="container mt-4">
+
+    <!-- Título -->
+    <div class="mb-4">
+        <h2 class="fw-bold">➕ Crear Cliente</h2>
+        <p class="text-muted">Completa los datos para registrar un nuevo cliente</p>
+    </div>
+
+    <!-- ALERTA DE ERRORES -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>⚠️ Atención:</strong>
+            <div asp-validation-summary="All"></div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- FORMULARIO -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form asp-action="Create">
+
+                <div class="row">
+
+                    <!-- Nombre -->
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Nombre" class="form-label fw-semibold"></label>
+                        <input asp-for="Nombre" class="form-control" placeholder="Ej: Juan Pérez" />
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Correo -->
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Correo" class="form-label fw-semibold"></label>
+                        <input asp-for="Correo" class="form-control" placeholder="correo@email.com" />
+                        <span asp-validation-for="Correo" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Telefono" class="form-label fw-semibold"></label>
+                        <input asp-for="Telefono" class="form-control" placeholder="8091234567" />
+                        <span asp-validation-for="Telefono" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Cédula -->
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Cedula" class="form-label fw-semibold"></label>
+                        <input asp-for="Cedula" class="form-control" placeholder="40212345678" />
+                        <span asp-validation-for="Cedula" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Dirección -->
+                    <div class="col-12 mb-3">
+                        <label asp-for="Direccion" class="form-label fw-semibold"></label>
+                        <input asp-for="Direccion" class="form-control" placeholder="Dirección completa" />
+                        <span asp-validation-for="Direccion" class="text-danger small"></span>
+                    </div>
+
+                </div>
+
+                <!-- BOTONES -->
+                <div class="d-flex justify-content-between mt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        ⬅️ Volver
+                    </a>
+
+                    <button type="submit" class="btn btn-success">
+                        💾 Guardar Cliente
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

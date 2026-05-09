@@ -1,0 +1,95 @@
+﻿@model Web.Models.ClienteModels.ClienteModel
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger d-flex align-items-center">
+        <div>
+            <strong>⚠️ Error:</strong>
+            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+        </div>
+    </div>
+}
+@{
+    ViewData["Title"] = "Desactivar Cliente";
+}
+
+<div class="container mt-4">
+
+    <!-- Título -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-danger">⚠️ Desactivar Cliente</h2>
+        <p class="text-muted">Confirma si deseas desactivar este cliente</p>
+    </div>
+
+    <!-- CARD -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <!-- ALERTA -->
+            <div class="alert alert-warning d-flex align-items-center">
+                <div>
+                    <strong>Advertencia:</strong> Esta acción desactivará el cliente.
+                </div>
+            </div>
+
+            <!-- DATOS -->
+            <div class="row mb-3">
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Nombre</label>
+                    <div class="fw-semibold">@Model.Nombre</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Correo</label>
+                    <div>@Model.Email</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Teléfono</label>
+                    <div>@Model.Telefono</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Cédula</label>
+                    <div>@Model.Cedula</div>
+                </div>
+
+                <div class="col-12 mb-2">
+                    <label class="text-muted">Dirección</label>
+                    <div>@Model.Direccion</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Estado</label>
+                    <div>
+                        @if (Model.Estado == "Activo")
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactivo</span>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTONES -->
+            <form asp-action="Delete" class="d-flex justify-content-between">
+
+                <input type="hidden" asp-for="Id" />
+
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    ⬅️ Cancelar
+                </a>
+
+                <button type="submit" class="btn btn-danger">
+                    🗑️ Desactivar Cliente
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+</div>
