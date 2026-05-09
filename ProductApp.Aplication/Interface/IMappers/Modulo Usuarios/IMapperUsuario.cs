@@ -1,4 +1,5 @@
-﻿using ProductApp.Aplication.Dtos.UsuarioDto;
+﻿using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
+using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Domian.Entitis;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,9 @@ namespace ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios
         Usuario MapToEntity(CreateUsuarioDto dto);
 
 
-       public void mapUpdate(UpdateUsuarioDto dto, Usuario usuario);
+        void mapUpdate(UpdateUsuarioDto dto, Usuario usuario);
+
+        Usuario MapFromRegisterDto(RegisteDto dto);
 
 
 

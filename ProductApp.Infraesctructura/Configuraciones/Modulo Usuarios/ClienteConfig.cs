@@ -20,14 +20,14 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
                 .HasMaxLength(30);
 
              builder.Property(c => c.Telefono)
-                .HasMaxLength(20);
+                .HasMaxLength(12);
 
             builder.Property(c => c.Cedula)
                 .IsRequired()
                 .HasMaxLength(13);
             
              builder.Property(c => c.Direccion)
-                .HasMaxLength(50);
+                .HasMaxLength(100);
 
             builder.Property(c => c.Estado)
                 .IsRequired()

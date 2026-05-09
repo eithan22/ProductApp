@@ -1,0 +1,86 @@
+﻿@model Web.Models.ClienteModels.ClienteModel
+
+@{
+    ViewData["Title"] = "Detalle del Cliente";
+}
+
+<div class="container mt-4">
+
+    <!-- Título -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">👁️ Detalle del Cliente</h2>
+            <p class="text-muted">Información completa del cliente</p>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            ⬅️ Volver
+        </a>
+    </div>
+
+    <!-- CARD -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted">ID</label>
+                    <div class="fw-semibold">@Model.Id</div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted">Nombre</label>
+                    <div class="fw-semibold">@Model.Nombre</div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted">Correo</label>
+                    <div>@Model.Email</div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted">Teléfono</label>
+                    <div>@Model.Telefono</div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted">Cédula</label>
+                    <div>@Model.Cedula</div>
+                </div>
+
+                <div class="col-12 mb-3">
+                    <label class="text-muted">Dirección</label>
+                    <div>@Model.Direccion</div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted">Estado</label>
+                    <div>
+                        @if (Model.Estado == "Activo")
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactivo</span>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTONES -->
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                    ✏️ Editar
+                </a>
+
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                    🗑️ Desactivar
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>

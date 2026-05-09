@@ -11,7 +11,9 @@ namespace ProductApp.Aplication.Dtos.CategoriaDto
 
         public string Descripcion { get; set; } = null!;
 
-       
+        public String Estado { get; set; } = null!; // para mostrar si esta activo o desactivado sin el enum
+
+
 
 
 

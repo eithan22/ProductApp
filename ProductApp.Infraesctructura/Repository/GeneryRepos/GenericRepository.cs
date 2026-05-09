@@ -99,5 +99,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
             return await _context.Set<T>().AnyAsync(filtro);
         }
 
+        public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> filtro)
+        {
+           return await Entity.Where(x => !x.IsDisable).FirstOrDefaultAsync(filtro);
+        }
     }
 }

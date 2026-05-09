@@ -8,5 +8,6 @@ namespace ProductApp.Aplication.Interface
 {
     public interface ICategoriaServices : IBaseServices<CategoriaResponseDto, CreateCategoriaDto, UpdateCategoriaDto>
     {
+
     }
 }

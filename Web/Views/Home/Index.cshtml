@@ -1,8 +1,80 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+
+    <!-- 🔥 HERO / BIENVENIDA -->
+    <div class="card card-custom p-4 mb-4 text-center">
+
+        <h1 class="fw-bold"> Bienvenido a ProductApp</h1>
+
+        <p class="text-muted mt-2">
+            Sistema de gestión moderno para administrar tus Ventas de forma eficiente.
+        </p>
+
+    </div>
+
+    <!-- 🔥 CARDS PRINCIPALES -->
+    <div class="row">
+
+        <!-- CLIENTES -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-custom p-4 text-center">
+
+                <i class="bi bi-people fs-1 text-primary"></i>
+
+                <h5 class="mt-3">Clientes</h5>
+
+                <p class="text-muted">
+                    Gestiona, consulta y administra tus clientes.
+                </p>
+
+                <a asp-controller="Cliente" asp-action="Index" class="btn btn-primary btn-sm">
+                    Ir a Clientes
+                </a>
+
+            </div>
+        </div>
+
+        <!-- FUTURO MODULO -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-custom p-4 text-center">
+
+                <i class="bi bi-bar-chart fs-1 text-success"></i>
+
+                <h5 class="mt-3">Reportes</h5>
+
+                <p class="text-muted">
+                    Visualiza estadísticas y datos importantes.
+                </p>
+
+                <button class="btn btn-outline-secondary btn-sm" disabled>
+                    Próximamente
+                </button>
+
+            </div>
+        </div>
+
+        <!-- CONFIG -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-custom p-4 text-center">
+
+                <i class="bi bi-gear fs-1 text-dark"></i>
+
+                <h5 class="mt-3">Configuración</h5>
+
+                <p class="text-muted">
+                    Ajusta opciones del sistema.
+                </p>
+
+                <button class="btn btn-outline-secondary btn-sm" disabled>
+                    Próximamente
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
 </div>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProductApp.Aplication.Result.OperationResult;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,17 +7,16 @@ namespace ProductApp.Aplication.Interface.Servicios.BaseServices
 {
     public interface IBaseServices<TResponsedto , TCreatedto, TUpdatedto>
     {
-        Task<TResponsedto> CreateAsync(TCreatedto dto);
+        Task<OperationResultD<TResponsedto>> CreateAsync(TCreatedto dto);
 
-        Task<List<TResponsedto>>GetAllAsync();
+        Task<OperationResultD<List<TResponsedto>>> GetAllAsync();
 
-        Task<TResponsedto> GetByIdAsync(int id);
+        Task<OperationResultD<TResponsedto>> GetByIdAsync(int id);
+        Task<OperationResultD<TResponsedto>> UpdateAsync(TUpdatedto dto);
 
-        Task<TResponsedto> UpdateAsync(TUpdatedto dto);
+        Task<OperationResultD<bool>> DeleteAsync(int id);
 
-        Task DeleteAsync(int id);
-
-        Task DisableAsync(int id);
+        Task<OperationResultD<bool>> DisableAsync(int id);
 
         
 

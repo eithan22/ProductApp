@@ -76,8 +76,7 @@ namespace ProductApp.Domian.Entitis
             if (string.IsNullOrWhiteSpace(telefono))
                 throw new ArgumentException("El teléfono no puede estar vacío.");
 
-            if (telefono.Length != 10)
-                throw new ArgumentException("El teléfono debe tener 10 dígitos.");
+           
         }
 
 

@@ -1,0 +1,75 @@
+﻿@model IEnumerable<Web.Models.Modelo_Usuarios.UsuarioModels.UsuarioModel>
+
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">👤 Usuarios</h2>
+
+    <a asp-action="Create" class="btn btn-success">
+        ➕ Nuevo Usuario
+    </a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Usuario</th>
+                        <th>Edad</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.Id</td>
+                            <td>@item.Nombre</td>
+                            <td>@item.Email</td>
+                            <td>@item.UserName</td>
+                            <td>@item.Edad</td>
+                            <td>
+                                <span class="badge bg-info">@item.RolUsuario</span>
+                            </td>
+                            <td>
+                                @if (item.EstadoUsuario == "Activo")
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactivo</span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-warning me-1">✏️</a>
+
+                                <a asp-action="Details" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-info me-1">👁️</a>
+
+                                <a asp-action="Delete" asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-outline-danger">🗑️</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+</div>

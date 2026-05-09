@@ -1,0 +1,83 @@
+﻿```cshtml
+@model Web.Models.Modelo_Usuarios.UsuarioModels.AuthModel.LoginModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="text-center mb-4">
+    <h2 class="fw-bold">Bienvenido</h2>
+    <p class="text-muted">Accede a tu cuenta</p>
+</div>
+
+<form asp-action="Login" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <!-- ERRORES GENERALES -->
+    <div asp-validation-summary="ModelOnly"
+         class="alert alert-danger">
+    </div>
+
+    <!-- USUARIO -->
+    <div class="mb-3">
+
+        <label asp-for="Username"
+               class="form-label">
+        </label>
+
+        <input asp-for="Username"
+               class="form-control"
+               placeholder="Ej: admin" />
+
+        <span asp-validation-for="Username"
+              class="text-danger">
+        </span>
+
+    </div>
+
+    <!-- PASSWORD -->
+    <div class="mb-3">
+
+        <label asp-for="Password"
+               class="form-label">
+        </label>
+
+        <input asp-for="Password"
+               type="password"
+               class="form-control"
+               placeholder="••••••••" />
+
+        <span asp-validation-for="Password"
+              class="text-danger">
+        </span>
+
+    </div>
+
+    <!-- BOTON -->
+    <div class="d-grid mb-3">
+        <button type="submit"
+                class="btn btn-primary">
+            Iniciar Sesión
+        </button>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="text-center">
+        <small>
+            ¿No tienes cuenta?
+            <a asp-controller="Auth"
+                   asp-action="Register">
+                Regístrate
+            </a>
+        </small>
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+```

@@ -15,11 +15,12 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
             builder.Property(u => u.Nombre)
                 .IsRequired()
                 .HasMaxLength(20);
-            
 
-            builder.Property(u => u.Password)
-                .IsRequired()
-                .HasMaxLength(20);
+            builder.Property(u => u.PasswordHash)
+    .IsRequired()
+    .HasMaxLength(200);
+
+
 
 
 

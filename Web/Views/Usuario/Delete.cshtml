@@ -1,0 +1,98 @@
+﻿@model Web.Models.Modelo_Usuarios.UsuarioModels.UsuarioModel
+
+@{
+    ViewData["Title"] = "Desactivar Usuario";
+}
+
+<div class="container mt-4">
+
+    <!-- Título -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-danger">⚠️ Desactivar Usuario</h2>
+        <p class="text-muted">Confirma si deseas desactivar este usuario</p>
+    </div>
+
+    <!-- ALERTA DE ERROR -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger d-flex align-items-center">
+            <div>
+                <strong>⚠️ Error:</strong>
+                @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+            </div>
+        </div>
+    }
+
+    <!-- CARD -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <!-- ALERTA -->
+            <div class="alert alert-warning d-flex align-items-center">
+                <div>
+                    <strong>Advertencia:</strong> Esta acción desactivará el usuario.
+                </div>
+            </div>
+
+            <!-- DATOS -->
+            <div class="row mb-3">
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Nombre</label>
+                    <div class="fw-semibold">@Model.Nombre</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Email</label>
+                    <div>@Model.Email</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Edad</label>
+                    <div>@Model.Edad</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Usuario</label>
+                    <div>@Model.UserName</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Rol</label>
+                    <div>@Model.RolUsuario</div>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="text-muted">Estado</label>
+                    <div>
+                        @if (Model.EstadoUsuario == "Activo")
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactivo</span>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOTONES -->
+            <form asp-action="Delete" class="d-flex justify-content-between">
+
+                <input type="hidden" asp-for="Id" />
+
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    ⬅️ Cancelar
+                </a>
+
+                <button type="submit" class="btn btn-danger">
+                    🗑️ Desactivar Usuario
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+</div>

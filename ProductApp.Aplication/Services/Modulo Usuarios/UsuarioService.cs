@@ -1,11 +1,18 @@
 ﻿using FluentValidation;
+using ProductApp.Aplication.BusinessValidator.Modulo_Usuarios;
+using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
+using ProductApp.Aplication.Helper;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
+using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
+using ProductApp.Aplication.Result.OperationResult;
+using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Repository;
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 
@@ -17,80 +24,210 @@ namespace ProductApp.Aplication.Services
         public readonly IMapperUsuario _mapperUsuario;
         private readonly IValidator<CreateUsuarioDto> _createValidator;  
         private readonly IValidator<UpdateUsuarioDto> _updateValidator;
+        private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
+        private readonly IValidator<ResetearPasswordDto> _resetPasswordValidator;
+        private readonly IValidator<CambiarRolDto> _cambiarRolValidator;
+        private readonly IValitadorBusinessUsuario _validatorBusinessUsuarios;
 
         public UsuarioService(IUsuarioRepository usuarioRepository, 
             IMapperUsuario mapperUsuario,
             IValidator<CreateUsuarioDto> createvalidator,
-            IValidator<UpdateUsuarioDto> updatevalidator)
+            IValidator<UpdateUsuarioDto> updatevalidator,
+            IValitadorBusinessUsuario validatorBusinessUsuarios
+
+            )
 
         { 
             _usuarioRepository = usuarioRepository;
             _mapperUsuario = mapperUsuario;
             _createValidator = createvalidator;
             _updateValidator = updatevalidator;
+            _validatorBusinessUsuarios = validatorBusinessUsuarios;
         }
 
 
-        public async Task<UsuarioResponseDto> CreateAsync(CreateUsuarioDto dto)
+        public async Task<OperationResultD<UsuarioResponseDto>> CreateAsync(CreateUsuarioDto dto)
         {
-
-           
-            
             //validacion con fluent validation
             var validationResult = await _createValidator.ValidateAsync(dto);
 
             if (!validationResult.IsValid)
             {
                 var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
-                throw new Exception($"Validación fallida: {errors}");
+                return OperationResultD<UsuarioResponseDto>.Failure($"Validación fallida: {errors}");
+            }
+
+            //validaciones de reglas de negocio
+
+            var businessValidationResult = await _validatorBusinessUsuarios.ValidarCreateUsuarioAsync(dto);
+
+            if (!businessValidationResult.IsSuccess)
+            {
+                return OperationResultD<UsuarioResponseDto>.Failure(businessValidationResult.Message);
             }
 
             //crear entidad
 
             var usuario = _mapperUsuario.MapToEntity(dto);
 
+            usuario.PasswordHash = PasswordHelper.Hash(dto.Password);
+
             await _usuarioRepository.CreateAsync(usuario);
 
             //respuesta
               var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
 
-            return usuarioResponseDto;
+            return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto , "Usuario Creado Correctamente");
 
         }
 
-        public async Task DeleteAsync(int id)
+
+        //solo el usuario puede cambiar su contraseña y debe proporcionar la contraseña actual para validar su identidad
+        public async Task<OperationResultD<bool>> CambiarPasswordUsuario(ChangePasswordDto dto)
+        {
+            //validacion con fluent validation
+            var validationResult = await _changePasswordValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid) 
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<bool>.Failure($"Validación fallida: {errors}");
+            }
+
+            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
+            if (usuario == null)
+                return OperationResultD<bool>.Failure("Usuario no encontrado");
+
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarCambiarPasswordUsuario(dto, usuario);
+
+            if (!validatorBusinessResult.IsSuccess)
+            {
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+            }
+
+            
+
+            usuario.PasswordHash = PasswordHelper.Hash(dto.PasswordNueva);
+
+            await _usuarioRepository.UpdateAsync(usuario);
+            return OperationResultD<bool>.Success(true, "Contraseña actualizada correctamente");
+        }
+
+
+
+        //solo el admin puede resetear la contraseña de un usuario sin necesidad de conocer la contraseña actual
+
+        public async Task<OperationResultD<bool>> ResetearPassword(ResetearPasswordDto dto)
+        {
+            //validacion con fluent validation
+            var validationResult = await _resetPasswordValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<bool>.Failure($"Validación fallida: {errors}");
+            }
+
+
+
+            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
+            if (usuario == null)
+                return OperationResultD<bool>.Failure("Usuario no encontrado");//
+
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarResetearPassword(dto);
+
+            if (!validatorBusinessResult.IsSuccess) {
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+            }
+
+            usuario.PasswordHash = PasswordHelper.Hash(dto.NuevaContraseña);
+
+            await _usuarioRepository.UpdateAsync(usuario);
+            return OperationResultD<bool>.Success(true, "Contraseña reseteada correctamente");
+        }
+
+
+        //solo el admin puede cambiar el rol de un usuario
+        public async Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto)
+        {
+            //validacion con fluent validation
+            var validationResult = await _cambiarRolValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid) 
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<bool>.Failure($"Validación fallida: {errors}");
+            };
+
+            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
+            if(usuario == null)
+            {
+                return OperationResultD<bool>.Failure("Usuario no encontrado");
+            }
+
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarCambiarRol(dto);
+            if (!validatorBusinessResult.IsSuccess) {
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+            }
+
+            usuario.RolUsuario = dto.NuevoRol;
+
+            await _usuarioRepository.UpdateAsync(usuario);
+            return OperationResultD<bool>.Success(true, "Rol actualizado correctamente");
+        }
+
+
+       
+
+        public async Task<OperationResultD<bool>> DeleteAsync(int id)
 
         {
             if (id <= 0)
             {
-                throw new Exception("Id no valido");
+                return OperationResultD<bool>.Failure("Id no valido");
             }
             var usuario = await _usuarioRepository.GetByIdAsync(id);
 
             if (usuario == null)
             {
-                throw new Exception("Usuario no encontrado");
+                return OperationResultD<bool>.Failure("Usuario no encontrado");
             }
 
             await _usuarioRepository.DeleteAsync(id);
 
+            return OperationResultD<bool>.Success(true, "Usuario Eliminado Correctamente");
+
         }
 
-        public async Task DisableAsync(int id)
+        
+
+        public async Task<OperationResultD<bool>> DisableAsync(int id)
         {
+
 
             if(id < 0)
             {
-                throw new Exception("Id no valido");
+                return OperationResultD<bool>.Failure("Id no valido");
             }
 
             var usuario = await _usuarioRepository.GetByIdAsync(id);
             
             if (usuario == null)
             {
-                throw new Exception("Usuario no encontrado");
+                return OperationResultD<bool>.Failure("Usuario no encontrado");
             }
-           // await _usuarioRepository.DisebleAsync(id);
+
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarDeleteUsuarioAsync(usuario);
+
+            if (!validatorBusinessResult.IsSuccess) {
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+            }
+
+            usuario.desactivar(usuario);
+
+            await _usuarioRepository.UpdateAsync(usuario);
+            return OperationResultD<bool>.Success(true, "Usuario Deshabilitado Correctamente");
+
 
 
         }
@@ -98,25 +235,32 @@ namespace ProductApp.Aplication.Services
 
 
         //No entiedo aun 
-        public async Task<List<UsuarioResponseDto>> GetAllAsync()
+        public async Task<OperationResultD<List<UsuarioResponseDto>>> GetAllAsync()
         {
             var usuarios = await _usuarioRepository.GetAllAsync();
+            if(usuarios == null || !usuarios.Any())
+            {
+                return OperationResultD<List<UsuarioResponseDto>>.Failure("No se encontraron usuarios");
+            }
 
             // Mapear con LINQ
             var usuarioResponseDtos = usuarios
                 .Select(u => _mapperUsuario.ToDto(u))
                 .ToList();
 
-            return usuarioResponseDtos;
+            return OperationResultD<List<UsuarioResponseDto>>.Success(usuarioResponseDtos, "Usuarios obtenidos correctamente");
         }
 
 
-        public async Task<UsuarioResponseDto> GetByIdAsync(int id)
+
+
+
+        public async Task<OperationResultD<UsuarioResponseDto>> GetByIdAsync(int id)
         {
             //bucar en el repositorio
             if (id <= 0)
             {
-                throw new Exception("Id no valido");
+                return OperationResultD<UsuarioResponseDto>.Failure("Id no valido");
             }
 
             var usuario = await _usuarioRepository.GetByIdAsync(id);
@@ -125,37 +269,50 @@ namespace ProductApp.Aplication.Services
           
             if (usuario == null)
             {
-                throw new Exception("Usuario no encontrado");
+                return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
             }
 
             //mapear entidad a dto
 
             var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
 
-            return usuarioResponseDto;
+            return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto, "Usuario obtenido correctamente");
 
 
         }
 
-        public async Task<UsuarioResponseDto> UpdateAsync(UpdateUsuarioDto dto)
+
+
+
+        public async Task<OperationResultD<UsuarioResponseDto>> UpdateAsync(UpdateUsuarioDto dto)
         {
-            //validaciones de entrada del dto con fullent validation
-
-            var validationResult = await _updateValidator.ValidateAsync(dto);
-
-            if (!validationResult.IsValid)
-            {
-                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
-                throw new Exception($"Validación fallida: {errors}");
-            }
-
+            
 
             var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
 
             if (usuario == null)
             {
-                throw new Exception("Usuario no encontrado");
+                return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
             }
+
+            //validacion con fluent validation
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<UsuarioResponseDto>.Failure($"Validación fallida: {errors}");
+            }
+
+
+            //validaciones de reglas de negocio
+            var businessValidationResult = await _validatorBusinessUsuarios.ValidarUpdateUsuarioAsync(dto);
+            if (!businessValidationResult.IsSuccess)
+            {
+                return OperationResultD<UsuarioResponseDto>.Failure(businessValidationResult.Message);
+            }
+
+
 
             //moficicando la entidad existente
 
@@ -167,7 +324,7 @@ namespace ProductApp.Aplication.Services
 
             var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
 
-            return usuarioResponseDto;
+            return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto, "Usuario actualizado correctamente");
 
 
 

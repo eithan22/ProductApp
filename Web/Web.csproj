@@ -6,4 +6,30 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
+    <!-- Override transitive vulnerable package -->
+    <PackageReference Include="NuGet.Packaging" Version="6.12.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ProductApp.Aplication\ProductApp.Aplication.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\Modulo Productos\" />
+    <Folder Include="Controllers\Modulo Ventas\" />
+    <Folder Include="Models\Modelo Ventas\" />
+    <Folder Include="Services\EndPoints\Modulo Ventas\" />
+    <Folder Include="Services\Interfaces\IEndPoints\Modulo Ventas\" />
+    <Folder Include="Services\Interfaces\ServicesHttp\Modulo Ventas\" />
+    <Folder Include="Services\MappersV\Modulo Ventas\" />
+    <Folder Include="Services\ServicesHttp\Modulo Ventas\" />
+  </ItemGroup>
+
 </Project>
+
