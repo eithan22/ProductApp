@@ -86,12 +86,13 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         }
         [Authorize]
-        [HttpPost("UpdateCategoria")]
+        [HttpPut("UpdateCategoria")]
 
-        public async Task<IActionResult> UpdateCategoria(UpdateCategoriaDto dto)
+        public async Task<IActionResult> UpdateCategoria( int id ,UpdateCategoriaDto dto)
         {
             try
             {
+                dto.Id = id;
                 var result = await _categoriaService.UpdateAsync(dto);
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
@@ -105,9 +106,9 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
         [Authorize]
-        [HttpDelete("DeleteCategoria/{id}")]
+        [HttpPatch("DisableCategoria/{id}")]
 
-        public async Task<IActionResult> DeleteCategoria(int id)
+        public async Task<IActionResult> DisableCategoria(int id)
         {
             try
             {

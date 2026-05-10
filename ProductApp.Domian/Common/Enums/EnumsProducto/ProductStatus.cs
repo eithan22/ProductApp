@@ -10,6 +10,8 @@ namespace ProductApp.Domian.Common.Enums.EnumsProducto
     {
         Agotado = 1,
         Disponible= 2,
+        Activo = 3,
+        Inactivo = 4
 
     }
 }

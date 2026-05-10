@@ -1,4 +1,5 @@
 ﻿using ProductApp.Domian.Entitis;
+using ProductApp.Domian.Interfaces.IGeneryRepos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,19 +8,9 @@ using System.Threading.Tasks;
 
 namespace ProductApp.Domian.Interfaces
 {
-    public interface IProductoRepository
+    public interface IProductoRepository : IGeneryRepository<Producto>
     {
-        Task<IEnumerable<Producto>> GetAllAsync();
-
-        Task<Producto> CreateAsync(Producto producto);
-
-        Task<Producto?> GetByIdAsync(int id);
-
-        Task UpdateAsync(Producto producto);
-
-        Task DisebleAsync(int id);
-
-        Task DeleteAsync(int id);
+        
 
     }
 }

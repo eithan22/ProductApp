@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ProductApp.Domian.Common.Enums.EnumsProducto;
+using ProductApp.Domian.Entitis;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,7 +13,11 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
         public decimal Precio { get; set; }
         public decimal Costo { get; set; }
 
+        public EstadoProducto EstadoProducto { get; set; }
+
+        public Categoria Categoria { get; set; }=null!;
 
 
+        
     }
 }

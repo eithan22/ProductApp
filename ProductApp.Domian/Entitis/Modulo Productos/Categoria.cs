@@ -1,4 +1,5 @@
 ﻿using ProductApp.Domian.Common.Base;
+using ProductApp.Domian.Common.Enums.EnumsCliente;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -41,7 +42,18 @@ namespace ProductApp.Domian.Entitis
             Descripcion = descripcion;
         }
 
-       
 
+        //agregar nueva funcionalidad
+        public void desactivarCategoria()
+        {
+            
+        }
+
+        public void activarCategoria()
+        {
+            // Lógica para activar la categoría, por ejemplo, establecer un estado o agregarla a la lista de categorías activas.
+        }
+
+
+        }
     }
-}
