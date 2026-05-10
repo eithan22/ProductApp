@@ -12,7 +12,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
     [Route("api/[controller]")]
     [ApiController]
-    public class UsuarioController : Controller
+    public class UsuarioController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
 

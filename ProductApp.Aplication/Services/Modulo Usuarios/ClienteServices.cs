@@ -88,7 +88,7 @@ namespace ProductApp.Aplication.Services
             }
 
             // Mapear el DTO a la entidad Cliente
-            var cliente = _mapperCliente.MapToCreateCliente(dto);
+            var cliente =  _mapperCliente.MapToCreateCliente(dto);
 
 
             await _clienteRepository.CreateAsync(cliente);

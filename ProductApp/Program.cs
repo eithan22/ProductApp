@@ -11,6 +11,7 @@ using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
+using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
@@ -24,6 +25,7 @@ using ProductApp.Aplication.Mappers.Modulo_Producto;
 using ProductApp.Aplication.Services;
 using ProductApp.Aplication.Services.Modulo_Usuarios;
 using ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator;
+using ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.AuthValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator;
@@ -82,6 +84,7 @@ namespace ProductApp
 
 
 
+            
 
             var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 
@@ -125,14 +128,23 @@ namespace ProductApp
 
             // repositorios
             builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+
             builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+
             builder.Services.AddScoped<ICategoriaRepository, CategoriaReposiroy>();
+
+            builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+
+
 
             // mappers
             builder.Services.AddScoped<IMapperCliente, ClienteMappers>();
+
             builder.Services.AddScoped<IMapperCategoria, CategoriaMapper>();
 
              builder.Services.AddScoped<IMapperUsuario, UsuarioMapper>();
+
+            builder.Services.AddScoped<IMapperProducto, ProductoMapper>();
 
 
             // servicios
@@ -149,6 +161,10 @@ namespace ProductApp
             // auth
 
             builder.Services.AddScoped<IAuthService, AuthServicecs>();
+
+            //Producto
+
+            builder.Services.AddScoped<IProductoServices, ProductoServices>();
 
 
 
@@ -168,6 +184,9 @@ namespace ProductApp
 
             // auth
             builder.Services.AddScoped<IValidatorBusinessAuth, ValidatorBusinessAuth>();
+
+            //Producto
+            builder.Services.AddScoped<IValidatorBusinessProducto, ValidatorBusinessProducto>();
             
 
 
@@ -193,6 +212,11 @@ namespace ProductApp
             // auth
             builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
             builder.Services.AddScoped<IValidator<RegisteDto>, RegisterValidator>();
+
+
+            //Producto
+            builder.Services.AddScoped<IValidator<CreateProductoDto>, CreateProductoValidator>();
+            builder.Services.AddScoped<IValidator<UpdateProductoDto>, UpdateProductoValidator>();
 
 
 

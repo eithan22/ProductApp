@@ -70,6 +70,9 @@ namespace ProductApp.Aplication.Services
         }
 
 
+
+
+
         //no se usa por ahora
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
@@ -89,6 +92,9 @@ namespace ProductApp.Aplication.Services
 
             return OperationResultD<bool>.Success(true, "Categoria eliminada correctamente");
         }
+
+
+
 
 
         public async Task<OperationResultD<bool>> DisableAsync(int id)
@@ -113,8 +119,10 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validationBusinessResult.Message);
             }
 
+            categoria.desactivarCategoria();
 
-            await _categoriaRepository.DisebleAsync(id);
+            await _categoriaRepository.UpdateAsync(categoria);
+
 
             return OperationResultD<bool>.Success(true, "Categoria deshabilitada correctamente");
         }

@@ -18,6 +18,10 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator
                 .NotEmpty().WithMessage("El email es requerido.")
                 .EmailAddress().WithMessage("El email no es válido.");
 
+
+            RuleFor(x => x.Edad)
+                .NotEmpty().WithMessage("La edad es Requerida");
+
             RuleFor(x => x.Password)
 
                 .NotEmpty().WithMessage("La contraseña es requerida.")

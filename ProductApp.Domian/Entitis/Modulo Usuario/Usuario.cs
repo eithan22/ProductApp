@@ -11,7 +11,7 @@ namespace ProductApp.Domian.Entitis
 {
     public class Usuario : BaseEntity
     {
-        public string Nombre { get; set; } = string.Empty;
+        public string Nombre { get;  set; } = string.Empty;
 
         public int Edad { get; set; } = 0;
         public string Email { get; set; } = string.Empty;
