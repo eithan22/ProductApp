@@ -9,6 +9,6 @@ namespace ProductApp.Domian.Interfaces
     public interface IClienteRepository : IGeneryRepository<Cliente>
     {
 
-         Task <List<Cliente>>BuscarAsync(string? nombre, string? telefono, string? correo);
+         Task <List<Cliente>>BuscarClientesAsync(string? nombre, string? telefono, string? correo);
     }
 }

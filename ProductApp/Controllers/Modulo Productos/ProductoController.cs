@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Dtos.CategoriaDto;
+using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
@@ -127,6 +128,53 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
                 return BadRequest(ApiResponse.FailureResponse(ex.Message));
             }
         }
+
+
+        [Authorize]
+        [HttpPatch("EnableProducto/{id}")]
+
+        public async Task<IActionResult> EnableProducto(int id)
+        {
+            try
+            {
+                var result = await _productoServices.EnableProducto(id);
+
+                if (!result.IsSuccess)
+                    return BadRequest(ApiResponse.FailureResponse(result.Message));
+
+                return Ok(ApiResponse.SuccessResponse(result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse.FailureResponse(ex.Message));
+            }
+
+        }
+
+
+        [Authorize]
+        [HttpGet("BuscarProductos")]
+
+        public async Task<IActionResult> BuscarProducto(string? nombre, string?categoria)
+        {
+            try
+            {
+                var result = await _productoServices.BuscarProductosPorNombreOCategoria(nombre, categoria);
+                if (!result.IsSuccess)
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+                return Ok(ApiResponseT<List<ProductoResponseDto>>.SuccessResponse(result.Data, result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
+
+            }
+
+        }
+
+
+
     }
 
 

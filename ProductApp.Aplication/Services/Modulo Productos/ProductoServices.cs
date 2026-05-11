@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using Microsoft.Win32;
+using Org.BouncyCastle.Crypto;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
@@ -39,7 +41,22 @@ namespace ProductApp.Aplication.Services
             _validatorBusinessProducto = validatorBusinessProducto;
 
         }
+        /*
 
+        Registrar nuevos productos.
+       • Editar información de productos.
+        • Asignar productos a una categoría.
+        • Actualizar precio de venta.
+         • Activar o desactivar productos.
+
+        • Consultar lista de productos disponibles.
+         • Buscar productos por nombre o categoría
+
+        */
+
+
+
+        //no se usara por ahora
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -60,6 +77,9 @@ namespace ProductApp.Aplication.Services
 
 
         }
+
+        
+        //desactivar un producto
 
         public async Task<OperationResultD<bool>> DisableAsync(int id)
         {
@@ -82,12 +102,14 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validatoBusiness.Message);
             }
 
-            await _productorepository.DisebleAsync(id);
+            producto.DesactivarProducto();
+            await _productorepository.UpdateAsync(producto);
+
             return OperationResultD<bool>.Success(true, "Producto deshabilitado exitosamente");
 
         }
 
-
+        //crear un producto y agregarle una categoria ya creada
 
          public async Task<OperationResultD<ProductoResponseDto>> CreateAsync(CreateProductoDto dto)
         {
@@ -108,7 +130,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ProductoResponseDto>.Failure(validatorBusiness.Message);
             
             }
-
+            var productoCompleto = await _productorepository.GetProductosConCategoriaAll();
             var producto =  _mapperProductoMapper.MapToCreateProducto(dto);
 
             
@@ -122,11 +144,10 @@ namespace ProductApp.Aplication.Services
 
         }
 
-
-
+        //ver todos os productos 
        public async Task<OperationResultD<List<ProductoResponseDto>>> GetAllAsync()
         {
-            var productos = await _productorepository.GetAllAsync();
+            var productos = await _productorepository.GetProductosConCategoriaAll();
 
             if(productos == null)
             {
@@ -140,6 +161,7 @@ namespace ProductApp.Aplication.Services
         }
 
         
+        //ver un producto en especifico
 
         public async Task<OperationResultD<ProductoResponseDto>> GetByIdAsync(int id)
         {
@@ -166,6 +188,7 @@ namespace ProductApp.Aplication.Services
            
         }
 
+        //actualizar el producto 
          public async Task<OperationResultD<ProductoResponseDto>> UpdateAsync(UpdateProductoDto dto)
         {
             var dtoValidator = await _validatorUpdateProductoDto.ValidateAsync(dto);
@@ -200,6 +223,47 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto actualizado correctamente");
         }
 
-      
+
+
+        //reactivar producto
+        public async Task<OperationResultD<bool>> EnableProducto(int id)
+        {
+            if (id <= 0)
+            {
+                return OperationResultD<bool>.Failure("El id no ppuede ser negativo o 0");
+            }
+
+            var producto = await _productorepository.GetByIdAsync(id);
+
+            if (producto == null) 
+            {
+                return OperationResultD<bool>.Failure("El producto no se encontro");
+            }
+
+            producto.ActivarProducto();
+
+            await _productorepository.UpdateAsync(producto);
+
+            return OperationResultD<bool>.Success(true, "Producto activado");
+        }
+
+
+
+
+        //buscar productor por nombre y categoria
+        public async Task<OperationResultD<List<ProductoResponseDto>>> BuscarProductosPorNombreOCategoria(string? nombre, string? categoria)
+        {
+            if (string.IsNullOrEmpty(nombre) && string.IsNullOrEmpty(categoria)) 
+            {
+                return OperationResultD<List<ProductoResponseDto>>.Failure("Debe proporcionar al menos un criterio de búsqueda");
+            
+            }
+
+            var producto = await _productorepository.BuscarProductosAsync(nombre, categoria);
+
+            var ProductoResponse = producto.Select(p => _mapperProductoMapper.MapToProductoResponse(p)).ToList();
+
+            return OperationResultD<List<ProductoResponseDto>>.Success(ProductoResponse, "Productos encontrados Correctamente");
+        }
     }
 }

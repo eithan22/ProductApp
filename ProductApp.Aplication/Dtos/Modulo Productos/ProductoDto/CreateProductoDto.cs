@@ -13,9 +13,9 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
         public decimal Precio { get; set; }
         public decimal Costo { get; set; }
 
-        public EstadoProducto EstadoProducto { get; set; }
+       
 
-        public Categoria Categoria { get; set; }=null!;
+        public int  CategoriaId { get; set; }
 
 
         

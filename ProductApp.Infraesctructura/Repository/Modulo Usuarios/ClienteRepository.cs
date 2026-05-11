@@ -15,7 +15,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
         }
 
-        public Task<List<Cliente>> BuscarAsync(string? nombre, string? telefono, string? correo)
+        public Task<List<Cliente>> BuscarClientesAsync(string? nombre, string? telefono, string? correo)
         {
             var query = _context.Clientes.AsQueryable();
 

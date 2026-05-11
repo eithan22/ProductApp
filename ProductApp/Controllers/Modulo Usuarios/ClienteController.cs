@@ -146,6 +146,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [HttpGet("GetBuscar")]
 
+        //tambien puedo hacer un dto de busquedad pero asi sta bien 
         public async Task<IActionResult> BuscarAsync(string? nombre, string? telefono, string? correo)
         {
             try

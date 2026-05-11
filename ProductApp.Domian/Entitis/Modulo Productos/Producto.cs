@@ -26,17 +26,20 @@ namespace ProductApp.Domian.Entitis
         public int CategoriaId { get; private set; }
 
 
-        public Producto(string nombre, string descripcion, decimal precio, decimal costo)
+        public Producto(string nombre, string descripcion, decimal precio, decimal costo , int categoriaId)
         {
             CambiarYvalidarNombre(nombre);
             CambiarYvalidarDescripcion(descripcion);
             CambiarYvalidarPrecio(precio);
             CambiarYvalidarCosto(costo);
+            CambiarYvalidarCategoria(categoriaId);
 
                 Nombre = nombre;
                 Descripcion = descripcion;
                 Precio = precio;
                 Costo = costo;
+                CategoriaId = categoriaId;
+
                 Estado = EstadoProducto.Disponible;
             
             
@@ -53,7 +56,7 @@ namespace ProductApp.Domian.Entitis
 
         public void CambiarYvalidarNombre(string nombre)
         {
-            if(string.IsNullOrWhiteSpace(Nombre))
+            if(string.IsNullOrWhiteSpace(nombre))
             {
                 throw new ArgumentException("El nombre no puede estar vacio.");
             }
@@ -75,7 +78,7 @@ namespace ProductApp.Domian.Entitis
 
         //apernder hacer estops metodos de validacion
         public void CambiarYvalidarDescripcion(string descripcion) {
-                      if(string.IsNullOrWhiteSpace(Descripcion))
+                      if(string.IsNullOrWhiteSpace(descripcion))
             {
                 throw new ArgumentException("La descripcion no puede estar vacia.");
             }
@@ -92,6 +95,17 @@ namespace ProductApp.Domian.Entitis
                 throw new ArgumentException("El costo no puede ser negativo.");
             }
             Costo = costo;
+        }
+
+        public void CambiarYvalidarCategoria(int categoriaId)
+        {
+            if(categoriaId < 0)
+            {
+                throw new ArgumentException("El id de la categoria no puede ser 0");
+
+            }
+            CategoriaId = categoriaId;
+
         }
 
 
