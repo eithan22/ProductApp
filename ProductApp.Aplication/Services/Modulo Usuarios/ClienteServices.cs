@@ -50,7 +50,7 @@ namespace ProductApp.Aplication.Services
                 }
 
 
-                var clientes = await _clienteRepository.BuscarAsync(nombre, telefono, correo);
+                var clientes = await _clienteRepository.BuscarClientesAsync(nombre, telefono, correo);
 
                 var clienteresponsedto = clientes.
                     Select(c => _mapperCliente.MapToClienteResponseDto(c))

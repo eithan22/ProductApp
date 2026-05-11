@@ -10,6 +10,9 @@ namespace ProductApp.Domian.Interfaces
 {
     public interface IProductoRepository : IGeneryRepository<Producto>
     {
+        Task<IEnumerable<Producto>> GetProductosConCategoriaAll();
+
+        Task<List<Producto>> BuscarProductosAsync(string? nombre, string? categoria);
         
 
     }

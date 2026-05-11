@@ -28,7 +28,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
 
             if (await _productoRepository.ExisteAsync(p => p.Descripcion == dto.Descripcion))
             {
-                return OperationResult.Failure("Este nombre ya existe");
+                return OperationResult.Failure("Este descripcion ya existe");
             }
 
             return OperationResult.Success();    
