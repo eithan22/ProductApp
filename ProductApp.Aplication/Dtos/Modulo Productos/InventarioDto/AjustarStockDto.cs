@@ -4,7 +4,10 @@ using System.Text;
 
 namespace ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto
 {
-    internal class CreateInventarioDto
+    public class AjustarStockDto
     {
+        public int ProductoId { get; set; }
+
+        public int NuevoStock { get; set; }
     }
 }

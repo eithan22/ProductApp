@@ -9,6 +9,7 @@ using ProductApp.Aplication.BusinessValidator.Modulo_Productos;
 using ProductApp.Aplication.BusinessValidator.Modulo_Usuarios;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.ClienteDto;
+using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
@@ -25,6 +26,7 @@ using ProductApp.Aplication.Mappers.Modulo_Producto;
 using ProductApp.Aplication.Services;
 using ProductApp.Aplication.Services.Modulo_Usuarios;
 using ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator;
+using ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.AuthValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator;
@@ -135,6 +137,8 @@ namespace ProductApp
 
             builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 
+            builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
+
 
 
             // mappers
@@ -145,6 +149,8 @@ namespace ProductApp
              builder.Services.AddScoped<IMapperUsuario, UsuarioMapper>();
 
             builder.Services.AddScoped<IMapperProducto, ProductoMapper>();
+
+            builder.Services.AddScoped<IMapperInventario, InventarioMapper>();
 
 
             // servicios
@@ -165,6 +171,9 @@ namespace ProductApp
             //Producto
 
             builder.Services.AddScoped<IProductoServices, ProductoServices>();
+
+            //inventario
+            builder.Services.AddScoped<IInventarioServices, InventarioService>();
 
 
 
@@ -219,6 +228,9 @@ namespace ProductApp
             builder.Services.AddScoped<IValidator<UpdateProductoDto>, UpdateProductoValidator>();
 
 
+            //Inventario
+            builder.Services.AddScoped<IValidator<MovimientoStockDto>, MovimientoStockValidator>();
+            builder.Services.AddScoped<IValidator<AjustarStockDto>, AjustarStockValidator>();
 
 
 

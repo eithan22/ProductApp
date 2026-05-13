@@ -33,7 +33,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 Descripcion = producto.Descripcion,
                 Precio = producto.Precio,
                 Costo = producto.Costo,
-                Estado = producto.Estado,
+                Estado = producto.Estado.ToString(),
                 Categoria = producto.Categoria?.Nombre,
 
 
