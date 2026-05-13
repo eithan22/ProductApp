@@ -23,7 +23,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Contex
 
         public DbSet<Pago> Pagos { get; set; }
 
-        public DbSet<Inventario> Inventarios { get; set; }
+        public DbSet<Inventario> Inventario { get; set; }
 
         public DbSet<Categoria> Categorias { get; set; }    
 

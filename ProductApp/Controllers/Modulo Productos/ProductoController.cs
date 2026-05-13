@@ -155,7 +155,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [Authorize]
         [HttpGet("BuscarProductos")]
 
-        public async Task<IActionResult> BuscarProducto(string? nombre, string?categoria)
+        public async Task<IActionResult> BuscarProducto(string? nombre, string? categoria)
         {
             try
             {

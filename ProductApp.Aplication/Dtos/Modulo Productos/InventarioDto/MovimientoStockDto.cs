@@ -4,7 +4,9 @@ using System.Text;
 
 namespace ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto
 {
-    internal class UpdateInventarioDto
+    public class MovimientoStockDto
     {
+        public int ProductoId { get; set; }
+        public int cantidad { get; set; } = 0;
     }
 }

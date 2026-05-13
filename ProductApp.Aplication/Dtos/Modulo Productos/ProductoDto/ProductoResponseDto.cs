@@ -15,7 +15,7 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
 
         public decimal Costo { get; set; }
 
-        public EstadoProducto Estado { get; set; }
+        public string Estado { get; set; } = "";
 
         public string? Categoria{ get; set; } // lo pongo que null porque en el reponse de create no se mostrara la categoria en si , pero si en el getallProductos 
 

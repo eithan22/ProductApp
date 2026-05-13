@@ -22,6 +22,7 @@ namespace ProductApp.Aplication.Services
     public class ProductoServices : IProductoServices
     {
         private readonly IProductoRepository _productorepository;
+        private readonly IInventarioRepository _inventarioRepository;
         private readonly IMapperProducto _mapperProductoMapper;
         private readonly IValidator<CreateProductoDto> _validatorCreateProductoDto;
         private readonly IValidator<UpdateProductoDto> _validatorUpdateProductoDto;
@@ -32,13 +33,16 @@ namespace ProductApp.Aplication.Services
             IMapperProducto mapperProductoMapper,
             IValidator<CreateProductoDto> validatorCreateProductoDto,
             IValidator<UpdateProductoDto> validatorUpdateProductoDto,
-            IValidatorBusinessProducto validatorBusinessProducto)
+            IValidatorBusinessProducto validatorBusinessProducto,
+            IInventarioRepository inventarioRepository
+            )
         {
             _productorepository = productorepository;
             _mapperProductoMapper = mapperProductoMapper;
             _validatorCreateProductoDto = validatorCreateProductoDto;
             _validatorUpdateProductoDto = validatorUpdateProductoDto;
             _validatorBusinessProducto = validatorBusinessProducto;
+            _inventarioRepository = inventarioRepository;
 
         }
         /*
@@ -109,6 +113,12 @@ namespace ProductApp.Aplication.Services
 
         }
 
+
+
+
+
+
+
         //crear un producto y agregarle una categoria ya creada
 
          public async Task<OperationResultD<ProductoResponseDto>> CreateAsync(CreateProductoDto dto)
@@ -137,12 +147,26 @@ namespace ProductApp.Aplication.Services
 
             await _productorepository.CreateAsync(producto);
 
-            
-           var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(producto);
+
+            //crear un inventario para el producto creado con cantidad actual 0 y cantidad minima 5 por defecto
+
+            var inventario = new Inventario(
+             0,  //cantidad actual por defecto
+             5,   //cantidad minima por defecto 
+             producto.Id
+             );
+
+            await _inventarioRepository.CreateAsync(inventario);
+
+            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(producto);
 
             return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto creado correctamente");
 
         }
+
+
+
+
 
         //ver todos os productos 
        public async Task<OperationResultD<List<ProductoResponseDto>>> GetAllAsync()
@@ -259,7 +283,16 @@ namespace ProductApp.Aplication.Services
             
             }
 
+           
+
             var producto = await _productorepository.BuscarProductosAsync(nombre, categoria);
+
+            //mas adelante podre el si existe 
+            if (producto.Count == 0)
+            {
+                return OperationResultD<List<ProductoResponseDto>>
+                    .Failure("No se encontraron productos");
+            }
 
             var ProductoResponse = producto.Select(p => _mapperProductoMapper.MapToProductoResponse(p)).ToList();
 

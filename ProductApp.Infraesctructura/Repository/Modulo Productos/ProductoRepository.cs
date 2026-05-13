@@ -17,7 +17,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
 
         public  Task<List<Producto>> BuscarProductosAsync(string? Nombre, string? Categoria)
         {
-            var query =  _context.Productos.AsQueryable();
+            var query = _context.Productos
+            .Include(p => p.Categoria)
+             .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(Nombre))
             {
@@ -33,6 +35,17 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
 
 
         }
+
+        //sin usar aun es para traer la categoria cuando usameos el getByIdProductos
+        public async Task<Producto?> GetProductoConCategoriaByIdAsync(int id)
+        {
+            return await _context.Productos
+                .Include(p => p.Categoria)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+
+
 
         public async Task<IEnumerable<Producto>> GetProductosConCategoriaAll()
         {
