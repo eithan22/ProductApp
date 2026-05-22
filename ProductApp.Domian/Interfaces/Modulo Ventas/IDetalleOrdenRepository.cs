@@ -10,6 +10,10 @@ namespace ProductApp.Domian.Interfaces
 {
     public interface IDetalleOrdenRepository : IGeneryRepository<OrderDetalle>
     {
+        Task<List<OrderDetalle>> ObtenerDetalleOrdenPorOrdenIdAsync(int Id);
+
+        Task<OrderDetalle?> ObtenerDetalleConProductoAsync(int id);
+
 
     }
 }

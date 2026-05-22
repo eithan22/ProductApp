@@ -9,15 +9,44 @@ namespace ProductApp.Domian.Entitis
 {
     public class OrderDetalle : BaseEntity // clase intermedia n*n
     {
-        public int ProductId { get; set; }
-        public Producto Producto { get; set; } = null!;
+        public int ProductId { get; private set; }
+        public Producto Producto { get; private set; } = null!;
 
-        public int Cantidad { get; set; }
-        public decimal PrecioUnitario { get; set; }
+        public int Cantidad { get; private set; }
+        public decimal PrecioUnitario { get; private set; }
 
-        public int OrdenId { get; set; }
-        public Orden Orden { get; set; } = null!;
+        public decimal Subtotal { get; private set; }
+
+        public int OrdenId { get; private set; }
+        public Orden Orden { get; private  set; } = null!;
 
 
+        public OrderDetalle()
+        {
+        }
+
+
+        public OrderDetalle(int productId, int cantidad, decimal precioUnitario, int ordenId)
+        {
+            ProductId = productId;
+            Cantidad = cantidad;
+            PrecioUnitario = precioUnitario;
+            OrdenId = ordenId;
+            ActualizarCantidad(cantidad);
+            CalcularSubtotal();
+
+        }
+
+
+        public void ActualizarCantidad(int nuevaCantidad)
+        {
+            Cantidad = nuevaCantidad;
+            CalcularSubtotal();
+        }
+        public void CalcularSubtotal()
+        {
+            Subtotal = Cantidad * PrecioUnitario;
+
+        }
     }
 }

@@ -10,6 +10,12 @@ namespace ProductApp.Domian.Interfaces
 {
     public interface IOrdenRepository : IGeneryRepository<Orden>
     {
-      
+        Task<List<Orden>> ObtenerPorClienteAsync(int clienteId);
+         Task<List<Orden>> ObtenerPorFechaAsync(DateTime fecha);
+
+        
+
+        
+
     }
 }
