@@ -33,4 +33,33 @@ ProductApp está desarrollado bajo una **Arquitectura en Capas** (Clean Architec
 
 1. **Capa de Presentación:** Interfaz de usuario y controladores (MVC/API).
 2. **Capa de Aplicación:** Lógica de negocio, DTOs y casos de uso.
-3. **C
+3. **Capa de Dominio:** Entidades principales y reglas de negocio puras.
+4. **Capa de Infraestructura:** Acceso a datos, DbContext y servicios externos.
+
+---
+
+## 🗄️ Modelo de Datos (Entidades Principales)
+
+| Entidad | Descripción |
+| :--- | :--- |
+| **Usuario** | Gestiona el acceso al sistema (Credenciales, Rol, Estado). |
+| **Cliente** | Almacena los datos de los compradores y su información de contacto. |
+| **Producto** | Representa los artículos en venta con sus precios y costos. |
+| **Categoría** | Agrupación lógica para clasificar los productos. |
+| **Inventario** | Controla el stock actual, stock mínimo y última actualización. |
+| **Orden** | Transacción comercial principal que agrupa al cliente y los productos. |
+| **DetalleOrden** | Desglose individual de cada producto, cantidad y subtotal dentro de una orden. |
+| **Pago** | Registro financiero de los abonos realizados a una orden específica. |
+
+---
+
+## 🔄 Flujo Principal de la Aplicación
+
+1. El usuario (Vendedor/Admin) inicia sesión en el sistema.
+2. Se registra un nuevo cliente o se selecciona uno existente.
+3. Se crea una nueva orden de venta.
+4. Se agregan los productos deseados al detalle de la orden.
+5. El sistema calcula el subtotal y el total de forma automática.
+6. Se registra el pago (total o parcial).
+7. Al completarse el pago, el sistema descuenta el stock del inventario automáticamente.
+8. Los datos quedan disponibles para la generación de reportes.        
