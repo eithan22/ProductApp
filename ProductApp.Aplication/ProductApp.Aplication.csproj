@@ -21,9 +21,7 @@
     <Folder Include="BusinessValidator\Modulo Ventas\" />
     <Folder Include="Dtos\BaseDto\" />
     <Folder Include="Interface\RulesBusinnes\Modulo Ventas\" />
-    <Folder Include="Validators\Modulo Ventas\DetalleOrdenValidator\" />
     <Folder Include="Validators\Modulo Ventas\PagoValidator\" />
-    <Folder Include="Validators\Modulo Ventas\OrdenValidator\" />
   </ItemGroup>
 
 </Project>

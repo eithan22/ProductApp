@@ -35,5 +35,15 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 .Where(od => od.OrdenId == Id)
                 .ToListAsync();
         }
+
+
+        // Implementación del método para obtener un detalle de orden específico por productoId y ordenId con la información del producto relacionado
+
+        public Task<OrderDetalle?> ObtenerProductoEnOrdenAsync(int ordenId, int productoId)
+        {
+            return _context.DetalleOrden
+                .Include(od => od.Producto) // Incluir la información del producto relacionado
+                .FirstOrDefaultAsync(od => od.ProductId == productoId && od.OrdenId == ordenId);
+        }
     }
 }

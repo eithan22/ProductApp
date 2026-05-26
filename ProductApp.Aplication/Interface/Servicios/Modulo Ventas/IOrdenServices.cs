@@ -16,6 +16,9 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId);
 
+
+        Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes();
+
         Task<OperationResultD<bool>> CambiarEstadoOrden(CambiarEstadoOrdenDto dto);
 
         Task<OperationResultD<bool>> RecalcularTotalAsync(int id);

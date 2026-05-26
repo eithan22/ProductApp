@@ -11,11 +11,11 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductoController : ControllerBase
+    public class OrdenController : ControllerBase
     {
         private readonly IProductoServices _productoServices;
 
-        public ProductoController(IProductoServices productoServices) 
+        public OrdenController(IProductoServices productoServices) 
         {
             _productoServices = productoServices;
 

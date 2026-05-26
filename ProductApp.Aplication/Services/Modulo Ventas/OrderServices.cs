@@ -1,4 +1,5 @@
-﻿using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
+﻿using FluentValidation;
+using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
 using ProductApp.Aplication.Dtos.OrdenDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
@@ -20,16 +21,22 @@ namespace ProductApp.Aplication.Services
         private readonly IDetalleOrdenRepository _detalleOrdenRepository;
         private readonly IClienteServices _clienteServices;
         private readonly IMapperOrden _mapperOrden;
-
+        private readonly IValidator<CreateOrdenDto> _createOrdenValidator;
+        
         public OrderServices(IOrdenRepository ordenRepository,
             IClienteServices clienteServices,
             IMapperOrden mapperOrden,
-            IDetalleOrdenRepository detalleOrdenRepository)
+            IDetalleOrdenRepository detalleOrdenRepository,
+            IValidator<CreateOrdenDto> createOrdenValidator
+            )
+
+
         {
             _ordenRepository = ordenRepository;
             _clienteServices = clienteServices;
             _mapperOrden = mapperOrden;
             _detalleOrdenRepository = detalleOrdenRepository;
+            _createOrdenValidator = createOrdenValidator;
         }
 
         // Cambiar el estado de una orden (Pendiente, Pagada, Cancelada, Entregada).
@@ -142,6 +149,23 @@ namespace ProductApp.Aplication.Services
 
 
         }
+
+        public Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes()
+        {
+            var ordenes = _ordenRepository.GetAllAsync();
+
+            if(ordenes == null)
+            {
+                return Task.FromResult(OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes"));
+            }
+
+            var ordenesResponse = ordenes.Result.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
+
+            return Task.FromResult(OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente"));
+        }
+
+
+
 
 
 

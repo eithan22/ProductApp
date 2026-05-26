@@ -19,7 +19,9 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<bool>> EliminarProductoAsync(int id);
 
         //consultar detalle de la orden
-        Task<OperationResultD<List<OrdenDetalleResponseDto>>> GetOrdenDetalle(int ordenId);
+        Task<OperationResultD<List<OrdenDetalleResponseDto>>> GetOrdenDetalle(int id);
+
+
 
     }
 }

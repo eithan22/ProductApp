@@ -42,7 +42,7 @@ namespace ProductApp.Domian.Entitis
         {
             Cantidad = nuevaCantidad;
             CalcularSubtotal();
-        }
+        } 
         public void CalcularSubtotal()
         {
             Subtotal = Cantidad * PrecioUnitario;

@@ -14,6 +14,8 @@ namespace ProductApp.Domian.Interfaces
 
         Task<OrderDetalle?> ObtenerDetalleConProductoAsync(int id);
 
+        Task<OrderDetalle?> ObtenerProductoEnOrdenAsync(int ordenId, int productoId);
+
 
     }
 }
