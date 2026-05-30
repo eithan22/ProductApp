@@ -1,65 +1,168 @@
-# ProductApp - Sistema de Gestión de Ventas 🛒
+# ProductApp 🛒
 
-ProductApp es un sistema integral de gestión de ventas diseñado para automatizar y optimizar los procesos comerciales de pequeñas y medianas empresas. Su objetivo principal es erradicar el descontrol de inventario, los errores de cálculo y la falta de historial financiero mediante una plataforma segura, organizada y escalable.
-
----
-
-## 🎯 Objetivos del Proyecto
-
-* Automatizar el proceso de ventas para reducir errores humanos.
-* Mejorar el control y la actualización automática del inventario.
-* Facilitar la toma de decisiones mediante la generación de reportes.
-* Garantizar la seguridad de la información con control de acceso basado en roles.
+A multi-layered **Sales Management REST API** built with **ASP.NET Core 8** following **Clean Architecture** principles. Manages products, categories, users, and clients with business validation, secure authentication, and strict separation of concerns across four independent layers.
 
 ---
 
-## ✨ Características Principales
+## 📋 Description
 
-El sistema está compuesto por los siguientes módulos clave:
+ProductApp is a backend system providing a RESTful API to automate and optimize commercial business processes. It implements domain-driven design with explicit separation between domain rules, application logic, infrastructure, and the API surface.
 
-* **Gestión de Usuarios y Seguridad:** Autenticación segura con contraseñas encriptadas y control de acceso estricto mediante roles (Administrador y Vendedor).
-* **Gestión de Clientes:** Registro completo de datos, historial de compras, totales acumulados y control de estado (activo/inactivo).
-* **Catálogo de Productos y Categorías:** Administración de artículos, actualización de precios, asignación de categorías y control de visibilidad.
-* **Control de Inventario Automatizado:** Descuento automático de stock al confirmar pagos y sistema de alertas para inventario mínimo.
-* **Gestión de Órdenes:** Creación de pedidos con múltiples productos, cálculo automático de subtotales/totales y manejo de estados (Pendiente, Pagada, Cancelada, Entregada).
-* **Control de Pagos:** Registro de transacciones (efectivo, transferencia, tarjeta), manejo de pagos parciales y actualización automática del estado de la orden.
-* **Reportes y Analíticas:** Generación de métricas clave de ventas por fecha, producto, vendedor e ingresos totales.
+The system handles full product and category lifecycle management, user authentication with BCrypt password hashing, client management, and enforces business rules through a dedicated validation layer before any persistence operation.
 
 ---
 
-## 🏛️ Arquitectura del Sistema
+## ✨ Features
 
-ProductApp está desarrollado bajo una **Arquitectura en Capas** (Clean Architecture/N-Tier) para garantizar un código organizado, mantenible y escalable a futuro. Las capas implementadas son:
-
-1. **Capa de Presentación:** Interfaz de usuario y controladores (MVC/API).
-2. **Capa de Aplicación:** Lógica de negocio, DTOs y casos de uso.
-3. **Capa de Dominio:** Entidades principales y reglas de negocio puras.
-4. **Capa de Infraestructura:** Acceso a datos, DbContext y servicios externos.
-
----
-
-## 🗄️ Modelo de Datos (Entidades Principales)
-
-| Entidad | Descripción |
-| :--- | :--- |
-| **Usuario** | Gestiona el acceso al sistema (Credenciales, Rol, Estado). |
-| **Cliente** | Almacena los datos de los compradores y su información de contacto. |
-| **Producto** | Representa los artículos en venta con sus precios y costos. |
-| **Categoría** | Agrupación lógica para clasificar los productos. |
-| **Inventario** | Controla el stock actual, stock mínimo y última actualización. |
-| **Orden** | Transacción comercial principal que agrupa al cliente y los productos. |
-| **DetalleOrden** | Desglose individual de cada producto, cantidad y subtotal dentro de una orden. |
-| **Pago** | Registro financiero de los abonos realizados a una orden específica. |
+- 🔐 **User Authentication** — Register and login with BCrypt password hashing and soft-delete support
+- 📦 **Product Management** — Create, update, and disable products with duplicate-name/description validation
+- 🗂️ **Category Management** — Full category lifecycle with business rule enforcement
+- 👥 **Client Management** — Client registration with existence validation
+- 🧪 **OperationResult Pattern** — All business operations return structured success/failure results
+- ♻️ **Soft Delete** — Records disabled via IsDisable flag, never permanently deleted
+- 📄 **Swagger UI** — Interactive API documentation via OpenAPI
 
 ---
 
-## 🔄 Flujo Principal de la Aplicación
+## 🛠️ Technologies
 
-1. El usuario (Vendedor/Admin) inicia sesión en el sistema.
-2. Se registra un nuevo cliente o se selecciona uno existente.
-3. Se crea una nueva orden de venta.
-4. Se agregan los productos deseados al detalle de la orden.
-5. El sistema calcula el subtotal y el total de forma automática.
-6. Se registra el pago (total o parcial).
-7. Al completarse el pago, el sistema descuenta el stock del inventario automáticamente.
-8. Los datos quedan disponibles para la generación de reportes.        
+| Layer | Technology |
+|-------|-----------|
+| Language | C# 12 |
+| Framework | ASP.NET Core 8 Web API |
+| Architecture | Clean Architecture |
+| Security | BCrypt.Net (password hashing) |
+| API Docs | Swagger / OpenAPI |
+| DI Container | .NET 8 Built-in DI |
+| Pattern | Repository Pattern |
+
+---
+
+## 🏗️ Architecture
+
+```
+ProductApp/
+├── Domian.ProductApp/            Domain Layer
+│   ├── Entities/                 Producto, Categoria, Usuario, Cliente
+│   └── Interfaces/               IProductoRepository, IUsuarioRepository
+│
+├── ProductApp.Aplication/        Application Layer
+│   ├── BusinessValidator/
+│   │   ├── Modulo Productos/     ValidatorBusinessProducto, ValidatorBusinessCategoria
+│   │   └── Modulo Usuarios/      ValidatorBusinessAuth, ValidatorBusinessUsuarios
+│   ├── Dtos/                     CreateDto, UpdateDto, ResponseDto per entity
+│   ├── Helper/                   PasswordHelper (BCrypt wrapper)
+│   ├── Result/                   OperationResult pattern
+│   └── Services/                 Application services
+│
+├── ProductApp.Infraestructure/   Infrastructure Layer
+│   └── Persistencia/             DbContext, repository implementations
+│
+└── ProductApp.Api/               Presentation Layer
+    ├── Controllers/              HTTP endpoints
+    ├── Program.cs                DI registration, middleware pipeline
+    └── appsettings.json          Configuration
+```
+
+---
+
+## 🔑 Key Design Patterns
+
+| Pattern | Implementation |
+|---------|----------------|
+| Repository Pattern | IProductoRepository, IUsuarioRepository abstract all data access |
+| Business Validator Pattern | Dedicated validator per module enforces rules before persistence |
+| OperationResult Pattern | Returns Success() or Failure("reason") instead of throwing exceptions |
+| DTO Pattern | Separate CreateDto, UpdateDto, ResponseDto per entity |
+| Dependency Injection | All services and repositories injected via constructor |
+
+---
+
+## 📦 Business Rules Enforced
+
+### Authentication
+- Passwords must match confirmation on register
+- Duplicate email or username rejected
+- Login validates existence, active status, and BCrypt password hash
+- Disabled users cannot authenticate
+
+### Products
+- Duplicate name rejected on create and update
+- Duplicate description rejected
+- Cannot disable an already-disabled product
+
+---
+
+## 🚀 Installation
+
+Prerequisites: .NET 8 SDK · SQL Server · Visual Studio 2022
+
+```bash
+git clone https://github.com/Eithan22/ProductApp.git
+cd ProductApp
+dotnet restore
+dotnet ef database update --project ProductApp.Infraestructure --startup-project ProductApp.Api
+dotnet run --project ProductApp.Api
+```
+
+Swagger available at: `https://localhost:{port}/swagger`
+
+---
+
+## ⚙️ Configuration
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=ProductAppDb;Trusted_Connection=True;"
+  }
+}
+```
+
+---
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/auth/register | Register a new user |
+| POST | /api/auth/login | Authenticate and validate credentials |
+| GET | /api/productos | List all products |
+| POST | /api/productos | Create a new product |
+| PUT | /api/productos/{id} | Update a product |
+| PATCH | /api/productos/{id}/disable | Soft-delete a product |
+| GET | /api/categorias | List all categories |
+| GET | /api/clientes | List all clients |
+
+---
+
+## 💡 Skills Demonstrated
+
+- ✅ **Clean Architecture** — 4 independent project layers with zero circular dependencies
+- ✅ **SOLID Principles** — Single Responsibility in validators, Open/Closed via interfaces
+- ✅ **Repository Pattern** — Complete data access abstraction
+- ✅ **Security** — BCrypt password hashing, soft delete, status validation
+- ✅ **RESTful API Design** — Proper HTTP methods and status codes
+- ✅ **ASP.NET Core 8** — Modern LTS framework with built-in DI and Swagger
+
+---
+
+## 🔮 Future Improvements
+
+- [ ] JWT Bearer token authentication
+- [ ] EF Core migrations
+- [ ] Unit tests for business validators
+- [ ] Pagination on list endpoints
+- [ ] FluentValidation for DTO validation
+
+---
+
+## 👨‍💻 Author
+
+**Eithan** — Backend Developer · Santo Domingo, Dominican Republic 🇩🇴  
+🎓 Software Development @ ITLA · 📧 eithanread1@gmail.com  
+[LinkedIn](https://linkedin.com/in/eithan-r) · [GitHub](https://github.com/Eithan22)
+
+---
+
+*MIT License*
