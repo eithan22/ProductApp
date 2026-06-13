@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 
@@ -11,9 +12,11 @@ using ProductApp.Infraesctructura.Persistencia.Contex;
 namespace ProductApp.Infraesctructura.Persistencia.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260527145259_newCamposOrdenDetalleyOrden")]
+    partial class newCamposOrdenDetalleyOrden
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,6 +186,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("decimal(18,2)");
 
@@ -190,7 +196,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
 
                     b.HasIndex("OrdenId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductoId");
 
                     b.ToTable("DetalleOrden");
                 });
@@ -358,7 +364,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
 
                     b.HasOne("ProductApp.Domian.Entitis.Producto", "Producto")
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("ProductoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

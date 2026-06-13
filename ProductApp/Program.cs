@@ -12,10 +12,13 @@ using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
+using ProductApp.Aplication.Dtos.Modulo_Ventas.DetalleOrdenDto;
+using ProductApp.Aplication.Dtos.OrdenDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
+using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
 using ProductApp.Aplication.Interface.IMappers.Modulos_Productos;
 using ProductApp.Aplication.Interface.RulesBusinnes;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Producto;
@@ -23,6 +26,7 @@ using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Usuarios;
 using ProductApp.Aplication.Mappers;
 using ProductApp.Aplication.Mappers.Modulo_Producto;
+using ProductApp.Aplication.Mappers.Modulo_Ventas;
 using ProductApp.Aplication.Services;
 using ProductApp.Aplication.Services.Modulo_Usuarios;
 using ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator;
@@ -31,6 +35,8 @@ using ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.AuthValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator;
+using ProductApp.Aplication.Validators.Modulo_Ventas.DetalleOrdenValidator;
+using ProductApp.Aplication.Validators.Modulo_Ventas.OrdenValidator;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
@@ -139,6 +145,11 @@ namespace ProductApp
 
             builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
 
+            builder.Services.AddScoped<IOrdenRepository, OrdenRepository>();
+
+            builder.Services.AddScoped<IDetalleOrdenRepository, DetalleOrdenRepository>();
+
+
 
 
             // mappers
@@ -151,6 +162,11 @@ namespace ProductApp
             builder.Services.AddScoped<IMapperProducto, ProductoMapper>();
 
             builder.Services.AddScoped<IMapperInventario, InventarioMapper>();
+
+            builder.Services.AddScoped<IMapperOrden, OrdenMapper>();    
+
+            builder.Services.AddScoped<IMapperDetalleOrdencs, OrdenDetalleMapper>();
+
 
 
             // servicios
@@ -174,6 +190,13 @@ namespace ProductApp
 
             //inventario
             builder.Services.AddScoped<IInventarioServices, InventarioService>();
+
+            // orden
+            builder.Services.AddScoped<IOrdenServices, OrderServices>();
+
+            // detalle orden
+
+            builder.Services.AddScoped<IDetalleOrdenServices, DetalleOrdenService>();
 
 
 
@@ -231,6 +254,14 @@ namespace ProductApp
             //Inventario
             builder.Services.AddScoped<IValidator<MovimientoStockDto>, MovimientoStockValidator>();
             builder.Services.AddScoped<IValidator<AjustarStockDto>, AjustarStockValidator>();
+
+            // orden
+            builder.Services.AddScoped<IValidator<CreateOrdenDto>, CreateOrdenValidator>();
+
+            // detalle orden
+            builder.Services.AddScoped<IValidator<CreateDetalleOrdenDto>, CreateDetalleOredenValidator>();
+            builder.Services.AddScoped<IValidator<UpdateDetalleOrdenDto>, UpdateDetalleOrdenValidator>();
+
 
 
 

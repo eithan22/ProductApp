@@ -33,7 +33,10 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         {
             try
             {
-                var result = await _ordenServices.CrearOrden(dto);
+                //agregando el usuario id al dto para crear la orden, el usuario id se obtiene del token de autenticacion
+                var usuarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+
+                var result = await _ordenServices.CrearOrden(dto, usuarioId);
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
@@ -47,10 +50,10 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         }
 
-
+        //
 
         [Authorize]
-        [HttpGet("GetAllOrdenes/{id}")]
+        [HttpGet("GetAllOrdenes")]
 
         public async Task<IActionResult> GetAllOrdenes()
         {

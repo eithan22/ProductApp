@@ -11,6 +11,10 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
     {
         public void Configure(EntityTypeBuilder<Usuario> builder)
         {
+           
+                
+
+
 
             builder.Property(u => u.Nombre)
                 .IsRequired()

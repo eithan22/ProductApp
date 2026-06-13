@@ -10,13 +10,13 @@ namespace ProductApp.Domian.Entitis
 {
     public class Orden : BaseEntity 
     {
-        public DateTime Fecha { get; set; }
-        public decimal Total { get; set; }
+        public DateTime Fecha { get; private set; }
+        public decimal Total { get; private set; }
 
-        public EstadoOrden Estado { get; set; }
-        public int UsuarioId { get; set; }
-        public Usuario Usuario { get; set; } = null!;
-        public Cliente Cliente { get; set; } = null!; 
+        public EstadoOrden Estado { get; private set; }
+        public int UsuarioId { get; private set; }
+        public Usuario Usuario { get; private set; } = null!;
+        public Cliente Cliente { get; private set; } = null!; 
 
         public int ClienteId { get; set; }
 
@@ -24,16 +24,27 @@ namespace ProductApp.Domian.Entitis
         public List<OrderDetalle> OrderDetails { get; set; } = new List<OrderDetalle>();
 
 
-        /*
-        public Orden(int clienteId, decimal total)
+        public Orden(int clienteId , int usuarioId)
         {
             ClienteId = clienteId;
-            Total = total;
+            UsuarioId = usuarioId;
+            Total = 0;
             Estado = EstadoOrden.Pendiente;
             Fecha = DateTime.Now;
         }
 
-        */
+        public void ActualizarTotal(decimal total)
+        {
+            Total = total;
+        }
+
+        public void CambiarEstado(
+            EstadoOrden nuevoEstado)
+        {
+            Estado = nuevoEstado;
+        }
+
+
 
         public void CancelarOrden()
         {

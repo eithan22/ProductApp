@@ -15,6 +15,13 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
         }
 
+        public Task<List<Orden>> GetAllOrdenes()
+        {
+            return _context.Ordenes
+                .Include(o => o.Cliente)
+                .ToListAsync();
+        }
+
         public async Task<List<Orden>> ObtenerPorClienteAsync(int clienteId)
         {
             return await _context.Ordenes
@@ -23,9 +30,13 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
            .ToListAsync();
         }
 
+
+
+
         public async Task<List<Orden>> ObtenerPorFechaAsync(DateTime fecha)
         {
             return await _context.Ordenes
+                .Include(o => o.Cliente)
                 .Where(o => o.Fecha.Date == fecha.Date)
                 .ToListAsync();
         }

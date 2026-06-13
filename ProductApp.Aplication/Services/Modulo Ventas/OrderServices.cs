@@ -48,7 +48,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure("Orden no encontrada");
             }
 
-            orden.Estado = dto.NuevoEstado;
+            orden.CambiarEstado(dto.NuevoEstado);
 
             await _ordenRepository.UpdateAsync(orden);
 
@@ -71,7 +71,8 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure("Solo se pueden cancelar órdenes pendientes");
             }
 
-            orden.Estado = EstadoOrden.Cancelada;
+            orden.CancelarOrden();
+
             await _ordenRepository.UpdateAsync(orden);
 
             return OperationResultD<bool>.Success(true, "Orden cancelada exitosamente");
@@ -84,16 +85,27 @@ namespace ProductApp.Aplication.Services
         public async Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId)
         {
             var cliente = await _clienteServices.GetByIdAsync(clienteId);
-            if (cliente == null)
+
+            // Verificar si el cliente existe
+            if (!cliente.IsSuccess)
             {
-                return OperationResultD<List<OrdenResponseDto>>.Failure("Cliente no encontrado");
+                return OperationResultD<List<OrdenResponseDto>>.Failure(cliente.Message);
             }
+
+
             // Obtener las órdenes del cliente
             var ordenes = await _ordenRepository.ObtenerPorClienteAsync(clienteId);
 
+
+            //esto no funciona ya que si evia una lista vacia si un cloente no tiene una orden 
             if (ordenes == null)
             {
                 return OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes para el cliente");
+            }
+
+            if(ordenes.Count == 0)
+            {
+                return OperationResultD<List<OrdenResponseDto>>.Failure("El cliente no tiene órdenes");
             }
 
             // Mapear las órdenes a DTOs de respuesta
@@ -116,10 +128,18 @@ namespace ProductApp.Aplication.Services
             // Obtener las órdenes por fecha
             var ordenes = await _ordenRepository.ObtenerPorFechaAsync(fecha);
 
+
+            if(ordenes.Count == 0)
+            {
+                return OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes para la fecha especificada");
+            }
+             //no sirbe ya que una va a mandar una lista vacia y no es null
+             /*
             if(ordenes == null)
             {
                 return OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes para la fecha especificada");
             }
+             */
 
             var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
 
@@ -130,16 +150,20 @@ namespace ProductApp.Aplication.Services
 
         // Crear una nueva orden.
 
-        public async Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto)
+        public async Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto, int usuarioId)
         {
+            
+
             var  cliente = await _clienteServices.GetByIdAsync(dto.ClienteId);
 
-            if(cliente == null)
+            if(!cliente.IsSuccess)
             {
-                return OperationResultD<OrdenResponseDto>.Failure("Cliente no encontrado");
+                return OperationResultD<OrdenResponseDto>.Failure(cliente.Message);
             }
 
-            var orden =  _mapperOrden.MapTOCreateOrden(dto);
+            // Inicializar la orden con valores predeterminados 
+           var  orden = _mapperOrden.MapTOCreateOrden(dto, usuarioId);
+
 
             await _ordenRepository.CreateAsync(orden);
 
@@ -150,18 +174,28 @@ namespace ProductApp.Aplication.Services
 
         }
 
-        public Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes()
+        public async Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes()
         {
-            var ordenes = _ordenRepository.GetAllAsync();
+            var ordenes = await _ordenRepository.GetAllOrdenes();
 
+            //LO MISMO 
+            /*
             if(ordenes == null)
             {
-                return Task.FromResult(OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes"));
+                return OperationResultD<List<OrdenResponseDto>>.Failure("Ordenes no encontradas");
+            }
+            */
+           
+
+            if(ordenes.Count == 0)
+            {
+                return OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes");
             }
 
-            var ordenesResponse = ordenes.Result.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
+            var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
 
-            return Task.FromResult(OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente"));
+            return(OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente"));       
+        
         }
 
 
@@ -187,7 +221,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure("No se encontraron detalles para la orden");
             }
 
-            orden.Total = detallesOrden.Sum(d => d.Subtotal);
+            orden.ActualizarTotal(detallesOrden.Sum(d => d.Subtotal));
 
             // Lógica para recalcular el total de la orden
 

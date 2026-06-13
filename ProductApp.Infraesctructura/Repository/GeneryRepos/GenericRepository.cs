@@ -25,8 +25,17 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
         public async Task<T> CreateAsync(T entity)
         {
-            await Entity.AddAsync(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await Entity.AddAsync(entity);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception( ex.InnerException?.Message ?? ex.Message);
+
+            }
+            
             return entity; 
          
              

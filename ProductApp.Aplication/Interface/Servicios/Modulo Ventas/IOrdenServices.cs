@@ -10,7 +10,7 @@ namespace ProductApp.Aplication.Interface
 {
     public interface IOrdenServices 
     {
-          Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto);
+          Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto, int usuarioId);
           Task<OperationResultD<bool>> CancelarOrden(int id);
             Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorFecha(DateTime fecha);
 

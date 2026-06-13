@@ -13,6 +13,8 @@ namespace ProductApp.Domian.Interfaces
         Task<List<Orden>> ObtenerPorClienteAsync(int clienteId);
          Task<List<Orden>> ObtenerPorFechaAsync(DateTime fecha);
 
+        Task<List<Orden>> GetAllOrdenes();
+
         
 
         

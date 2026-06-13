@@ -10,15 +10,20 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
 {
     public class OrdenMapper : IMapperOrden
     {
-        public Orden MapTOCreateOrden(CreateOrdenDto dto)
+        public Orden MapTOCreateOrden(CreateOrdenDto dto, int usuarioid)
         {
             return new Orden
-            {
-
-                ClienteId = dto.ClienteId,
-                Total = 0
-            };
+            (
+                dto.ClienteId,
+                usuarioid
+            );
+            
+               
+    
+            
         }
+
+       
 
         public OrdenResponseDto MapToOrdenResponseDto(Orden orden)
         {

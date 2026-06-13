@@ -13,7 +13,9 @@ namespace ProductApp.Domian.Interfaces
         Task<IEnumerable<Producto>> GetProductosConCategoriaAll();
 
         Task<List<Producto>> BuscarProductosAsync(string? nombre, string? categoria);
-        
+
+        Task<Producto?> ObtenerProductoConInventarioAsync(int id);
+
 
     }
 }

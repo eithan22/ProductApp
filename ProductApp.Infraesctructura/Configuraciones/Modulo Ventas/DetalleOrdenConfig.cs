@@ -10,7 +10,25 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<OrderDetalle> builder)
         {
-            builder.Property(od => od.Cantidad)
+          
+        
+          
+        
+                builder.HasOne(x => x.Producto)
+                       .WithMany()
+                       .HasForeignKey(x => x.ProductId);
+
+
+
+                builder.HasOne(x => x.Orden)
+                       .WithMany(x => x.OrderDetails)
+                       .HasForeignKey(x => x.OrdenId);
+           
+        
+
+
+
+        builder.Property(od => od.Cantidad)
                 .IsRequired();
 
 

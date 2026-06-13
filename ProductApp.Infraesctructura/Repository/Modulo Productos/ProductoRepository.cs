@@ -53,6 +53,13 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 .Include(p => p.Categoria).ToListAsync();
 
         }
+
+        public Task<Producto?> ObtenerProductoConInventarioAsync(int id)
+        {
+           return _context.Productos
+                .Include(p => p.Inventario)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
     }
 }
 

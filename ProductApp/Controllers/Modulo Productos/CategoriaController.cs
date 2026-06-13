@@ -105,6 +105,10 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
             }
         }
 
+
+
+
+
         [Authorize]
         [HttpPatch("DisableCategoria/{id}")]
 
