@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ProductApp.Domian.Common.Base
+﻿namespace ProductApp.Domian.Common.Base
 {
-    public abstract  class BaseEntity 
+    public abstract class BaseEntity
     {
-        public int Id { get;   set; }
-        public bool IsDisable { get; set; } = false;
+        public int Id { get; private set; }
 
+        public bool EstaEliminado { get; protected set; } = false;
 
+        public DateTime CreadoEn { get; private set; } = DateTime.UtcNow;
 
+        public DateTime ModificadoEn { get; private set; } = DateTime.UtcNow;
+
+        protected void ActualizarFechaModificacion()
+        {
+            ModificadoEn = DateTime.UtcNow;
+        }
     }
 }

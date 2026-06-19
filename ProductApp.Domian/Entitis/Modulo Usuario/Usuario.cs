@@ -1,56 +1,122 @@
-﻿using ProductApp.Domian.Common.Base;
-using ProductApp.Domian.Common.Enums.EnumsCliente;
+using ProductApp.Domian.Common.Base;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ProductApp.Domian.Common.Exceptions;
 
 namespace ProductApp.Domian.Entitis
 {
     public class Usuario : BaseEntity
     {
-        public string Nombre { get;  set; } = string.Empty;
+        public string Nombre { get; private set; } = string.Empty;
+        public string Email { get; private set; } = string.Empty;
+        public string Username { get; private set; } = string.Empty;
+        public string PasswordHash { get; private set; } = string.Empty;
+        public RolUsuario RolUsuario { get; private set; }
+        public EstadoUsuario EstadoUsuario { get; private set; }
+        public DateTime? FechaNacimiento { get; private set; }
 
-        public int Edad { get; set; } = 0;
-        public string Email { get; set; } = string.Empty;
+        public int? Edad => FechaNacimiento.HasValue
+            ? CalcularEdad(FechaNacimiento.Value)
+            : null;
 
-        public RolUsuario RolUsuario { get; set; }
+        public IReadOnlyList<Orden> Ordenes { get; private set; } = new List<Orden>();
 
-        public EstadoUsuario EstadoUsuario { get; set; }
+        protected Usuario() { }
 
-        public string Username { get; set; } = string.Empty;
+        public Usuario(string nombre, string email, string username, RolUsuario rolUsuario)
+        {
+            ValidarNombre(nombre);
+            ValidarEmail(email);
+            ValidarUsername(username);
 
-        public string PasswordHash { get; set; } = string.Empty;
+            Nombre = nombre;
+            Email = email;
+            Username = username;
+            RolUsuario = rolUsuario;
+            EstadoUsuario = EstadoUsuario.Activo;
+        }
 
-        public List<Orden> Ordenes { get; set; } = new List<Orden>();
+        // --- Validaciones privadas ---
 
+        private static void ValidarNombre(string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ValidacionDominioException("Nombre", "El nombre no puede estar vacío.");
+        }
 
+        private static void ValidarEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new ValidacionDominioException("Email", "El email no puede estar vacío.");
+        }
 
+        private static void ValidarUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ValidacionDominioException("Username", "El username no puede estar vacío.");
+        }
 
+        private static int CalcularEdad(DateTime fechaNacimiento)
+        {
+            var hoy = DateTime.UtcNow;
+            var edad = hoy.Year - fechaNacimiento.Year;
+            if (fechaNacimiento.Date > hoy.AddYears(-edad)) edad--;
+            return edad;
+        }
 
-        public void desactivar(Usuario usuario)
+        // --- Métodos de actualización ---
+
+        public void CambiarNombre(string nombre)
+        {
+            ValidarNombre(nombre);
+            Nombre = nombre;
+            ActualizarFechaModificacion();
+        }
+
+        public void CambiarEmail(string email)
+        {
+            ValidarEmail(email);
+            Email = email;
+            ActualizarFechaModificacion();
+        }
+
+        public void EstablecerFechaNacimiento(DateTime? fechaNacimiento)
+        {
+            FechaNacimiento = fechaNacimiento;
+            ActualizarFechaModificacion();
+        }
+
+        public void EstablecerPasswordHash(string hash)
+        {
+            if (string.IsNullOrWhiteSpace(hash))
+                throw new ValidacionDominioException("PasswordHash", "El hash de contraseña no puede estar vacío.");
+
+            PasswordHash = hash;
+        }
+
+        public void CambiarRol(RolUsuario nuevoRol)
+        {
+            RolUsuario = nuevoRol;
+            ActualizarFechaModificacion();
+        }
+
+        // --- Ciclo de vida ---
+
+        public void Desactivar()
         {
             if (EstadoUsuario == EstadoUsuario.Inactivo)
-                throw new InvalidOperationException("El cliente ya está inactivo.");
+                throw new EstadoInvalidoException("Usuario", EstadoUsuario.ToString(), "Desactivar");
 
             EstadoUsuario = EstadoUsuario.Inactivo;
+            ActualizarFechaModificacion();
         }
-        public void activar(Usuario usuario)
+
+        public void Activar()
         {
             if (EstadoUsuario == EstadoUsuario.Activo)
-                throw new InvalidOperationException("El cliente ya está activo.");
+                throw new EstadoInvalidoException("Usuario", EstadoUsuario.ToString(), "Activar");
+
             EstadoUsuario = EstadoUsuario.Activo;
-
-
+            ActualizarFechaModificacion();
         }
-
-
-
-
-
-
-
     }
 }

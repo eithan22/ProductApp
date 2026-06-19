@@ -1,23 +1,13 @@
-﻿using ProductApp.Domian.Entitis;
+using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces.IGeneryRepos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProductApp.Domian.Interfaces
 {
-    public interface IOrdenRepository : IGeneryRepository<Orden>
+    public interface IOrdenRepository : IGenericRepository<Orden>
     {
+        Task<List<Orden>> GetAllConDetallesAsync();
         Task<List<Orden>> ObtenerPorClienteAsync(int clienteId);
-         Task<List<Orden>> ObtenerPorFechaAsync(DateTime fecha);
-
-        Task<List<Orden>> GetAllOrdenes();
-
-        
-
-        
-
+        Task<List<Orden>> ObtenerPorUsuarioAsync(int usuarioId);
+        Task<List<Orden>> ObtenerPorRangoFechaAsync(DateTime desde, DateTime hasta);
     }
 }

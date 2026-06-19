@@ -1,21 +1,12 @@
-﻿using ProductApp.Domian.Entitis;
+using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces.IGeneryRepos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProductApp.Domian.Interfaces
 {
-    public interface IDetalleOrdenRepository : IGeneryRepository<OrderDetalle>
+    public interface IDetalleOrdenRepository : IGenericRepository<OrdenDetalle>
     {
-        Task<List<OrderDetalle>> ObtenerDetalleOrdenPorOrdenIdAsync(int Id);
-
-        Task<OrderDetalle?> ObtenerDetalleConProductoAsync(int id);
-
-        Task<OrderDetalle?> ObtenerProductoEnOrdenAsync(int ordenId, int productoId);
-
-
+        Task<List<OrdenDetalle>> ObtenerPorOrdenIdAsync(int ordenId);
+        Task<OrdenDetalle?> ObtenerConProductoAsync(int id);
+        Task<OrdenDetalle?> ObtenerProductoEnOrdenAsync(int ordenId, int productoId);
     }
 }

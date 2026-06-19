@@ -1,59 +1,71 @@
-﻿using ProductApp.Domian.Common.Base;
-using ProductApp.Domian.Common.Enums.EnumsCliente;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using ProductApp.Domian.Common.Base;
+using ProductApp.Domian.Common.Exceptions;
 
 namespace ProductApp.Domian.Entitis
 {
     public class Categoria : BaseEntity
     {
-
-
         public string Nombre { get; private set; } = string.Empty;
         public string Descripcion { get; private set; } = string.Empty;
-        
 
-        public List<Producto> Productos { get; private set; } = new List<Producto>();
+        public IReadOnlyList<Producto> Productos { get; private set; } = new List<Producto>();
+
+        protected Categoria() { }
 
         public Categoria(string nombre, string descripcion)
         {
             CambiarYvalidarNombre(nombre);
             CambiarYvalidarDescripcion(descripcion);
-
-            Nombre = nombre;
-            Descripcion = descripcion;
-           
-
         }
 
+        // --- Validaciones privadas ---
+
+        private static void ValidarNombre(string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ValidacionDominioException("Nombre", "El nombre de la categoría no puede estar vacío.");
+        }
+
+        private static void ValidarDescripcion(string descripcion)
+        {
+            if (string.IsNullOrWhiteSpace(descripcion))
+                throw new ValidacionDominioException("Descripcion", "La descripción de la categoría no puede estar vacía.");
+        }
+
+        // --- Métodos de actualización ---
 
         public void CambiarYvalidarNombre(string nombre)
         {
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre no puede estar vacío.");
+            ValidarNombre(nombre);
             Nombre = nombre;
+            ActualizarFechaModificacion();
         }
 
         public void CambiarYvalidarDescripcion(string descripcion)
         {
-            if (string.IsNullOrWhiteSpace(descripcion))
-                throw new ArgumentException("La descripción no puede estar vacía.");
+            ValidarDescripcion(descripcion);
             Descripcion = descripcion;
+            ActualizarFechaModificacion();
         }
 
+        // --- Ciclo de vida ---
 
-        //agregar nueva funcionalidad
-        public void desactivarCategoria()
+        public void Desactivar()
         {
-            
+            if (EstaEliminado)
+                throw new EstadoInvalidoException("Categoria", "Inactivo", "Desactivar");
+
+            EstaEliminado = true;
+            ActualizarFechaModificacion();
         }
 
-        public void activarCategoria()
+        public void Activar()
         {
-            // Lógica para activar la categoría, por ejemplo, establecer un estado o agregarla a la lista de categorías activas.
-        }
+            if (!EstaEliminado)
+                throw new EstadoInvalidoException("Categoria", "Activo", "Activar");
 
-
+            EstaEliminado = false;
+            ActualizarFechaModificacion();
         }
     }
+}
