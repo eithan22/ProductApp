@@ -37,6 +37,8 @@ using ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator;
 using ProductApp.Aplication.Validators.Modulo_Ventas.DetalleOrdenValidator;
 using ProductApp.Aplication.Validators.Modulo_Ventas.OrdenValidator;
+using ProductApp.Aplication.Validators.Modulo_Ventas.PagoValidator;
+using ProductApp.Aplication.Dtos.PagoDto;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
@@ -149,6 +151,8 @@ namespace ProductApp
 
             builder.Services.AddScoped<IDetalleOrdenRepository, DetalleOrdenRepository>();
 
+            builder.Services.AddScoped<IPagoRepository, PagoRepository>();
+
 
 
 
@@ -166,6 +170,8 @@ namespace ProductApp
             builder.Services.AddScoped<IMapperOrden, OrdenMapper>();    
 
             builder.Services.AddScoped<IMapperDetalleOrdencs, OrdenDetalleMapper>();
+
+            builder.Services.AddScoped<IMapperPago, PagoMapper>();
 
 
 
@@ -197,6 +203,9 @@ namespace ProductApp
             // detalle orden
 
             builder.Services.AddScoped<IDetalleOrdenServices, DetalleOrdenService>();
+
+            // pago
+            builder.Services.AddScoped<IPagoServices, PagoService>();
 
 
 
@@ -261,6 +270,9 @@ namespace ProductApp
             // detalle orden
             builder.Services.AddScoped<IValidator<CreateDetalleOrdenDto>, CreateDetalleOredenValidator>();
             builder.Services.AddScoped<IValidator<UpdateDetalleOrdenDto>, UpdateDetalleOrdenValidator>();
+
+            // pago
+            builder.Services.AddScoped<IValidator<CreatePagoDto>, CreatePagoValidator>();
 
 
 

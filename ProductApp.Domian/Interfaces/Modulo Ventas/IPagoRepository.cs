@@ -8,5 +8,7 @@ namespace ProductApp.Domian.Interfaces
 {
     public interface IPagoRepository : IGeneryRepository<Pago>
     {
+        Task<List<Pago>> ObtenerPagosPorOrdenAsync(int ordenId);
+        Task<decimal> ObtenerTotalPagadoPorOrdenAsync(int ordenId);
     }
 }

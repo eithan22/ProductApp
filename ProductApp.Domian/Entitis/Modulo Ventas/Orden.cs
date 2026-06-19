@@ -20,7 +20,7 @@ namespace ProductApp.Domian.Entitis
 
         public int ClienteId { get; set; }
 
-        public Pago Pago { get; set; } = null!;
+        public List<Pago> Pagos { get; set; } = new List<Pago>();
         public List<OrderDetalle> OrderDetails { get; set; } = new List<OrderDetalle>();
 
 
@@ -46,18 +46,29 @@ namespace ProductApp.Domian.Entitis
 
 
 
+        public decimal CalcularSaldoPendiente(decimal totalPagado)
+        {
+            return Total - totalPagado;
+        }
+
+        public bool EstaCompletamentePagada(decimal totalPagado)
+        {
+            return CalcularSaldoPendiente(totalPagado) <= 0;
+        }
+
         public void CancelarOrden()
         {
             if (Estado == EstadoOrden.Procesada)
-            {
                 throw new InvalidOperationException("No se puede cancelar una orden que ya ha sido procesada.");
-            }
 
             if (Estado == EstadoOrden.Cancelada)
-            {
                 throw new InvalidOperationException("La orden ya está cancelada.");
-            }
 
+            if (Estado == EstadoOrden.Pagada)
+                throw new InvalidOperationException("No se puede cancelar una orden que ya ha sido pagada.");
+
+            if (Estado == EstadoOrden.Entregada)
+                throw new InvalidOperationException("No se puede cancelar una orden que ya ha sido entregada.");
 
             Estado = EstadoOrden.Cancelada;
         }

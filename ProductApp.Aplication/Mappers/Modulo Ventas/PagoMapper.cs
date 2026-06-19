@@ -1,10 +1,30 @@
-﻿using System;
+﻿using ProductApp.Aplication.Dtos.PagoDto;
+using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
+using ProductApp.Domian.Entitis;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace ProductApp.Aplication.Mappers.Modulo_Ventas
 {
-    internal class PagoMapper
+    public class PagoMapper : IMapperPago
     {
+        public Pago MapToCreatePago(CreatePagoDto dto)
+        {
+            return new Pago(dto.OrdenId, dto.Monto, dto.MetodoPago);
+        }
+
+        public PagoResponseDto MapToPagoResponseDto(Pago pago, decimal saldoPendiente)
+        {
+            return new PagoResponseDto
+            {
+                Id             = pago.Id,
+                Monto          = pago.Monto,
+                MetodoPago     = pago.MetodoPago,
+                EstadoPago     = pago.Estado,
+                FechaPago      = pago.FechaPago,
+                SaldoPendiente = saldoPendiente
+            };
+        }
     }
 }

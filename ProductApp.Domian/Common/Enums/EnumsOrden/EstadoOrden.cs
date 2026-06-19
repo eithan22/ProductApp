@@ -6,8 +6,10 @@ namespace ProductApp.Domian.Common.Enums.EnumsOrden
 {
     public enum EstadoOrden
     {
-        Pendiente= 0,
+        Pendiente = 0,
         Procesada = 1,
-        Cancelada = 2
+        Cancelada = 2,
+        Pagada    = 3,
+        Entregada = 4
     }
 }
