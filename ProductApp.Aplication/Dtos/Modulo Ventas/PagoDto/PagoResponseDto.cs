@@ -11,9 +11,9 @@ namespace ProductApp.Aplication.Dtos.PagoDto
 
         public decimal Monto { get; set; }
 
-        public MetodoPago MetodoPago { get; set; }
+        public string MetodoPago { get; set; } = string.Empty;
 
-        public EstadoPago EstadoPago { get; set; }
+        public string EstadoPago { get; set; } = string.Empty;
 
         public DateTime FechaPago { get; set; }
 

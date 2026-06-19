@@ -20,8 +20,8 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
             {
                 Id             = pago.Id,
                 Monto          = pago.Monto,
-                MetodoPago     = pago.MetodoPago,
-                EstadoPago     = pago.Estado,
+                MetodoPago     = pago.MetodoPago.ToString(),
+                EstadoPago     = pago.Estado.ToString(),
                 FechaPago      = pago.FechaPago,
                 SaldoPendiente = saldoPendiente
             };
