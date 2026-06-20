@@ -21,7 +21,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 
 
 
-        public async Task<OperationResult> ValidarRegisterAsync(RegisteDto dto)
+        public async Task<OperationResult> ValidarRegisterAsync(RegisterDto dto)
         {
             if(dto.Password != dto.ConfirmPassword)
                 return OperationResult.Failure("Las contraseñas no coinciden");

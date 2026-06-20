@@ -8,7 +8,7 @@ using System.Text;
 
 namespace ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario
 {
-    public interface IValitadorBusinessUsuario
+    public interface IValidatorBusinessUsuario
     {
          Task<OperationResult> ValidarCreateUsuarioAsync(CreateUsuarioDto dto);
         Task<OperationResult> ValidarUpdateUsuarioAsync(UpdateUsuarioDto dto);

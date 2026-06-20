@@ -3,7 +3,7 @@ using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
 
 namespace ProductApp.Aplication.Validators.Modulo_Usuario.AuthValidator
 {
-    public class RegisterValidator : AbstractValidator<RegisteDto>
+    public class RegisterValidator : AbstractValidator<RegisterDto>
     {
         public RegisterValidator()
         {

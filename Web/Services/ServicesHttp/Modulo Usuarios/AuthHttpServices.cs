@@ -27,7 +27,7 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
             var dto = AuthMapperM.MapRegisterDto(model);
 
             // Realizar la solicitud POST al endpoint de registro utilizando el BaseHttpServices con el RegisterDto y esperar la respuesta que es un UsuarioModel
-            var response = await _baseHttpServices.PostAsync<RegisteDto, UsuarioModel>(_authEndpoint.Register, dto);
+            var response = await _baseHttpServices.PostAsync<RegisterDto, UsuarioModel>(_authEndpoint.Register, dto);
 
             return response;
            

@@ -20,7 +20,7 @@ namespace ProductApp.Aplication.Services
         private readonly IOrdenServices _ordenServices;
         private readonly IOrdenRepository _ordenRepository;
         private readonly IProductoRepository _productoRepository;
-        private readonly IMapperDetalleOrdencs _mapperDetalleOrdencs;
+        private readonly IMapperDetalleOrden _mapperDetalleOrdencs;
         private readonly IValidator<CreateDetalleOrdenDto> _createDetalleOrdenValidator;
         private readonly IValidator<UpdateDetalleOrdenDto> _updateDetalleOrdenValidator;
 
@@ -28,7 +28,7 @@ namespace ProductApp.Aplication.Services
             IOrdenServices ordenServices,
             IOrdenRepository ordenRepository,
             IProductoRepository productoRepository,
-            IMapperDetalleOrdencs mapperDetalleOrdencs,
+            IMapperDetalleOrden mapperDetalleOrdencs,
             IValidator<CreateDetalleOrdenDto> createDetalleOrdenValidator,
             IValidator<UpdateDetalleOrdenDto> updateDetalleOrdenValidator)
         {

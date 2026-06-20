@@ -19,7 +19,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [HttpPost("register")]
 
-        public async Task<IActionResult> Register(RegisteDto dto)
+        public async Task<IActionResult> Register(RegisterDto dto)
         {
 
             try

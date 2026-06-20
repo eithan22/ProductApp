@@ -14,9 +14,9 @@ namespace Web.Services.Mappers.Modulo_Usuarios
             };
         }
 
-        public static RegisteDto MapRegisterDto(RegisterModel model)
+        public static RegisterDto MapRegisterDto(RegisterModel model)
         {
-            return new RegisteDto
+            return new RegisterDto
             {
                 Nombre = model.Nombre,
                 FechaNacimiento = model.FechaNacimiento,

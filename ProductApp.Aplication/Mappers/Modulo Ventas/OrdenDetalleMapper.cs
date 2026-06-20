@@ -6,7 +6,7 @@ using ProductApp.Domian.Entitis;
 
 namespace ProductApp.Aplication.Mappers.Modulo_Ventas
 {
-    public class OrdenDetalleMapper : IMapperDetalleOrdencs
+    public class OrdenDetalleMapper : IMapperDetalleOrden
     {
         
 

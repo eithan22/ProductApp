@@ -10,7 +10,7 @@ using ProductApp.Domian.Interfaces;
 
 namespace ProductApp.Aplication.Services
 {
-    public class OrderServices : IOrdenServices
+    public class OrdenServices : IOrdenServices
     {
         private readonly IOrdenRepository _ordenRepository;
         private readonly IDetalleOrdenRepository _detalleOrdenRepository;
@@ -19,7 +19,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<CreateOrdenDto> _createOrdenValidator;
         private readonly IValidatorBusinessOrden _validatorBusinessOrden;
 
-        public OrderServices(
+        public OrdenServices(
             IOrdenRepository ordenRepository,
             IClienteServices clienteServices,
             IMapperOrden mapperOrden,

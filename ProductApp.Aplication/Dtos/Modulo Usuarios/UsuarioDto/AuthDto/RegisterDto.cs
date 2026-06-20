@@ -1,6 +1,6 @@
 namespace ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto
 {
-    public class RegisteDto
+    public class RegisterDto
     {
         public string Nombre { get; set; } = string.Empty;
         public DateTime? FechaNacimiento { get; set; }

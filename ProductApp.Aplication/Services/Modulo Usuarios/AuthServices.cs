@@ -15,22 +15,22 @@ using System.Text;
 
 namespace ProductApp.Aplication.Services.Modulo_Usuarios
 {
-    public class AuthServicecs : IAuthService
+    public class AuthServices : IAuthService
     {
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IMapperUsuario _mapperUsuario;
         private readonly IConfiguration _config;
         private readonly IValidator<LoginDto> _loginValidator;
-        private readonly IValidator<RegisteDto> _registerValidator;
+        private readonly IValidator<RegisterDto> _registerValidator;
         private readonly IValidatorBusinessAuth _validatorBusinessAuth;
 
-        public AuthServicecs(
+        public AuthServices(
             IUsuarioRepository usuarioRepository,
             IMapperUsuario mapperUsuario,
             IConfiguration config,
             IValidatorBusinessAuth validatorBusinessAuth,
             IValidator<LoginDto> loginValidator,
-            IValidator<RegisteDto> registerValidator)
+            IValidator<RegisterDto> registerValidator)
         {
             _usuarioRepository = usuarioRepository;
             _mapperUsuario = mapperUsuario;
@@ -40,7 +40,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             _registerValidator = registerValidator;
         }
 
-        public async Task<OperationResultD<UsuarioResponseDto>> Register(RegisteDto dto)
+        public async Task<OperationResultD<UsuarioResponseDto>> Register(RegisterDto dto)
         {
             var validationResult = await _registerValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)

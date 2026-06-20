@@ -27,11 +27,11 @@ namespace ProductApp.Extensions.Modulo_Ventas
 
             // Mappers
             services.AddScoped<IMapperOrden, OrdenMapper>();
-            services.AddScoped<IMapperDetalleOrdencs, OrdenDetalleMapper>();
+            services.AddScoped<IMapperDetalleOrden, OrdenDetalleMapper>();
             services.AddScoped<IMapperPago, PagoMapper>();
 
             // Servicios
-            services.AddScoped<IOrdenServices, OrderServices>();
+            services.AddScoped<IOrdenServices, OrdenServices>();
             services.AddScoped<IDetalleOrdenServices, DetalleOrdenService>();
             services.AddScoped<IPagoServices, PagoService>();
 
@@ -43,7 +43,7 @@ namespace ProductApp.Extensions.Modulo_Ventas
             services.AddScoped<IValidator<CreateOrdenDto>, CreateOrdenValidator>();
 
             // Validadores DTO — Detalle Orden
-            services.AddScoped<IValidator<CreateDetalleOrdenDto>, CreateDetalleOredenValidator>();
+            services.AddScoped<IValidator<CreateDetalleOrdenDto>, CreateDetalleOrdenValidator>();
             services.AddScoped<IValidator<UpdateDetalleOrdenDto>, UpdateDetalleOrdenValidator>();
 
             // Validadores DTO — Pago

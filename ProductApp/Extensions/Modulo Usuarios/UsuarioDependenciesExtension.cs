@@ -35,10 +35,10 @@ namespace ProductApp.Extensions.Modulo_Usuarios
             // Servicios
             services.AddScoped<IUsuarioService, UsuarioService>();
             services.AddScoped<IClienteServices, ClienteServices>();
-            services.AddScoped<IAuthService, AuthServicecs>();
+            services.AddScoped<IAuthService, AuthServices>();
 
             // Reglas de negocio
-            services.AddScoped<IValitadorBusinessUsuario, ValidatorBusinessUsuarios>();
+            services.AddScoped<IValidatorBusinessUsuario, ValidatorBusinessUsuarios>();
             services.AddScoped<IValidatorBusinessAuth, ValidatorBusinessAuth>();
             services.AddScoped<IValidatorBusinessClientes, ValidatorBusinessClientes>();
 
@@ -51,7 +51,7 @@ namespace ProductApp.Extensions.Modulo_Usuarios
 
             // Validadores DTO — Auth
             services.AddScoped<IValidator<LoginDto>, LoginValidator>();
-            services.AddScoped<IValidator<RegisteDto>, RegisterValidator>();
+            services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 
             // Validadores DTO — Clientes
             services.AddScoped<IValidator<CreateClienteDto>, CreateClienteValidator>();

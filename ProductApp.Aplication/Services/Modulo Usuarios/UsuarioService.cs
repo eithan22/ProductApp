@@ -19,14 +19,14 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
         private readonly IValidator<ResetearPasswordDto> _resetPasswordValidator;
         private readonly IValidator<CambiarRolDto> _cambiarRolValidator;
-        private readonly IValitadorBusinessUsuario _validatorBusinessUsuarios;
+        private readonly IValidatorBusinessUsuario _validatorBusinessUsuarios;
 
         public UsuarioService(
             IUsuarioRepository usuarioRepository,
             IMapperUsuario mapperUsuario,
             IValidator<CreateUsuarioDto> createValidator,
             IValidator<UpdateUsuarioDto> updateValidator,
-            IValitadorBusinessUsuario validatorBusinessUsuarios,
+            IValidatorBusinessUsuario validatorBusinessUsuarios,
             IValidator<ChangePasswordDto> changePasswordValidator,
             IValidator<ResetearPasswordDto> resetPasswordValidator,
             IValidator<CambiarRolDto> cambiarRolValidator)

@@ -8,7 +8,7 @@ using ProductApp.Domian.Interfaces;
 
 namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 {
-    public class ValidatorBusinessUsuarios : IValitadorBusinessUsuario
+    public class ValidatorBusinessUsuarios : IValidatorBusinessUsuario
     {
         private readonly IUsuarioRepository _usuarioRepository;
 

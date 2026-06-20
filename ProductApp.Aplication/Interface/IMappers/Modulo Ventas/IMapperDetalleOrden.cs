@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ProductApp.Aplication.Interface.IMappers.Modulo_Ventas
 {
-    public interface IMapperDetalleOrdencs
+    public interface IMapperDetalleOrden
     {
         OrdenDetalle MapToCreateDetalleOrden(CreateDetalleOrdenDto dto , Producto producto);
          OrdenDetalleResponseDto MapToDetalleOrdenResponseDto(OrdenDetalle detalle);

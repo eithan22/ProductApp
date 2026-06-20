@@ -36,7 +36,7 @@ namespace ProductApp.Aplication.Mappers
             usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
         }
 
-        public Usuario MapFromRegisterDto(RegisteDto dto)
+        public Usuario MapFromRegisterDto(RegisterDto dto)
         {
             return new Usuario(dto.Nombre, dto.Email, dto.UserName, RolUsuario.Vendedor);
         }

@@ -9,7 +9,7 @@ namespace ProductApp.Aplication.Interface.Servicios.Modulo_Usuarios
 {
     public interface IAuthService
     {
-        Task<OperationResultD<UsuarioResponseDto>>Register(RegisteDto dto);
+        Task<OperationResultD<UsuarioResponseDto>>Register(RegisterDto dto);
         Task<OperationResultD<AuthResponseDto>>Login(LoginDto dto);
     }
 }

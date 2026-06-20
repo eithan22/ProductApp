@@ -7,9 +7,9 @@ using System.Text;
 
 namespace ProductApp.Aplication.Validators.Modulo_Ventas.DetalleOrdenValidator
 {
-    public class CreateDetalleOredenValidator : AbstractValidator<CreateDetalleOrdenDto>
+    public class CreateDetalleOrdenValidator : AbstractValidator<CreateDetalleOrdenDto>
     {
-        public CreateDetalleOredenValidator()
+        public CreateDetalleOrdenValidator()
         {
            RuleFor(x => x.OrdenId)
                 .GreaterThan(0).WithMessage("El Id de la orden debe ser mayor que cero.");
