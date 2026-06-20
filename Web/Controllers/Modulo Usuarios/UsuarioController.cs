@@ -88,7 +88,7 @@ namespace Web.Controllers.Modulo_Usuarios
                     Nombre = usuario.Nombre,
                     Email = usuario.Email,
                     UserName = usuario.UserName,
-                    Edad = usuario.Edad,
+                    FechaNacimiento = usuario.FechaNacimiento,
                  
                 };
 

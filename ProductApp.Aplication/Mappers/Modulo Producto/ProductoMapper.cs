@@ -49,7 +49,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
             producto.CambiarYvalidarCosto(dto.Costo);
             producto.CambiarYvalidarDescripcion(dto.Descripcion);
             producto.CambiarYvalidarNombre(dto.Nombre);
-            producto.CambiarYvalidarCategoria(dto.categoriaid);
+            producto.CambiarYvalidarCategoria(dto.CategoriaId);
             
             
         }

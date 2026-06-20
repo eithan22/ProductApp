@@ -1,16 +1,12 @@
-﻿using FluentValidation;
+using FluentValidation;
 using ProductApp.Aplication.Dtos.PagoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
+using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Ventas;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Common.Enums.EnumsOrden;
-using ProductApp.Domian.Common.Enums.EnumsPago;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ProductApp.Aplication.Services
 {
@@ -22,6 +18,7 @@ namespace ProductApp.Aplication.Services
         private readonly IInventarioRepository _inventarioRepository;
         private readonly IMapperPago _mapperPago;
         private readonly IValidator<CreatePagoDto> _createPagoValidator;
+        private readonly IValidatorBusinessPago _validatorBusinessPago;
 
         public PagoService(
             IPagoRepository pagoRepository,
@@ -29,14 +26,16 @@ namespace ProductApp.Aplication.Services
             IDetalleOrdenRepository detalleOrdenRepository,
             IInventarioRepository inventarioRepository,
             IMapperPago mapperPago,
-            IValidator<CreatePagoDto> createPagoValidator)
+            IValidator<CreatePagoDto> createPagoValidator,
+            IValidatorBusinessPago validatorBusinessPago)
         {
-            _pagoRepository           = pagoRepository;
-            _ordenRepository          = ordenRepository;
-            _detalleOrdenRepository   = detalleOrdenRepository;
-            _inventarioRepository     = inventarioRepository;
-            _mapperPago               = mapperPago;
-            _createPagoValidator      = createPagoValidator;
+            _pagoRepository = pagoRepository;
+            _ordenRepository = ordenRepository;
+            _detalleOrdenRepository = detalleOrdenRepository;
+            _inventarioRepository = inventarioRepository;
+            _mapperPago = mapperPago;
+            _createPagoValidator = createPagoValidator;
+            _validatorBusinessPago = validatorBusinessPago;
         }
 
         public async Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto)
@@ -50,30 +49,20 @@ namespace ProductApp.Aplication.Services
             if (orden == null)
                 return OperationResultD<PagoResponseDto>.Failure("Orden no encontrada");
 
-            if (orden.Estado != EstadoOrden.Pendiente)
-                return OperationResultD<PagoResponseDto>.Failure(
-                    "Solo se pueden registrar pagos para órdenes en estado Pendiente");
+            var totalPagado = await _pagoRepository.ObtenerTotalPagadoPorOrdenAsync(dto.OrdenId);
+            var saldoActual = orden.Total - totalPagado;
 
-            if (orden.Total <= 0)
-                return OperationResultD<PagoResponseDto>.Failure(
-                    "La orden no tiene total calculado. Agregue productos antes de registrar un pago");
+            var businessResult = await _validatorBusinessPago.ValidarRegistrarPagoAsync(dto, orden, saldoActual);
+            if (!businessResult.IsSuccess)
+                return OperationResultD<PagoResponseDto>.Failure(businessResult.Message);
 
-            var totalPagado   = await _pagoRepository.ObtenerTotalPagadoPorOrdenAsync(dto.OrdenId);
-            var saldoActual   = orden.Total - totalPagado;
-
-            if (dto.Monto > saldoActual)
-                return OperationResultD<PagoResponseDto>.Failure(
-                    $"El monto ({dto.Monto}) supera el saldo pendiente ({saldoActual})");
-
-            var nuevoSaldo   = saldoActual - dto.Monto;
+            var nuevoSaldo = saldoActual - dto.Monto;
             var pagoCompleto = nuevoSaldo <= 0;
 
-            // Si este pago completa la orden, validar todo el inventario ANTES de guardar nada
             var inventariosADescontar = new List<(Inventario inventario, int cantidad)>();
             if (pagoCompleto)
             {
                 var detalles = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(dto.OrdenId);
-
                 foreach (var detalle in detalles)
                 {
                     var inventario = await _inventarioRepository.GetByProductoIdAsync(detalle.ProductId);
@@ -90,11 +79,9 @@ namespace ProductApp.Aplication.Services
                 }
             }
 
-            // Guardar el pago
             var pago = _mapperPago.MapToCreatePago(dto);
             await _pagoRepository.CreateAsync(pago);
 
-            // Si el pago es completo: marcar pago, cambiar estado de orden y descontar inventario
             if (pagoCompleto)
             {
                 pago.MarcarComoCompletado();
@@ -118,11 +105,6 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<PagoResponseDto>.Success(response, mensaje);
         }
 
-
-
-
-
-
         public async Task<OperationResultD<List<PagoResponseDto>>> ObtenerPagosPorOrdenAsync(int ordenId)
         {
             var orden = await _ordenRepository.GetByIdAsync(ordenId);
@@ -130,23 +112,15 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<List<PagoResponseDto>>.Failure("Orden no encontrada");
 
             var pagos = await _pagoRepository.ObtenerPagosPorOrdenAsync(ordenId);
-
             if (!pagos.Any())
-                return OperationResultD<List<PagoResponseDto>>.Failure(
-                    "No se encontraron pagos para esta orden");
+                return OperationResultD<List<PagoResponseDto>>.Failure("No se encontraron pagos para esta orden");
 
-            var totalPagado     = pagos.Sum(p => p.Monto);
-            var saldoPendiente  = orden.Total - totalPagado;
+            var totalPagado = pagos.Sum(p => p.Monto);
+            var saldoPendiente = orden.Total - totalPagado;
 
-            var response = pagos
-                .Select(p => _mapperPago.MapToPagoResponseDto(p, saldoPendiente))
-                .ToList();
-
+            var response = pagos.Select(p => _mapperPago.MapToPagoResponseDto(p, saldoPendiente)).ToList();
             return OperationResultD<List<PagoResponseDto>>.Success(response, "Pagos obtenidos exitosamente");
         }
-
-
-
 
         public async Task<OperationResultD<decimal>> ObtenerSaldoPendienteAsync(int ordenId)
         {
@@ -154,7 +128,7 @@ namespace ProductApp.Aplication.Services
             if (orden == null)
                 return OperationResultD<decimal>.Failure("Orden no encontrada");
 
-            var totalPagado    = await _pagoRepository.ObtenerTotalPagadoPorOrdenAsync(ordenId);
+            var totalPagado = await _pagoRepository.ObtenerTotalPagadoPorOrdenAsync(ordenId);
             var saldoPendiente = orden.Total - totalPagado;
 
             return OperationResultD<decimal>.Success(saldoPendiente, "Saldo pendiente obtenido exitosamente");

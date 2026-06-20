@@ -1,10 +1,3 @@
-﻿using ProductApp.Domian.Common.Enums.EnumsCliente;
-using ProductApp.Domian.Common.Enums.EnumsProducto;
-using ProductApp.Domian.Entitis;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace ProductApp.Aplication.Dtos.ProductoDto
 {
     public class UpdateProductoDto
@@ -12,8 +5,8 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
         public int Id { get; set; }
         public string Nombre { get; set; } = null!;
         public string Descripcion { get; set; } = null!;
-        public decimal Precio { get; set; } 
-        public decimal Costo { get; set; } 
-        public int categoriaid { get; set; } 
+        public decimal Precio { get; set; }
+        public decimal Costo { get; set; }
+        public int CategoriaId { get; set; }
     }
 }

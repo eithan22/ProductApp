@@ -26,7 +26,7 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator
 
             RuleFor(x => x.Cedula)
                 .NotEmpty().WithMessage("La cédula es requerida.")
-                .Matches(@"^\d{10}$").WithMessage("La cédula debe tener 10 dígitos.");  //402-1363129-0
+                .Matches(@"^\d{11}$").WithMessage("La cédula debe tener 11 dígitos.");
 
             RuleFor(x => x.Direccion)
                 .NotEmpty().WithMessage("La dirección es requerida.")

@@ -1,4 +1,3 @@
-﻿```cshtml
 @model Web.Models.Modelo_Usuarios.UsuarioModels.AuthModel.RegisterModel
 
 @{
@@ -40,18 +39,18 @@
 
         </div>
 
-        <!-- EDAD -->
+        <!-- FECHA DE NACIMIENTO -->
         <div class="col-md-6 mb-3">
 
-            <label asp-for="Edad"
+            <label asp-for="FechaNacimiento"
                    class="form-label fw-semibold">
             </label>
 
-            <input asp-for="Edad"
-                   class="form-control"
-                   placeholder="25" />
+            <input asp-for="FechaNacimiento"
+                   type="date"
+                   class="form-control" />
 
-            <span asp-validation-for="Edad"
+            <span asp-validation-for="FechaNacimiento"
                   class="text-danger">
             </span>
 
@@ -160,4 +159,3 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-```

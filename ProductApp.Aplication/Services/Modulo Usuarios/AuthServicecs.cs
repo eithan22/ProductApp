@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
@@ -8,12 +8,7 @@ using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Usuarios;
 using ProductApp.Aplication.Result.OperationResult;
-using ProductApp.Domian.Common.Enums.EnumsUsuario;
-using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
-using ProductApp.Infraesctructura.Persistencia.Repository;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -29,7 +24,8 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
         private readonly IValidator<RegisteDto> _registerValidator;
         private readonly IValidatorBusinessAuth _validatorBusinessAuth;
 
-        public AuthServicecs(IUsuarioRepository usuarioRepository, 
+        public AuthServicecs(
+            IUsuarioRepository usuarioRepository,
             IMapperUsuario mapperUsuario,
             IConfiguration config,
             IValidatorBusinessAuth validatorBusinessAuth,
@@ -44,114 +40,66 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             _registerValidator = registerValidator;
         }
 
-
         public async Task<OperationResultD<UsuarioResponseDto>> Register(RegisteDto dto)
         {
+            var validationResult = await _registerValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                return OperationResultD<UsuarioResponseDto>.Failure(
+                    string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
 
-            try
-            {
-                // 🟢 VALIDACIONES DE DTO
-                var validationResult = await _registerValidator.ValidateAsync(dto);
+            var validatorBusiness = await _validatorBusinessAuth.ValidarRegisterAsync(dto);
+            if (!validatorBusiness.IsSuccess)
+                return OperationResultD<UsuarioResponseDto>.Failure(validatorBusiness.Message);
 
-                if (!validationResult.IsValid)
-                {
-                    return OperationResultD<UsuarioResponseDto>.Failure(string.Join("; ", validationResult.Errors));
-                }
+            var usuario = _mapperUsuario.MapFromRegisterDto(dto);
+            usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
+            usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.Password));
 
+            await _usuarioRepository.CreateAsync(usuario);
 
-
-                // 🟢 VALIDACIONES DE NEGOCI
-
-                var ValidatorBusiness = await _validatorBusinessAuth.ValidarRegisterAsync(dto);
-
-                if (!ValidatorBusiness.IsSuccess)
-                    return OperationResultD<UsuarioResponseDto>.Failure(ValidatorBusiness.Message);
-
-
-                //  Crear nuevo usuario
-                var usuario = _mapperUsuario.MapFromRegisterDto(dto);
-
-                // Aquí deberías hashear la contraseña antes de guardarla
-                usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.Password));
-
-                //  Guardar usuario en la base de datos
-                await _usuarioRepository.CreateAsync(usuario);
-
-                // 🔴  Retornar resultado
-
-                var response = _mapperUsuario.ToDto(usuario);
-
-                return OperationResultD<UsuarioResponseDto>.Success(response, "Usuario registrado exitosamente");
-
-            }
-            catch (Exception ex)
-            {
-                return OperationResultD<UsuarioResponseDto>
-                    .Failure(ex.Message);
-            }
-
-
-
+            var response = _mapperUsuario.ToDto(usuario);
+            return OperationResultD<UsuarioResponseDto>.Success(response, "Usuario registrado exitosamente");
         }
 
         public async Task<OperationResultD<AuthResponseDto>> Login(LoginDto dto)
         {
-            // 🟢 VALIDACIONES DE DTO
             var validationResult = await _loginValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
-            {
-                return OperationResultD<AuthResponseDto>.Failure(string.Join("; ", validationResult.Errors));
-            }
+                return OperationResultD<AuthResponseDto>.Failure(
+                    string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
 
+            var validatorBusiness = await _validatorBusinessAuth.ValidarLoginAsync(dto);
+            if (!validatorBusiness.IsSuccess)
+                return OperationResultD<AuthResponseDto>.Failure(validatorBusiness.Message);
 
-             // 🟢 VALIDACIONES DE NEGOCIO
-            var ValidatorBusiness = await _validatorBusinessAuth.ValidarLoginAsync(dto);
-
-            if (!ValidatorBusiness.IsSuccess) 
-                return OperationResultD<AuthResponseDto>.Failure(ValidatorBusiness.Message);
-
-
-            var usuario = await _usuarioRepository
-                .FirstOrDefaultAsync(x => x.Username == dto.Username);
-
+            var usuario = await _usuarioRepository.FirstOrDefaultAsync(x => x.Username == dto.Username);
             if (usuario == null)
                 return OperationResultD<AuthResponseDto>.Failure("Usuario no encontrado");
 
-
-            // 🟢 CREAR TOKEN JWT  // Aquí es donde se genera el token JWT para el usuario autenticado 
-
             var claims = new[]
             {
-            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-            new Claim(ClaimTypes.Name, usuario.Nombre),
-           new Claim(ClaimTypes.Role, usuario.RolUsuario.ToString())
-    };
+                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Nombre),
+                new Claim(ClaimTypes.Role, usuario.RolUsuario.ToString())
+            };
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"])
-            );
-
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(60),
-                signingCredentials: creds
-            );
+                expires: DateTime.UtcNow.AddMinutes(60),
+                signingCredentials: creds);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            // 🟢 RESPUESTA
 
             return OperationResultD<AuthResponseDto>.Success(new AuthResponseDto
             {
                 Token = tokenString,
-                Usuario  = _mapperUsuario.ToDto(usuario)
+                Usuario = _mapperUsuario.ToDto(usuario)
             }, "Login exitoso");
         }
-
-
     }
 }

@@ -21,7 +21,8 @@ namespace ProductApp.Aplication.Mappers
                 Nombre = usuario.Nombre,
                 Email = usuario.Email,
                 UserName = usuario.Username,
-                Edad = usuario.Edad ?? 0,
+                Edad = usuario.Edad,
+                FechaNacimiento = usuario.FechaNacimiento,
                 RolUsuario = usuario.RolUsuario.ToString(),
                 EstadoUsuario = usuario.EstadoUsuario.ToString()
             };
@@ -32,6 +33,7 @@ namespace ProductApp.Aplication.Mappers
             usuario.CambiarNombre(dto.Nombre);
             usuario.CambiarEmail(dto.Email);
             usuario.CambiarRol(dto.RolUsuario);
+            usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
         }
 
         public Usuario MapFromRegisterDto(RegisteDto dto)

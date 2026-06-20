@@ -138,10 +138,9 @@ namespace ProductApp.Aplication.Services
             if (!validatorBusiness.IsSuccess)
             {
                 return OperationResultD<ProductoResponseDto>.Failure(validatorBusiness.Message);
-            
             }
-            var productoCompleto = await _productorepository.GetAllConCategoriaAsync();
-            var producto =  _mapperProductoMapper.MapToCreateProducto(dto);
+
+            var producto = _mapperProductoMapper.MapToCreateProducto(dto);
 
             
 
