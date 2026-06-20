@@ -182,7 +182,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
                     return Unauthorized("Token inválido");
 
                 var userId = int.Parse(userIdClaim.Value);
-
+                dto.Id = userId;
 
                 var result = await _usuarioService.CambiarPasswordUsuario(dto);
                 if (!result.IsSuccess)

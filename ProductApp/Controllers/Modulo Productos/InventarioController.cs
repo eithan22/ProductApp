@@ -19,6 +19,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
 
+        [Authorize]
         [HttpGet("GetInventarioPorProducto/{productoId}")]
         public async Task<IActionResult> GetInventario(int productoId)
         {
@@ -44,6 +45,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
 
 
+        [Authorize]
         [HttpGet("GetAllInventarios")]
         public async Task<IActionResult> GetAllInventarios()
         {
@@ -68,6 +70,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
 
+        [Authorize]
         [HttpGet("GetStockBajo")]
         public async Task<IActionResult> GetStockBajo()
         {
@@ -140,8 +143,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         [Authorize]
         [HttpPut("AjustarInventario")]
-
-        public async Task<IActionResult> AjustarInventario(int productoId, AjustarStockDto dto)
+        public async Task<IActionResult> AjustarInventario([FromQuery] int productoId, AjustarStockDto dto)
         {
             try { 
           

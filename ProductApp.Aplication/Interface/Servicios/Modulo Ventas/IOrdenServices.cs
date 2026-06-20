@@ -22,6 +22,7 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<bool>> CambiarEstadoOrden(CambiarEstadoOrdenDto dto);
 
         Task<OperationResultD<bool>> RecalcularTotalAsync(int id);
+        Task<OperationResultD<OrdenResponseDto>> GetOrdenByIdAsync(int id);
 
 
 

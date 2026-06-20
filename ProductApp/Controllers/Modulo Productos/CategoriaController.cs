@@ -86,9 +86,8 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         }
         [Authorize]
-        [HttpPut("UpdateCategoria")]
-
-        public async Task<IActionResult> UpdateCategoria( int id ,UpdateCategoriaDto dto)
+        [HttpPut("UpdateCategoria/{id}")]
+        public async Task<IActionResult> UpdateCategoria(int id, UpdateCategoriaDto dto)
         {
             try
             {

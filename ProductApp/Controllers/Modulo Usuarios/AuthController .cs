@@ -3,7 +3,6 @@ using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Usuarios;
 using ProductApp.Aplication.Result.ApiResponses;
-using ProductApp.Infraesctructura.Persistencia.Repository;
 
 namespace ProductApp.Api.Controllers.Modulo_Usuarios
 {

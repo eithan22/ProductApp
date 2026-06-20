@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProductApp.Aplication.Dtos.CategoriaDto;
-using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Dtos.Modulo_Ventas.DetalleOrdenDto;
-using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
-using ProductApp.Aplication.Services;
 
 namespace ProductApp.Api.Controllers.Modulo_Ventas
 {

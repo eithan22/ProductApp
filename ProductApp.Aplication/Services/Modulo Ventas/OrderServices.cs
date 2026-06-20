@@ -114,6 +114,16 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
         }
 
+        public async Task<OperationResultD<OrdenResponseDto>> GetOrdenByIdAsync(int id)
+        {
+            var orden = await _ordenRepository.GetByIdAsync(id);
+            if (orden == null)
+                return OperationResultD<OrdenResponseDto>.Failure("Orden no encontrada");
+
+            var ordenResponse = _mapperOrden.MapToOrdenResponseDto(orden);
+            return OperationResultD<OrdenResponseDto>.Success(ordenResponse, "Orden obtenida exitosamente");
+        }
+
         public async Task<OperationResultD<bool>> RecalcularTotalAsync(int id)
         {
             var orden = await _ordenRepository.GetByIdAsync(id);

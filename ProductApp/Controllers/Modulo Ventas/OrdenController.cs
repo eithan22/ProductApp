@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProductApp.Aplication.Dtos.CategoriaDto;
-using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
 using ProductApp.Aplication.Dtos.OrdenDto;
-using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
-using ProductApp.Aplication.Services;
 
 namespace ProductApp.Api.Controllers.Modulo_Ventas
 {
@@ -123,7 +119,23 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         }
 
 
-        //obtener ordenes por clientes
+        [Authorize]
+        [HttpGet("GetOrdenById/{id}")]
+        public async Task<IActionResult> GetOrdenById(int id)
+        {
+            try
+            {
+                var result = await _ordenServices.GetOrdenByIdAsync(id);
+                if (!result.IsSuccess)
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+                return Ok(ApiResponseT<OrdenResponseDto>.SuccessResponse(result.Data, result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
+            }
+        }
 
         [Authorize]
         [HttpGet("GetOrdenByClientes/{id}")]
