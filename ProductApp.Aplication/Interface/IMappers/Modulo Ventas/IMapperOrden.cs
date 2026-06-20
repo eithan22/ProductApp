@@ -9,7 +9,6 @@ namespace ProductApp.Aplication.Interface.IMappers.Modulo_Ventas
     public interface IMapperOrden
     {
         Orden MapTOCreateOrden(CreateOrdenDto dto, int usuarioId);
-         OrdenResponseDto MapToOrdenResponseDto(Orden orden);
-         void MapToUpdateOrden(UpdateOrdenDto dto, Orden orden);
+        OrdenResponseDto MapToOrdenResponseDto(Orden orden);
     }
 }

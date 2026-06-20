@@ -38,9 +38,5 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
             return response;
         }
 
-        public void MapToUpdateOrden(UpdateOrdenDto dto, Orden orden)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
