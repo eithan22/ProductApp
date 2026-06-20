@@ -160,6 +160,24 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         //obtener ordenes por fecha
 
         [Authorize]
+        [HttpGet("GetOrdenesByUsuario/{usuarioId}")]
+        public async Task<IActionResult> GetOrdenesByUsuario(int usuarioId)
+        {
+            try
+            {
+                var result = await _ordenServices.GetOrdenesByUsuarioAsync(usuarioId);
+                if (!result.IsSuccess)
+                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+                return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
+            }
+        }
+
+        [Authorize]
         [HttpGet("GetOrdenByFecha/{fecha}")]
 
         public async Task<IActionResult> GetOrdenByFecha(DateTime fecha)

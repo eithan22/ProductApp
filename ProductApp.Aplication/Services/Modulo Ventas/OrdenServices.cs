@@ -124,6 +124,16 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<OrdenResponseDto>.Success(ordenResponse, "Orden obtenida exitosamente");
         }
 
+        public async Task<OperationResultD<List<OrdenResponseDto>>> GetOrdenesByUsuarioAsync(int usuarioId)
+        {
+            var ordenes = await _ordenRepository.ObtenerPorUsuarioAsync(usuarioId);
+            if (ordenes == null || ordenes.Count == 0)
+                return OperationResultD<List<OrdenResponseDto>>.Failure("El usuario no tiene órdenes registradas");
+
+            var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
+            return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
+        }
+
         public async Task<OperationResultD<bool>> RecalcularTotalAsync(int id)
         {
             var orden = await _ordenRepository.GetByIdAsync(id);

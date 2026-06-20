@@ -23,6 +23,7 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<bool>> RecalcularTotalAsync(int id);
         Task<OperationResultD<OrdenResponseDto>> GetOrdenByIdAsync(int id);
+        Task<OperationResultD<List<OrdenResponseDto>>> GetOrdenesByUsuarioAsync(int usuarioId);
 
 
 
