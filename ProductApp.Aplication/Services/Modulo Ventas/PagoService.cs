@@ -72,7 +72,7 @@ namespace ProductApp.Aplication.Services
             var inventariosADescontar = new List<(Inventario inventario, int cantidad)>();
             if (pagoCompleto)
             {
-                var detalles = await _detalleOrdenRepository.ObtenerDetalleOrdenPorOrdenIdAsync(dto.OrdenId);
+                var detalles = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(dto.OrdenId);
 
                 foreach (var detalle in detalles)
                 {

@@ -47,16 +47,16 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
 
 
 
-        public async Task<IEnumerable<Producto>> GetProductosConCategoriaAll()
+        public async Task<IEnumerable<Producto>> GetAllConCategoriaAsync()
         {
             return await _context.Productos
-                .Include(p => p.Categoria).ToListAsync();
-
+                .Include(p => p.Categoria)
+                .ToListAsync();
         }
 
-        public Task<Producto?> ObtenerProductoConInventarioAsync(int id)
+        public Task<Producto?> ObtenerConInventarioAsync(int id)
         {
-           return _context.Productos
+            return _context.Productos
                 .Include(p => p.Inventario)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }

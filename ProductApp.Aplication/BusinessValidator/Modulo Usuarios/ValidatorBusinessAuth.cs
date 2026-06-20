@@ -51,7 +51,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             if (usuario == null)
                 return OperationResult.Failure("Usuario no encontrado");
 
-            if (usuario.IsDisable)
+            if (usuario.EstaEliminado)
                 return OperationResult.Failure("Usuario deshabilitado");
 
             

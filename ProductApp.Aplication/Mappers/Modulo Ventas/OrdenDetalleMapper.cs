@@ -10,9 +10,9 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
     {
         
 
-        public OrderDetalle MapToCreateDetalleOrden(CreateDetalleOrdenDto dto, Producto producto)
+        public OrdenDetalle MapToCreateDetalleOrden(CreateDetalleOrdenDto dto, Producto producto)
         {
-           return new OrderDetalle
+           return new OrdenDetalle
                 (
                    dto.ProductId,
                     dto.Cantidad,
@@ -21,7 +21,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
                 );  
         }
 
-        public OrdenDetalleResponseDto MapToDetalleOrdenResponseDto(OrderDetalle detalle)
+        public OrdenDetalleResponseDto MapToDetalleOrdenResponseDto(OrdenDetalle detalle)
         {
             var response = new OrdenDetalleResponseDto()
             {
@@ -35,7 +35,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
             return response;
         }
 
-        public void MapToUpdateDetalleOrden(UpdateDetalleOrdenDto dto, OrderDetalle detalle)
+        public void MapToUpdateDetalleOrden(UpdateDetalleOrdenDto dto, OrdenDetalle detalle)
         {
             detalle.ActualizarCantidad(dto.Cantidad);
 

@@ -32,7 +32,18 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 query = query.Where(c => c.Correo.Contains(correo));
             }
             return query.ToListAsync();
+        }
 
+        public async Task<bool> ExistePorCorreoAsync(string correo)
+        {
+            return await _context.Clientes
+                .AnyAsync(c => !c.EstaEliminado && c.Correo == correo);
+        }
+
+        public async Task<bool> ExistePorCedulaAsync(string cedula)
+        {
+            return await _context.Clientes
+                .AnyAsync(c => !c.EstaEliminado && c.Cedula == cedula);
         }
     }
 }

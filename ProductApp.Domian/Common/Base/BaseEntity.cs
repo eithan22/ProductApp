@@ -10,7 +10,13 @@
 
         public DateTime ModificadoEn { get; private set; } = DateTime.UtcNow;
 
-        protected void ActualizarFechaModificacion()
+        public void Eliminar()
+        {
+            EstaEliminado = true;
+            ActualizarFechaModificacion();
+        }
+
+        public void ActualizarFechaModificacion()
         {
             ModificadoEn = DateTime.UtcNow;
         }

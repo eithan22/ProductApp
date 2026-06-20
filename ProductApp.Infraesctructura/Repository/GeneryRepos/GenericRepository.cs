@@ -9,7 +9,7 @@ using System.Text;
 
 namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 {
-    public class GenericRepository<T> : IGeneryRepository<T> where T : BaseEntity
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
 
         //Aun no comprendi la inyeccion de el context para los demas repositorios
@@ -25,18 +25,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
         public async Task<T> CreateAsync(T entity)
         {
-            try
-            {
-                await Entity.AddAsync(entity);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception( ex.InnerException?.Message ?? ex.Message);
-
-            }
-            
-            return entity; 
+            await Entity.AddAsync(entity);
+            await _context.SaveChangesAsync();
+            return entity;
          
              
 
@@ -46,15 +37,13 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
         // delete logico no se va a usar
 
         
-        public async Task DisebleAsync(int id)
+        public async Task DisableAsync(int id)
         {
             var entity = await Entity.FindAsync(id);
             if (entity != null)
             {
-                entity.IsDisable = true;
+                entity.Eliminar();
                 await _context.SaveChangesAsync();
-
-
             }
         }
         
@@ -74,21 +63,18 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
         //aun no lo entiendo . 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-         var result =  await Entity.
-         
-                ToListAsync();
-
-            return result;
-
+            return await Entity
+                .Where(x => !x.EstaEliminado)
+                .ToListAsync();
         }
 
         //aun no lo entiendo.
 
         public async Task<T?> GetByIdAsync(int id)
         {
-           var result = await Entity.
-               Where(x => !x.IsDisable && x.Id == id).
-               FirstOrDefaultAsync();
+           var result = await Entity
+               .Where(x => !x.EstaEliminado && x.Id == id)
+               .FirstOrDefaultAsync();
 
 
 
@@ -110,7 +96,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
         public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> filtro)
         {
-           return await Entity.Where(x => !x.IsDisable).FirstOrDefaultAsync(filtro);
+           return await Entity.Where(x => !x.EstaEliminado).FirstOrDefaultAsync(filtro);
         }
     }
 }

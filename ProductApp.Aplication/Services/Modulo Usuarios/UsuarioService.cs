@@ -70,7 +70,7 @@ namespace ProductApp.Aplication.Services
 
             var usuario = _mapperUsuario.MapToEntity(dto);
 
-            usuario.PasswordHash = PasswordHelper.Hash(dto.Password);
+            usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.Password));
 
             await _usuarioRepository.CreateAsync(usuario);
 
@@ -107,7 +107,7 @@ namespace ProductApp.Aplication.Services
 
             
 
-            usuario.PasswordHash = PasswordHelper.Hash(dto.PasswordNueva);
+            usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.PasswordNueva));
 
             await _usuarioRepository.UpdateAsync(usuario);
             return OperationResultD<bool>.Success(true, "Contraseña actualizada correctamente");
@@ -140,7 +140,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
             }
 
-            usuario.PasswordHash = PasswordHelper.Hash(dto.NuevaContraseña);
+            usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.NuevaContraseña));
 
             await _usuarioRepository.UpdateAsync(usuario);
             return OperationResultD<bool>.Success(true, "Contraseña reseteada correctamente");
@@ -170,7 +170,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
             }
 
-            usuario.RolUsuario = dto.NuevoRol;
+            usuario.CambiarRol(dto.NuevoRol);
 
             await _usuarioRepository.UpdateAsync(usuario);
             return OperationResultD<bool>.Success(true, "Rol actualizado correctamente");
@@ -223,7 +223,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
             }
 
-            usuario.desactivar(usuario);
+            usuario.Desactivar();
 
             await _usuarioRepository.UpdateAsync(usuario);
             return OperationResultD<bool>.Success(true, "Usuario Deshabilitado Correctamente");

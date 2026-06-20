@@ -72,7 +72,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
                 var usuario = _mapperUsuario.MapFromRegisterDto(dto);
 
                 // Aquí deberías hashear la contraseña antes de guardarla
-                usuario.PasswordHash = PasswordHelper.Hash(dto.Password);
+                usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.Password));
 
                 //  Guardar usuario en la base de datos
                 await _usuarioRepository.CreateAsync(usuario);

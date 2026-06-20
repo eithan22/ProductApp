@@ -141,7 +141,7 @@ namespace ProductApp
 
             builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 
-            builder.Services.AddScoped<ICategoriaRepository, CategoriaReposiroy>();
+            builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 
             builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 

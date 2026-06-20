@@ -1,9 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProductApp.Domian.Entitis;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
 {
@@ -11,25 +8,21 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
     {
         public void Configure(EntityTypeBuilder<Usuario> builder)
         {
-           
-                
-
-
-
             builder.Property(u => u.Nombre)
                 .IsRequired()
                 .HasMaxLength(20);
 
             builder.Property(u => u.PasswordHash)
-    .IsRequired()
-    .HasMaxLength(200);
+                .IsRequired()
+                .HasMaxLength(200);
 
+            builder.Property(u => u.Username)
+                .IsRequired()
+                .HasMaxLength(50);
 
+            builder.Property(u => u.FechaNacimiento);
 
-
-
-            builder.Property(u => u.Edad)
-                .IsRequired();
+            builder.Ignore(u => u.Edad);
 
             builder.Property(u => u.Email)
                 .IsRequired()
@@ -42,17 +35,6 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
             builder.Property(u => u.EstadoUsuario)
                 .IsRequired()
                 .HasConversion<string>();
-
-
-
-
-
-
-
-
-
-
-
         }
     }
 }

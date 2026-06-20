@@ -8,8 +8,8 @@ namespace ProductApp.Aplication.Interface.IMappers.Modulo_Ventas
 {
     public interface IMapperDetalleOrdencs
     {
-        OrderDetalle MapToCreateDetalleOrden(CreateDetalleOrdenDto dto , Producto producto);
-         OrdenDetalleResponseDto MapToDetalleOrdenResponseDto(OrderDetalle detalle);
-          void MapToUpdateDetalleOrden(UpdateDetalleOrdenDto dto, OrderDetalle detalle);
+        OrdenDetalle MapToCreateDetalleOrden(CreateDetalleOrdenDto dto , Producto producto);
+         OrdenDetalleResponseDto MapToDetalleOrdenResponseDto(OrdenDetalle detalle);
+          void MapToUpdateDetalleOrden(UpdateDetalleOrdenDto dto, OrdenDetalle detalle);
     }
 }

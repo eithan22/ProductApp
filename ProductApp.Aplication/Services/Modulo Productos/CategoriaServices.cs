@@ -119,7 +119,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validationBusinessResult.Message);
             }
 
-            categoria.desactivarCategoria();
+            categoria.Desactivar();
 
             await _categoriaRepository.UpdateAsync(categoria);
 

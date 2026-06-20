@@ -41,7 +41,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
 
         public async Task<OperationResult> ValidarDisableProductoAsync(Producto producto)
         {
-          if( producto.IsDisable == true)
+          if( producto.EstaEliminado == true)
             {
                 return OperationResult.Failure("El producto ya esta inactivo");
                

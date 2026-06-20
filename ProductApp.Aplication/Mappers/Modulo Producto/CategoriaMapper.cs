@@ -16,7 +16,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 Id = categoria.Id,
                 Nombre = categoria.Nombre,
                 Descripcion = categoria.Descripcion,
-                Estado = categoria.IsDisable ? "Inactiva" : "Activa"
+                Estado = categoria.EstaEliminado ? "Inactiva" : "Activa"
 
             };
             return categoriaResponseDto;

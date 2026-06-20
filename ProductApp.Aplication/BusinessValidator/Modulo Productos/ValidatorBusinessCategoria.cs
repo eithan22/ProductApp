@@ -41,7 +41,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
             {
                 return OperationResult.Failure("La categoria no existe.");
             }
-            if (categoria.IsDisable == true)
+            if (categoria.EstaEliminado == true)
             {
                 return OperationResult.Failure("La categoria ya está inactiva.");
             }

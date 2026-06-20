@@ -17,7 +17,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Contex
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Orden> Ordenes { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
-        public DbSet<OrderDetalle> DetalleOrden { get; set; }
+        public DbSet<OrdenDetalle> DetalleOrden { get; set; }
 
         public DbSet<Cliente>Clientes { get; set; }
 
@@ -30,10 +30,18 @@ namespace ProductApp.Infraesctructura.Persistencia.Contex
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());//agregar las configuraciones 
-
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
 
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            foreach (var entry in ChangeTracker.Entries<ProductApp.Domian.Common.Base.BaseEntity>())
+            {
+                if (entry.State == EntityState.Modified)
+                    entry.Entity.ActualizarFechaModificacion();
+            }
+            return base.SaveChangesAsync(cancellationToken);
+        }
     }
 }
 

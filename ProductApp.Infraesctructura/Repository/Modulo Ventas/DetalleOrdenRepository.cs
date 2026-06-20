@@ -1,48 +1,36 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 using ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ProductApp.Infraesctructura.Persistencia.Repository
 {
-    public class DetalleOrdenRepository : GenericRepository<OrderDetalle>, IDetalleOrdenRepository
+    public class DetalleOrdenRepository : GenericRepository<OrdenDetalle>, IDetalleOrdenRepository
     {
         public DetalleOrdenRepository(AppDbContext context) : base(context)
         {
         }
 
-        // Implementación del método para obtener el detalle de la orden con la información del producto relacionado
-
-        public async Task<OrderDetalle?> ObtenerDetalleConProductoAsync(int id)
+        public async Task<OrdenDetalle?> ObtenerConProductoAsync(int id)
         {
             return await _context.DetalleOrden
-                .Include(od => od.Producto) // Incluir la información del producto relacionado
+                .Include(od => od.Producto)
                 .FirstOrDefaultAsync(od => od.Id == id);
-
-
         }
 
-        // Implementación del método para obtener todos los detalles de una orden específica con la información del producto relacionado
-
-        public async Task<List<OrderDetalle>> ObtenerDetalleOrdenPorOrdenIdAsync(int Id)
+        public async Task<List<OrdenDetalle>> ObtenerPorOrdenIdAsync(int ordenId)
         {
             return await _context.DetalleOrden
-                .Include(od => od.Producto) // Incluir la información del producto relacionado
-                .Where(od => od.OrdenId == Id)
+                .Include(od => od.Producto)
+                .Where(od => od.OrdenId == ordenId)
                 .ToListAsync();
         }
 
-
-        // Implementación del método para obtener un detalle de orden específico por productoId y ordenId con la información del producto relacionado
-
-        public Task<OrderDetalle?> ObtenerProductoEnOrdenAsync(int ordenId, int productoId)
+        public Task<OrdenDetalle?> ObtenerProductoEnOrdenAsync(int ordenId, int productoId)
         {
             return _context.DetalleOrden
-                .Include(od => od.Producto) // Incluir la información del producto relacionado
+                .Include(od => od.Producto)
                 .FirstOrDefaultAsync(od => od.ProductId == productoId && od.OrdenId == ordenId);
         }
     }

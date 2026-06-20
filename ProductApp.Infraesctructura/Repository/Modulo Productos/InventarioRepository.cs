@@ -16,7 +16,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
         }
 
-        public async Task<List<Inventario>> GetAllInventariosAsync()
+        public async Task<List<Inventario>> GetAllConProductoAsync()
         {
             return await _context.Inventario
                 .Include(i => i.Producto)

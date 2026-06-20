@@ -210,7 +210,7 @@ namespace ProductApp.Aplication.Services
 
         public async Task<OperationResultD<List<InventarioResponseDto>>> ObtenerTodosInventariosAsync()
         {
-            var inventarios = await _inventarioRepository.GetAllInventariosAsync();
+            var inventarios = await _inventarioRepository.GetAllConProductoAsync();
 
             if (inventarios == null || !inventarios.Any())
             {

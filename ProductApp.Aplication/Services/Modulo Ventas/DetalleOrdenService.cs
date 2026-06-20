@@ -73,7 +73,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<OrdenDetalleResponseDto>.Failure("No se pueden modificar detalles de una orden que no está pendiente");
             }
 
-            var producto = await _productoRepository.ObtenerProductoConInventarioAsync(detalleOrden.ProductId);
+            var producto = await _productoRepository.ObtenerConInventarioAsync(detalleOrden.ProductId);
 
             if(producto == null)
             {
@@ -110,7 +110,7 @@ namespace ProductApp.Aplication.Services
             }
 
             // Obtener el detalle de orden actualizado con la información del producto para la respuesta
-            var detalleConProducto = await _detalleOrdenRepository.ObtenerDetalleConProductoAsync(detalleOrden.Id);
+            var detalleConProducto = await _detalleOrdenRepository.ObtenerConProductoAsync(detalleOrden.Id);
 
             if (detalleConProducto == null)
             {
@@ -158,7 +158,7 @@ namespace ProductApp.Aplication.Services
 
             // Validar que el producto exista y que la cantidad solicitada no exceda el stock disponible
 
-            var producto = await _productoRepository.ObtenerProductoConInventarioAsync(dto.ProductId);
+            var producto = await _productoRepository.ObtenerConInventarioAsync(dto.ProductId);
 
             if (producto == null)
             {
@@ -219,7 +219,7 @@ namespace ProductApp.Aplication.Services
 
             await _detalleOrdenRepository.CreateAsync(detalleOrden);
 
-          var detalleConProducto = await _detalleOrdenRepository.ObtenerDetalleConProductoAsync(detalleOrden.Id);
+          var detalleConProducto = await _detalleOrdenRepository.ObtenerConProductoAsync(detalleOrden.Id);
 
             if (detalleConProducto == null) 
             {
@@ -300,7 +300,7 @@ namespace ProductApp.Aplication.Services
 
         public async Task<OperationResultD<List<OrdenDetalleResponseDto>>> GetOrdenDetalle(int id)
         {
-            var detalles = await _detalleOrdenRepository.ObtenerDetalleOrdenPorOrdenIdAsync(id);
+            var detalles = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(id);
 
             if(!detalles.Any())
             {

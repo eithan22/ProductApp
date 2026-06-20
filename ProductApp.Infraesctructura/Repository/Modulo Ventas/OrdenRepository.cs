@@ -1,43 +1,49 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 using ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ProductApp.Infraesctructura.Persistencia.Repository
 {
-    public class OrdenRepository : GenericRepository<Orden> , IOrdenRepository
+    public class OrdenRepository : GenericRepository<Orden>, IOrdenRepository
     {
         public OrdenRepository(AppDbContext context) : base(context)
         {
         }
 
-        public Task<List<Orden>> GetAllOrdenes()
+        public async Task<List<Orden>> GetAllConDetallesAsync()
         {
-            return _context.Ordenes
+            return await _context.Ordenes
                 .Include(o => o.Cliente)
+                .Include(o => o.Detalles)
+                    .ThenInclude(d => d.Producto)
                 .ToListAsync();
         }
 
         public async Task<List<Orden>> ObtenerPorClienteAsync(int clienteId)
         {
             return await _context.Ordenes
-           .Include(o => o.Cliente)
-           .Where(o => o.ClienteId == clienteId)
-           .ToListAsync();
+                .Include(o => o.Cliente)
+                .Include(o => o.Detalles)
+                .Where(o => o.ClienteId == clienteId)
+                .ToListAsync();
         }
 
-
-
-
-        public async Task<List<Orden>> ObtenerPorFechaAsync(DateTime fecha)
+        public async Task<List<Orden>> ObtenerPorUsuarioAsync(int usuarioId)
         {
             return await _context.Ordenes
                 .Include(o => o.Cliente)
-                .Where(o => o.Fecha.Date == fecha.Date)
+                .Include(o => o.Detalles)
+                .Where(o => o.UsuarioId == usuarioId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Orden>> ObtenerPorRangoFechaAsync(DateTime desde, DateTime hasta)
+        {
+            return await _context.Ordenes
+                .Include(o => o.Cliente)
+                .Where(o => o.Fecha >= desde && o.Fecha <= hasta)
                 .ToListAsync();
         }
     }

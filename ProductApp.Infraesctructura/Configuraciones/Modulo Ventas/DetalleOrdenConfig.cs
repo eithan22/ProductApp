@@ -6,22 +6,16 @@ using System.Text;
 
 namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
 {
-    public class DetalleOrdenConfig : IEntityTypeConfiguration<OrderDetalle>
+    public class DetalleOrdenConfig : IEntityTypeConfiguration<OrdenDetalle>
     {
-        public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<OrderDetalle> builder)
+        public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<OrdenDetalle> builder)
         {
-          
-        
-          
-        
                 builder.HasOne(x => x.Producto)
                        .WithMany()
                        .HasForeignKey(x => x.ProductId);
 
-
-
                 builder.HasOne(x => x.Orden)
-                       .WithMany(x => x.OrderDetails)
+                       .WithMany(x => x.Detalles)
                        .HasForeignKey(x => x.OrdenId);
            
         
@@ -36,8 +30,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
-           
-
+            builder.Property(od => od.Subtotal)
+                .HasColumnType("decimal(18,2)");
         }
     }
 }

@@ -126,7 +126,7 @@ namespace ProductApp.Aplication.Services
         {
 
             // Obtener las órdenes por fecha
-            var ordenes = await _ordenRepository.ObtenerPorFechaAsync(fecha);
+            var ordenes = await _ordenRepository.ObtenerPorRangoFechaAsync(fecha.Date, fecha.Date.AddDays(1).AddTicks(-1));
 
 
             if(ordenes.Count == 0)
@@ -176,7 +176,7 @@ namespace ProductApp.Aplication.Services
 
         public async Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes()
         {
-            var ordenes = await _ordenRepository.GetAllOrdenes();
+            var ordenes = await _ordenRepository.GetAllConDetallesAsync();
 
             //LO MISMO 
             /*
@@ -214,7 +214,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure("Orden no encontrada");
             }
 
-            var detallesOrden = await _detalleOrdenRepository.ObtenerDetalleOrdenPorOrdenIdAsync(id);
+            var detallesOrden = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(id);
 
             if (detallesOrden == null || detallesOrden.Count == 0)
             {

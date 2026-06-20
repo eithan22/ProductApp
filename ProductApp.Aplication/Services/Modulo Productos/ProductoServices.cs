@@ -140,7 +140,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ProductoResponseDto>.Failure(validatorBusiness.Message);
             
             }
-            var productoCompleto = await _productorepository.GetProductosConCategoriaAll();
+            var productoCompleto = await _productorepository.GetAllConCategoriaAsync();
             var producto =  _mapperProductoMapper.MapToCreateProducto(dto);
 
             
@@ -171,7 +171,7 @@ namespace ProductApp.Aplication.Services
         //ver todos os productos 
        public async Task<OperationResultD<List<ProductoResponseDto>>> GetAllAsync()
         {
-            var productos = await _productorepository.GetProductosConCategoriaAll();
+            var productos = await _productorepository.GetAllConCategoriaAsync();
 
             if(productos == null)
             {
