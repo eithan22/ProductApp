@@ -3,7 +3,6 @@ using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Entitis;
 using System;
-using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 using OperationResult = ProductApp.Aplication.Result.OperationResult.OperationResult;

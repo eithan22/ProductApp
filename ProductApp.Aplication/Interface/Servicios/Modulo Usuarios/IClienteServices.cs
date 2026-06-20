@@ -2,7 +2,6 @@
 using ProductApp.Aplication.Interface.Servicios.BaseServices;
 using ProductApp.Aplication.Result.OperationResult;
 using System;
-using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 

@@ -9,7 +9,6 @@ using ProductApp.Domian.Common.Enums.EnumsCliente;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using System;
-using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Text;
 
