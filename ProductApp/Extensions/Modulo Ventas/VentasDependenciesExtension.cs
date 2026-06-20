@@ -38,6 +38,7 @@ namespace ProductApp.Extensions.Modulo_Ventas
             // Reglas de negocio
             services.AddScoped<IValidatorBusinessOrden, ValidatorBusinessOrden>();
             services.AddScoped<IValidatorBusinessPago, ValidatorBusinessPago>();
+            services.AddScoped<IValidatorBusinessDetalleOrden, ValidatorBusinessDetalleOrden>();
 
             // Validadores DTO — Orden
             services.AddScoped<IValidator<CreateOrdenDto>, CreateOrdenValidator>();
