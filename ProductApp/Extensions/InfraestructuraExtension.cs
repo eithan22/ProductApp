@@ -10,9 +10,12 @@ namespace ProductApp.Extensions
     {
         public static IServiceCollection AddInfraestructura(this IServiceCollection services, IConfiguration configuration)
         {
+            // Configuración de la base de datos
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+
+            // Configuración de autenticación JWT
             var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!);
 
             services.AddAuthentication(options =>
