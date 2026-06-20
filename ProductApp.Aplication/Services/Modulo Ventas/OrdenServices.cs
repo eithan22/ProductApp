@@ -14,21 +14,21 @@ namespace ProductApp.Aplication.Services
     {
         private readonly IOrdenRepository _ordenRepository;
         private readonly IDetalleOrdenRepository _detalleOrdenRepository;
-        private readonly IClienteServices _clienteServices;
+        private readonly IClienteRepository _clienteRepository;
         private readonly IMapperOrden _mapperOrden;
         private readonly IValidator<CreateOrdenDto> _createOrdenValidator;
         private readonly IValidatorBusinessOrden _validatorBusinessOrden;
 
         public OrdenServices(
             IOrdenRepository ordenRepository,
-            IClienteServices clienteServices,
+            IClienteRepository clienteRepository,
             IMapperOrden mapperOrden,
             IDetalleOrdenRepository detalleOrdenRepository,
             IValidator<CreateOrdenDto> createOrdenValidator,
             IValidatorBusinessOrden validatorBusinessOrden)
         {
             _ordenRepository = ordenRepository;
-            _clienteServices = clienteServices;
+            _clienteRepository = clienteRepository;
             _mapperOrden = mapperOrden;
             _detalleOrdenRepository = detalleOrdenRepository;
             _createOrdenValidator = createOrdenValidator;
@@ -82,9 +82,9 @@ namespace ProductApp.Aplication.Services
 
         public async Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId)
         {
-            var cliente = await _clienteServices.GetByIdAsync(clienteId);
-            if (!cliente.IsSuccess)
-                return OperationResultD<List<OrdenResponseDto>>.Failure(cliente.Message);
+            var cliente = await _clienteRepository.GetByIdAsync(clienteId);
+            if (cliente == null)
+                return OperationResultD<List<OrdenResponseDto>>.Failure("Cliente no encontrado");
 
             var ordenes = await _ordenRepository.ObtenerPorClienteAsync(clienteId);
             if (ordenes == null || ordenes.Count == 0)
