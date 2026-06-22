@@ -10,6 +10,7 @@ using ProductApp.Aplication.Mappers.Modulo_Ventas;
 using ProductApp.Aplication.Services;
 using ProductApp.Aplication.Validators.Modulo_Ventas.DetalleOrdenValidator;
 using ProductApp.Aplication.Validators.Modulo_Ventas.OrdenValidator;
+using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
 using ProductApp.Aplication.Validators.Modulo_Ventas.PagoValidator;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Repository;
@@ -42,6 +43,7 @@ namespace ProductApp.Extensions.Modulo_Ventas
 
             // Validadores DTO — Orden
             services.AddScoped<IValidator<CreateOrdenDto>, CreateOrdenValidator>();
+            services.AddScoped<IValidator<CambiarEstadoOrdenDto>, CambiarEstadoOrdenValidator>();
 
             // Validadores DTO — Detalle Orden
             services.AddScoped<IValidator<CreateDetalleOrdenDto>, CreateDetalleOrdenValidator>();

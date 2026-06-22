@@ -157,7 +157,6 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         }
 
 
-        //obtener ordenes por fecha
 
         [Authorize]
         [HttpGet("GetOrdenesByUsuario/{usuarioId}")]

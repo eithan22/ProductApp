@@ -91,7 +91,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
         public async Task<bool> ExisteAsync(Expression<Func<T, bool>> filtro)
         {
-            return await _context.Set<T>().AnyAsync(filtro);
+            return await _context.Set<T>()
+                .Where(x => !x.EstaEliminado)
+                .AnyAsync(filtro);
         }
 
         public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> filtro)

@@ -4,10 +4,6 @@ using ProductApp.Aplication.Helper;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Interfaces;
-using ProductApp.Infraesctructura.Persistencia.Repository;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 {

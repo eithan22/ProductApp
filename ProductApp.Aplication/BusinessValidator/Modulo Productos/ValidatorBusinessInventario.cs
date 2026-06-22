@@ -37,9 +37,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
             if (producto.Estado == EstadoProducto.Inactivo)
                 return OperationResult.Failure("No se puede descontar stock de un producto inactivo.");
 
-            if (dto.cantidad > inventario.CantidadActual)
+            if (dto.Cantidad > inventario.CantidadActual)
                 return OperationResult.Failure(
-                    $"Stock insuficiente. Disponible: {inventario.CantidadActual}, solicitado: {dto.cantidad}.");
+                    $"Stock insuficiente. Disponible: {inventario.CantidadActual}, solicitado: {dto.Cantidad}.");
 
             return OperationResult.Success();
         }

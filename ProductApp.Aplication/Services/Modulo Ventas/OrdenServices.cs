@@ -17,6 +17,7 @@ namespace ProductApp.Aplication.Services
         private readonly IClienteRepository _clienteRepository;
         private readonly IMapperOrden _mapperOrden;
         private readonly IValidator<CreateOrdenDto> _createOrdenValidator;
+        private readonly IValidator<CambiarEstadoOrdenDto> _cambiarEstadoValidator;
         private readonly IValidatorBusinessOrden _validatorBusinessOrden;
 
         public OrdenServices(
@@ -25,6 +26,7 @@ namespace ProductApp.Aplication.Services
             IMapperOrden mapperOrden,
             IDetalleOrdenRepository detalleOrdenRepository,
             IValidator<CreateOrdenDto> createOrdenValidator,
+            IValidator<CambiarEstadoOrdenDto> cambiarEstadoValidator,
             IValidatorBusinessOrden validatorBusinessOrden)
         {
             _ordenRepository = ordenRepository;
@@ -32,6 +34,7 @@ namespace ProductApp.Aplication.Services
             _mapperOrden = mapperOrden;
             _detalleOrdenRepository = detalleOrdenRepository;
             _createOrdenValidator = createOrdenValidator;
+            _cambiarEstadoValidator = cambiarEstadoValidator;
             _validatorBusinessOrden = validatorBusinessOrden;
         }
 
@@ -49,17 +52,24 @@ namespace ProductApp.Aplication.Services
             var orden = _mapperOrden.MapTOCreateOrden(dto, usuarioId);
             await _ordenRepository.CreateAsync(orden);
 
-            var ordenResponse = _mapperOrden.MapToOrdenResponseDto(orden);
+            var ordenConCliente = await _ordenRepository.GetByIdConClienteAsync(orden.Id);
+            var ordenResponse = _mapperOrden.MapToOrdenResponseDto(ordenConCliente!);
             return OperationResultD<OrdenResponseDto>.Success(ordenResponse, "Orden creada exitosamente");
         }
 
         public async Task<OperationResultD<bool>> CambiarEstadoOrden(CambiarEstadoOrdenDto dto)
         {
+            var dtoResult = await _cambiarEstadoValidator.ValidateAsync(dto);
+            if (!dtoResult.IsValid)
+                return OperationResultD<bool>.Failure(
+                    string.Join(", ", dtoResult.Errors.Select(e => e.ErrorMessage)));
+
             var orden = await _ordenRepository.GetByIdAsync(dto.Id);
             if (orden == null)
                 return OperationResultD<bool>.Failure("Orden no encontrada");
 
-            orden.CambiarEstado(dto.NuevoEstado);
+            var nuevoEstado = Enum.Parse<EstadoOrden>(dto.NuevoEstado, true);
+            orden.CambiarEstado(nuevoEstado);
             await _ordenRepository.UpdateAsync(orden);
 
             return OperationResultD<bool>.Success(true, "Estado de la orden actualizado exitosamente");
@@ -70,9 +80,6 @@ namespace ProductApp.Aplication.Services
             var orden = await _ordenRepository.GetByIdAsync(id);
             if (orden == null)
                 return OperationResultD<bool>.Failure("Orden no encontrada");
-
-            if (orden.Estado != EstadoOrden.Pendiente)
-                return OperationResultD<bool>.Failure("Solo se pueden cancelar órdenes pendientes");
 
             orden.CancelarOrden();
             await _ordenRepository.UpdateAsync(orden);
@@ -116,7 +123,7 @@ namespace ProductApp.Aplication.Services
 
         public async Task<OperationResultD<OrdenResponseDto>> GetOrdenByIdAsync(int id)
         {
-            var orden = await _ordenRepository.GetByIdAsync(id);
+            var orden = await _ordenRepository.GetByIdConClienteAsync(id);
             if (orden == null)
                 return OperationResultD<OrdenResponseDto>.Failure("Orden no encontrada");
 

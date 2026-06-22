@@ -1,5 +1,3 @@
-using ProductApp.Domian.Common.Enums.EnumsUsuario;
-
 namespace ProductApp.Aplication.Dtos.UsuarioDto
 {
     public class UpdateUsuarioDto
@@ -9,6 +7,6 @@ namespace ProductApp.Aplication.Dtos.UsuarioDto
         public string Email { get; set; } = null!;
         public DateTime? FechaNacimiento { get; set; }
         public string UserName { get; set; } = string.Empty;
-        public RolUsuario RolUsuario { get; set; }
+        public string RolUsuario { get; set; } = string.Empty;
     }
 }

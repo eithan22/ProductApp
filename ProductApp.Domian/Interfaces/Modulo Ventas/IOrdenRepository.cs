@@ -9,5 +9,6 @@ namespace ProductApp.Domian.Interfaces
         Task<List<Orden>> ObtenerPorClienteAsync(int clienteId);
         Task<List<Orden>> ObtenerPorUsuarioAsync(int usuarioId);
         Task<List<Orden>> ObtenerPorRangoFechaAsync(DateTime desde, DateTime hasta);
+        Task<Orden?> GetByIdConClienteAsync(int id);
     }
 }

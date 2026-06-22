@@ -18,6 +18,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 .Include(o => o.Cliente)
                 .Include(o => o.Detalles)
                     .ThenInclude(d => d.Producto)
+                .Where(o => !o.EstaEliminado)
                 .ToListAsync();
         }
 
@@ -26,7 +27,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
             return await _context.Ordenes
                 .Include(o => o.Cliente)
                 .Include(o => o.Detalles)
-                .Where(o => o.ClienteId == clienteId)
+                .Where(o => !o.EstaEliminado && o.ClienteId == clienteId)
                 .ToListAsync();
         }
 
@@ -35,7 +36,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
             return await _context.Ordenes
                 .Include(o => o.Cliente)
                 .Include(o => o.Detalles)
-                .Where(o => o.UsuarioId == usuarioId)
+                .Where(o => !o.EstaEliminado && o.UsuarioId == usuarioId)
                 .ToListAsync();
         }
 
@@ -43,8 +44,15 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Ordenes
                 .Include(o => o.Cliente)
-                .Where(o => o.Fecha >= desde && o.Fecha <= hasta)
+                .Where(o => !o.EstaEliminado && o.Fecha >= desde && o.Fecha <= hasta)
                 .ToListAsync();
+        }
+
+        public async Task<Orden?> GetByIdConClienteAsync(int id)
+        {
+            return await _context.Ordenes
+                .Include(o => o.Cliente)
+                .FirstOrDefaultAsync(o => o.Id == id && !o.EstaEliminado);
         }
     }
 }

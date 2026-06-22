@@ -19,7 +19,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             var query = _context.Productos
             .Include(p => p.Categoria)
-             .AsQueryable();
+            .Where(p => !p.EstaEliminado)
+            .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(Nombre))
             {
@@ -41,7 +42,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Productos
                 .Include(p => p.Categoria)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => !p.EstaEliminado && p.Id == id);
         }
 
 
@@ -51,6 +52,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Productos
                 .Include(p => p.Categoria)
+                .Where(p => !p.EstaEliminado)
                 .ToListAsync();
         }
 
@@ -58,7 +60,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return _context.Productos
                 .Include(p => p.Inventario)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => !p.EstaEliminado && p.Id == id);
         }
     }
 }

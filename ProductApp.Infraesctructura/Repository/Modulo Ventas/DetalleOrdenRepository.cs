@@ -16,14 +16,14 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.DetalleOrden
                 .Include(od => od.Producto)
-                .FirstOrDefaultAsync(od => od.Id == id);
+                .FirstOrDefaultAsync(od => !od.EstaEliminado && od.Id == id);
         }
 
         public async Task<List<OrdenDetalle>> ObtenerPorOrdenIdAsync(int ordenId)
         {
             return await _context.DetalleOrden
                 .Include(od => od.Producto)
-                .Where(od => od.OrdenId == ordenId)
+                .Where(od => !od.EstaEliminado && od.OrdenId == ordenId)
                 .ToListAsync();
         }
 
@@ -31,7 +31,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return _context.DetalleOrden
                 .Include(od => od.Producto)
-                .FirstOrDefaultAsync(od => od.ProductId == productoId && od.OrdenId == ordenId);
+                .FirstOrDefaultAsync(od => !od.EstaEliminado && od.ProductId == productoId && od.OrdenId == ordenId);
         }
     }
 }

@@ -11,7 +11,6 @@ namespace ProductApp.Aplication.Services
     public class DetalleOrdenService : IDetalleOrdenServices
     {
         private readonly IDetalleOrdenRepository _detalleOrdenRepository;
-        private readonly IOrdenServices _ordenServices;
         private readonly IOrdenRepository _ordenRepository;
         private readonly IProductoRepository _productoRepository;
         private readonly IMapperDetalleOrden _mapperDetalleOrden;
@@ -21,7 +20,6 @@ namespace ProductApp.Aplication.Services
 
         public DetalleOrdenService(
             IDetalleOrdenRepository detalleOrdenRepository,
-            IOrdenServices ordenServices,
             IOrdenRepository ordenRepository,
             IProductoRepository productoRepository,
             IMapperDetalleOrden mapperDetalleOrden,
@@ -30,7 +28,6 @@ namespace ProductApp.Aplication.Services
             IValidatorBusinessDetalleOrden validatorBusinessDetalleOrden)
         {
             _detalleOrdenRepository = detalleOrdenRepository;
-            _ordenServices = ordenServices;
             _ordenRepository = ordenRepository;
             _productoRepository = productoRepository;
             _mapperDetalleOrden = mapperDetalleOrden;
@@ -58,7 +55,7 @@ namespace ProductApp.Aplication.Services
                 detalleExistente.ActualizarCantidad(detalleExistente.Cantidad + dto.Cantidad);
                 await _detalleOrdenRepository.UpdateAsync(detalleExistente);
 
-                var recalculoActualizado = await _ordenServices.RecalcularTotalAsync(dto.OrdenId);
+                var recalculoActualizado = await RecalcularTotalOrdenAsync(dto.OrdenId);
                 if (!recalculoActualizado.IsSuccess)
                     return OperationResultD<OrdenDetalleResponseDto>.Failure("Error al recalcular el total de la orden: " + recalculoActualizado.Message);
 
@@ -73,7 +70,7 @@ namespace ProductApp.Aplication.Services
             if (detalleConProducto == null)
                 return OperationResultD<OrdenDetalleResponseDto>.Failure("Error al obtener el detalle de orden con el producto");
 
-            var recalculo = await _ordenServices.RecalcularTotalAsync(dto.OrdenId);
+            var recalculo = await RecalcularTotalOrdenAsync(dto.OrdenId);
             if (!recalculo.IsSuccess)
                 return OperationResultD<OrdenDetalleResponseDto>.Failure("Error al recalcular el total de la orden: " + recalculo.Message);
 
@@ -96,7 +93,7 @@ namespace ProductApp.Aplication.Services
             _mapperDetalleOrden.MapToUpdateDetalleOrden(dto, detalleOrden!);
             await _detalleOrdenRepository.UpdateAsync(detalleOrden!);
 
-            var recalculo = await _ordenServices.RecalcularTotalAsync(detalleOrden!.OrdenId);
+            var recalculo = await RecalcularTotalOrdenAsync(detalleOrden!.OrdenId);
             if (!recalculo.IsSuccess)
                 return OperationResultD<OrdenDetalleResponseDto>.Failure("Error al recalcular el total de la orden: " + recalculo.Message);
 
@@ -117,7 +114,7 @@ namespace ProductApp.Aplication.Services
             var detalleOrden = await _detalleOrdenRepository.GetByIdAsync(id);
             await _detalleOrdenRepository.DeleteAsync(detalleOrden!.Id);
 
-            var recalculo = await _ordenServices.RecalcularTotalAsync(detalleOrden.OrdenId);
+            var recalculo = await RecalcularTotalOrdenAsync(detalleOrden.OrdenId);
             if (!recalculo.IsSuccess)
                 return OperationResultD<bool>.Failure("Error al recalcular el total de la orden: " + recalculo.Message);
 
@@ -132,6 +129,19 @@ namespace ProductApp.Aplication.Services
 
             var detallesResponse = detalles.Select(d => _mapperDetalleOrden.MapToDetalleOrdenResponseDto(d)).ToList();
             return OperationResultD<List<OrdenDetalleResponseDto>>.Success(detallesResponse, "Detalles de la orden obtenidos exitosamente");
+        }
+
+        private async Task<OperationResultD<bool>> RecalcularTotalOrdenAsync(int ordenId)
+        {
+            var orden = await _ordenRepository.GetByIdAsync(ordenId);
+            if (orden == null)
+                return OperationResultD<bool>.Failure("Orden no encontrada");
+
+            var detalles = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(ordenId);
+            orden.ActualizarTotal(detalles.Sum(d => d.Subtotal));
+            await _ordenRepository.UpdateAsync(orden);
+
+            return OperationResultD<bool>.Success(true, "Total recalculado");
         }
     }
 }

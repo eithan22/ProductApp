@@ -1,6 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.Win32;
-using Org.BouncyCastle.Crypto;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
@@ -10,17 +8,13 @@ using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Producto;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
-using ProductApp.Infraesctructura.Persistencia.Configuraciones;
-using ProductApp.Infraesctructura.Persistencia.Repository;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 
 namespace ProductApp.Aplication.Services
 {
     public class ProductoServices : IProductoServices
     {
+        private const int CantidadMinimaDefecto = 5;
+
         private readonly IProductoRepository _productorepository;
         private readonly IInventarioRepository _inventarioRepository;
         private readonly IMapperProducto _mapperProductoMapper;
@@ -150,8 +144,8 @@ namespace ProductApp.Aplication.Services
             //crear un inventario para el producto creado con cantidad actual 0 y cantidad minima 5 por defecto
 
             var inventario = new Inventario(
-             0,  //cantidad actual por defecto
-             5,   //cantidad minima por defecto 
+             0,
+             CantidadMinimaDefecto,
              producto.Id
              );
 
@@ -193,7 +187,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ProductoResponseDto>.Failure("el id es invalido ");
             }
 
-           var producto = await _productorepository.GetByIdAsync(id);
+           var producto = await _productorepository.GetProductoConCategoriaByIdAsync(id);
 
             if (producto == null)
             {

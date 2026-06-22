@@ -1,16 +1,11 @@
 ﻿using FluentValidation;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using ProductApp.Aplication.Dtos.CategoriaDto;
-using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulos_Productos;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Producto;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ProductApp.Aplication.Services
 {

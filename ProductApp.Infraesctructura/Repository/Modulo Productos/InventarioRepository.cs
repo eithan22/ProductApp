@@ -1,12 +1,8 @@
-﻿using ProductApp.Domian.Entitis;
+﻿using Microsoft.EntityFrameworkCore;
+using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
-using ProductApp.Domian.Interfaces.IGeneryRepos;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 using ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace ProductApp.Infraesctructura.Persistencia.Repository
 {
@@ -20,16 +16,15 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Inventario
                 .Include(i => i.Producto)
+                .Where(i => !i.EstaEliminado)
                 .ToListAsync();
         }
 
         public async Task<Inventario?> GetByProductoIdAsync(int productoId)
         {
-
             return await _context.Inventario
                 .Include(i => i.Producto)
-                .FirstOrDefaultAsync(i => i.ProductoId == productoId);
-
+                .FirstOrDefaultAsync(i => !i.EstaEliminado && i.ProductoId == productoId);
         }
 
         // Método para obtener el inventario con stock bajo
@@ -37,9 +32,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Inventario
                 .Include(i => i.Producto)
-                .Where(i => i.CantidadActual < i.CantidadMinima)
+                .Where(i => !i.EstaEliminado && i.CantidadActual <= i.CantidadMinima)
                 .ToListAsync();
-
         }
     }
 }

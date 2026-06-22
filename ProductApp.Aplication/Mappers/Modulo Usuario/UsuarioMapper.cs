@@ -10,7 +10,8 @@ namespace ProductApp.Aplication.Mappers
     {
         public Usuario MapToEntity(CreateUsuarioDto dto)
         {
-            return new Usuario(dto.Nombre, dto.Email, dto.UserName, dto.RolUsuario);
+            var rol = Enum.Parse<RolUsuario>(dto.RolUsuario, true);
+            return new Usuario(dto.Nombre, dto.Email, dto.UserName, rol);
         }
 
         public UsuarioResponseDto ToDto(Usuario usuario)
@@ -28,11 +29,12 @@ namespace ProductApp.Aplication.Mappers
             };
         }
 
-        public void mapUpdate(UpdateUsuarioDto dto, Usuario usuario)
+        public void MapUpdate(UpdateUsuarioDto dto, Usuario usuario)
         {
+            var rol = Enum.Parse<RolUsuario>(dto.RolUsuario, true);
             usuario.CambiarNombre(dto.Nombre);
             usuario.CambiarEmail(dto.Email);
-            usuario.CambiarRol(dto.RolUsuario);
+            usuario.CambiarRol(rol);
             usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
         }
 

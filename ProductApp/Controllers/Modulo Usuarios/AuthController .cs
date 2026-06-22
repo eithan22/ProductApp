@@ -52,7 +52,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
                 var result = await _authService.Login(dto);
                 if (!result.IsSuccess)
                 {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+                    return Unauthorized(ApiResponseT<object>.FailureResponse(result.Message));
                 }
                 return Ok(ApiResponseT<AuthResponseDto>.SuccessResponse(result.Data, result.Message));
             }

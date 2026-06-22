@@ -34,7 +34,7 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator
                 .Matches(@"[A-Z]").WithMessage("La contraseña debe contener al menos una letra mayúscula.")
                 .Matches(@"[a-z]").WithMessage("La contraseña debe contener al menos una letra minúscula.")
                 .Matches(@"[0-9]").WithMessage("La contraseña debe contener al menos un número.")
-                .Matches(@"[\!\@\#\$\%\^\&\*\(\)\_\+\-=\[\]\{\}\;\:\'\""\,\<\>\.\?\/\\\|]").WithMessage("La contraseña debe contener al menos un carácter especial.");
+                .Matches(@"[!@#$%^&*()_+\-=\[\]{};':"".,<>?/\\|]").WithMessage("La contraseña debe contener al menos un carácter especial.");
 
 
 

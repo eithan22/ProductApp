@@ -14,7 +14,7 @@ namespace ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios
         Usuario MapToEntity(CreateUsuarioDto dto);
 
 
-        void mapUpdate(UpdateUsuarioDto dto, Usuario usuario);
+        void MapUpdate(UpdateUsuarioDto dto, Usuario usuario);
 
         Usuario MapFromRegisterDto(RegisterDto dto);
 

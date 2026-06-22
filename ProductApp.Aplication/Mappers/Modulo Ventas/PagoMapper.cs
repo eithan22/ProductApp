@@ -1,9 +1,7 @@
 ﻿using ProductApp.Aplication.Dtos.PagoDto;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
+using ProductApp.Domian.Common.Enums.EnumsPago;
 using ProductApp.Domian.Entitis;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ProductApp.Aplication.Mappers.Modulo_Ventas
 {
@@ -11,7 +9,8 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
     {
         public Pago MapToCreatePago(CreatePagoDto dto)
         {
-            return new Pago(dto.OrdenId, dto.Monto, dto.MetodoPago);
+            var metodoPago = Enum.Parse<MetodoPago>(dto.MetodoPago, true);
+            return new Pago(dto.OrdenId, dto.Monto, metodoPago);
         }
 
         public PagoResponseDto MapToPagoResponseDto(Pago pago, decimal saldoPendiente)

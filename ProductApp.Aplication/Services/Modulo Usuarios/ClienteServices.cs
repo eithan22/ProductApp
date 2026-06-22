@@ -95,7 +95,7 @@ namespace ProductApp.Aplication.Services
             // Mapear la entidad Cliente a ClienteResponseDto
             var clienteresponse = _mapperCliente.MapToClienteResponseDto(cliente);
 
-            return OperationResultD<ClienteResponseDto>.Success(clienteresponse);
+            return OperationResultD<ClienteResponseDto>.Success(clienteresponse, "Cliente creado correctamente");
 
         }
 
@@ -119,7 +119,7 @@ namespace ProductApp.Aplication.Services
 
             await _clienteRepository.DeleteAsync(id);
 
-            return OperationResultD<bool>.Success(true);
+            return OperationResultD<bool>.Success(true, "Cliente eliminado correctamente");
 
 
 
@@ -194,7 +194,7 @@ namespace ProductApp.Aplication.Services
 
             var clienteResponsedto = _mapperCliente.MapToClienteResponseDto(cliente);
 
-            return OperationResultD<ClienteResponseDto>.Success(clienteResponsedto);
+            return OperationResultD<ClienteResponseDto>.Success(clienteResponsedto, "Cliente obtenido correctamente");
 
         }
 
@@ -233,7 +233,7 @@ namespace ProductApp.Aplication.Services
 
             var clienteResponsedto = _mapperCliente.MapToClienteResponseDto(cliente);
 
-            return OperationResultD<ClienteResponseDto>.Success(clienteResponsedto);
+            return OperationResultD<ClienteResponseDto>.Success(clienteResponsedto, "Cliente actualizado correctamente");
 
         }
 

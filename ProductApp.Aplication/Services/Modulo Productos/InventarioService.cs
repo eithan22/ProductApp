@@ -10,7 +10,6 @@ namespace ProductApp.Aplication.Services
 {
     public class InventarioService : IInventarioServices
     {
-        private readonly IProductoServices _productoServices;
         private readonly IInventarioRepository _inventarioRepository;
         private readonly IMapperInventario _mapperInventario;
         private readonly IValidator<MovimientoStockDto> _movimientoStockValidator;
@@ -18,14 +17,12 @@ namespace ProductApp.Aplication.Services
         private readonly IValidatorBusinessInventario _validatorBusinessInventario;
 
         public InventarioService(
-            IProductoServices productoServices,
             IInventarioRepository inventarioRepository,
             IMapperInventario mapperInventario,
             IValidator<MovimientoStockDto> movimientoStockValidator,
             IValidator<AjustarStockDto> ajustarStockValidator,
             IValidatorBusinessInventario validatorBusinessInventario)
         {
-            _productoServices = productoServices;
             _inventarioRepository = inventarioRepository;
             _mapperInventario = mapperInventario;
             _movimientoStockValidator = movimientoStockValidator;
@@ -58,7 +55,7 @@ namespace ProductApp.Aplication.Services
             if (!businessResult.IsSuccess)
                 return OperationResultD<InventarioResponseDto>.Failure(businessResult.Message);
 
-            inventario.RegistrarEntradaStock(dto.cantidad);
+            inventario.RegistrarEntradaStock(dto.Cantidad);
             await _inventarioRepository.UpdateAsync(inventario);
 
             return OperationResultD<InventarioResponseDto>.Success(
@@ -80,7 +77,7 @@ namespace ProductApp.Aplication.Services
             if (!businessResult.IsSuccess)
                 return OperationResultD<InventarioResponseDto>.Failure(businessResult.Message);
 
-            inventario.RegistrarSalidaStock(dto.cantidad);
+            inventario.RegistrarSalidaStock(dto.Cantidad);
             await _inventarioRepository.UpdateAsync(inventario);
 
             return OperationResultD<InventarioResponseDto>.Success(

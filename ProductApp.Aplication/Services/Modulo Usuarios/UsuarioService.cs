@@ -6,6 +6,7 @@ using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
 using ProductApp.Aplication.Result.OperationResult;
+using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Interfaces;
 
 namespace ProductApp.Aplication.Services
@@ -127,7 +128,8 @@ namespace ProductApp.Aplication.Services
             if (!validatorBusinessResult.IsSuccess)
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
 
-            usuario.CambiarRol(dto.NuevoRol);
+            var nuevoRol = Enum.Parse<RolUsuario>(dto.NuevoRol, true);
+            usuario.CambiarRol(nuevoRol);
             await _usuarioRepository.UpdateAsync(usuario);
 
             return OperationResultD<bool>.Success(true, "Rol actualizado correctamente");
@@ -190,10 +192,6 @@ namespace ProductApp.Aplication.Services
 
         public async Task<OperationResultD<UsuarioResponseDto>> UpdateAsync(UpdateUsuarioDto dto)
         {
-            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
-            if (usuario == null)
-                return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
-
             var validationResult = await _updateValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
@@ -201,11 +199,15 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<UsuarioResponseDto>.Failure($"Validación fallida: {errors}");
             }
 
+            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
+            if (usuario == null)
+                return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
+
             var businessValidationResult = await _validatorBusinessUsuarios.ValidarUpdateUsuarioAsync(dto);
             if (!businessValidationResult.IsSuccess)
                 return OperationResultD<UsuarioResponseDto>.Failure(businessValidationResult.Message);
 
-            _mapperUsuario.mapUpdate(dto, usuario);
+            _mapperUsuario.MapUpdate(dto, usuario);
             await _usuarioRepository.UpdateAsync(usuario);
 
             var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
