@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 # Instrucciones locales para asistentes de IA (no publicas)
 CLAUDE.md
+skills-lock.json
