@@ -1,0 +1,25 @@
+@model string
+@{
+    var paths = new Dictionary<string, string>
+    {
+        ["add"] = "<path d=\"M12 5v14M5 12h14\"/>",
+        ["edit"] = "<path d=\"M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5\"/><path d=\"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z\"/>",
+        ["view"] = "<path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
+        ["trash"] = "<path d=\"M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13\"/>",
+        ["back"] = "<path d=\"M19 12H5M12 19l-7-7 7-7\"/>",
+        ["search"] = "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/>",
+        ["check"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m8 12 3 3 5-6\"/>",
+        ["reset"] = "<path d=\"M3 12a9 9 0 1 0 3-6.7\"/><path d=\"M3 4v5h5\"/>",
+        ["home"] = "<path d=\"m3 11 9-8 9 8\"/><path d=\"M5 10v10h5v-6h4v6h5V10\"/>",
+        ["users"] = "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>",
+        ["tag"] = "<path d=\"M20 10 12 2H4v8l8 8 8-8Z\"/><circle cx=\"7\" cy=\"7\" r=\"1\"/>",
+        ["box"] = "<path d=\"M21 8 12 3 3 8v8l9 5 9-5V8Z\"/><path d=\"M3 8l9 5 9-5M12 13v8\"/>",
+        ["layers"] = "<path d=\"m12 2 9 5-9 5-9-5 9-5Z\"/><path d=\"m3 12 9 5 9-5\"/>",
+        ["receipt"] = "<path d=\"M6 2h12v20l-3-2-3 2-3-2-3 2Z\"/><path d=\"M9 8h6M9 12h6\"/>",
+        ["logout"] = "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/><path d=\"M16 17l5-5-5-5M21 12H9\"/>",
+        ["minus"] = "<path d=\"M5 12h14\"/>",
+        ["target"] = "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1\"/>"
+    };
+    var d = paths.TryGetValue(Model ?? "", out var p) ? p : "";
+}
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(d)</svg>

@@ -95,7 +95,7 @@ namespace ProductApp.Aplication.Services
 
             var ordenes = await _ordenRepository.ObtenerPorClienteAsync(clienteId);
             if (ordenes == null || ordenes.Count == 0)
-                return OperationResultD<List<OrdenResponseDto>>.Failure("El cliente no tiene órdenes");
+                return OperationResultD<List<OrdenResponseDto>>.Success(new List<OrdenResponseDto>(), "El cliente no tiene órdenes");
 
             var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
@@ -105,7 +105,7 @@ namespace ProductApp.Aplication.Services
         {
             var ordenes = await _ordenRepository.ObtenerPorRangoFechaAsync(fecha.Date, fecha.Date.AddDays(1).AddTicks(-1));
             if (ordenes.Count == 0)
-                return OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes para la fecha especificada");
+                return OperationResultD<List<OrdenResponseDto>>.Success(new List<OrdenResponseDto>(), "No se encontraron órdenes para la fecha especificada");
 
             var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
@@ -115,7 +115,7 @@ namespace ProductApp.Aplication.Services
         {
             var ordenes = await _ordenRepository.GetAllConDetallesAsync();
             if (ordenes.Count == 0)
-                return OperationResultD<List<OrdenResponseDto>>.Failure("No se encontraron órdenes");
+                return OperationResultD<List<OrdenResponseDto>>.Success(new List<OrdenResponseDto>(), "No se encontraron órdenes");
 
             var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
@@ -135,7 +135,7 @@ namespace ProductApp.Aplication.Services
         {
             var ordenes = await _ordenRepository.ObtenerPorUsuarioAsync(usuarioId);
             if (ordenes == null || ordenes.Count == 0)
-                return OperationResultD<List<OrdenResponseDto>>.Failure("El usuario no tiene órdenes registradas");
+                return OperationResultD<List<OrdenResponseDto>>.Success(new List<OrdenResponseDto>(), "El usuario no tiene órdenes registradas");
 
             var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");

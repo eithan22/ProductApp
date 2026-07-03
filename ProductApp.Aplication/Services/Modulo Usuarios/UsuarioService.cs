@@ -171,7 +171,7 @@ namespace ProductApp.Aplication.Services
         {
             var usuarios = await _usuarioRepository.GetAllAsync();
             if (usuarios == null || !usuarios.Any())
-                return OperationResultD<List<UsuarioResponseDto>>.Failure("No se encontraron usuarios");
+                return OperationResultD<List<UsuarioResponseDto>>.Success(new List<UsuarioResponseDto>(), "No hay usuarios registrados");
 
             var usuarioResponseDtos = usuarios.Select(u => _mapperUsuario.ToDto(u)).ToList();
             return OperationResultD<List<UsuarioResponseDto>>.Success(usuarioResponseDtos, "Usuarios obtenidos correctamente");

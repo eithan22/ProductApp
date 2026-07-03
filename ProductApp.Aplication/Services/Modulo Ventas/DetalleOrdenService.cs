@@ -125,7 +125,7 @@ namespace ProductApp.Aplication.Services
         {
             var detalles = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(id);
             if (!detalles.Any())
-                return OperationResultD<List<OrdenDetalleResponseDto>>.Failure("No se encontraron detalles para esta orden");
+                return OperationResultD<List<OrdenDetalleResponseDto>>.Success(new List<OrdenDetalleResponseDto>(), "Esta orden no tiene productos todavía");
 
             var detallesResponse = detalles.Select(d => _mapperDetalleOrden.MapToDetalleOrdenResponseDto(d)).ToList();
             return OperationResultD<List<OrdenDetalleResponseDto>>.Success(detallesResponse, "Detalles de la orden obtenidos exitosamente");

@@ -1,105 +1,63 @@
-﻿@model IEnumerable<Web.Models.ClienteModels.ClienteModel>
+@model IEnumerable<Web.Models.ClienteModels.ClienteModel>
 
 @{
     ViewData["Title"] = "Clientes";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">👥 Clientes</h2>
-
-    <a asp-action="Create" class="btn btn-success">
-        ➕ Nuevo Cliente
+    <p class="text-muted mb-0">Directorio de clientes registrados.</p>
+    <a asp-action="Create" class="btn-pa btn-pa-primary">
+        @await Html.PartialAsync("_Icon", "add") Nuevo cliente
     </a>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form asp-action="Buscar" method="get" class="row g-2 mb-3">
-
-            <div class="col-md-3">
-                <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre..." />
-            </div>
-
-            <div class="col-md-3">
-                <input type="text" name="telefono" class="form-control" placeholder="Buscar por teléfono..." />
-            </div>
-
-            <div class="col-md-3">
-                <input type="text" name="correo" class="form-control" placeholder="Buscar por correo..." />
-            </div>
-
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100">
-                    🔍 Buscar
-                </button>
-
-                <a asp-action="Index" class="btn btn-secondary w-100">
-                    🔄 Limpiar
-                </a>
-            </div>
-
-        </form>
-        <div class="table-responsive">
-
-            <table class="table table-hover align-middle">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Teléfono</th>
-                        <th>Cédula</th>
-                        <th>Dirección</th>
-                        <th>Estado</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="fw-semibold">@item.Id</td>
-                            <td>@item.Nombre</td>
-                            <td>@item.Email</td>
-                            <td>@item.Telefono</td>
-                            <td>@item.Cedula</td>
-                            <td>@item.Direccion</td>
-
-                            <td>
-                                @if (item.Estado == "Activo")
-                                {
-                                    <span class="badge bg-success">Activo</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger">Inactivo</span>
-                                }
-                            </td>
-
-                            <td class="text-center">
-                                <a asp-action="Edit" asp-route-id="@item.Id"
-                                       class="btn btn-sm btn-outline-warning me-1">
-                                    ✏️
-                                </a>
-
-                                <a asp-action="Details" asp-route-id="@item.Id"
-                                       class="btn btn-sm btn-outline-info me-1">
-                                    👁️
-                                </a>
-
-                                <a asp-action="Delete" asp-route-id="@item.Id"
-                                       class="btn btn-sm btn-outline-danger">
-                                    🗑️
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-
-            </table>
+<div class="surface-card p-3 mb-4">
+    <form asp-action="Buscar" method="get" class="row g-2">
+        <div class="col-md-3">
+            <input type="text" name="nombre" class="form-control" placeholder="Nombre..." />
         </div>
+        <div class="col-md-3">
+            <input type="text" name="telefono" class="form-control" placeholder="Teléfono..." />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="correo" class="form-control" placeholder="Correo..." />
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "search") Buscar</button>
+            <a asp-action="Index" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+        </div>
+    </form>
+</div>
 
-    </div>
+<div class="surface-card p-2">
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">No hay clientes registrados.</div>
+    }
+
+    @foreach (var item in Model)
+    {
+        var activo = item.Estado == "Activo";
+
+        <div class="ledger-row">
+            <div class="ledger-body">
+                <div class="ledger-name">@item.Nombre</div>
+                <div class="ledger-desc">@item.Email · @item.Telefono</div>
+            </div>
+
+            <div class="ledger-meta">
+                <span class="mono text-muted" style="font-size:.8rem;">@item.Cedula</span>
+
+                <span class="status-pill @(activo ? "on" : "off")">
+                    <span class="dot"></span> @item.Estado
+                </span>
+
+                <div class="ledger-actions">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
+                </div>
+            </div>
+        </div>
+    }
 </div>

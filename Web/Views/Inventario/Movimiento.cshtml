@@ -1,0 +1,76 @@
+@model Web.Models.Modelo_Productos.InventarioModels.InventarioModel
+
+@{
+    ViewData["Title"] = "Gestionar stock";
+    var bajo = Model.StockActual <= Model.StockMinimo;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-0">@Model.Producto</p>
+    <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">@Html.ValidationSummary(false, "", new { @class = "mb-0" })</div>
+}
+
+<div class="surface-card p-4 mb-4 d-flex gap-5 flex-wrap align-items-center">
+    <div>
+        <div class="text-muted" style="font-size:.8rem;">Stock actual</div>
+        <div class="mono" style="font-size:1.8rem; font-weight:700; color:@(bajo ? "var(--color-danger)" : "var(--color-primary)")">@Model.StockActual</div>
+    </div>
+    <div>
+        <div class="text-muted" style="font-size:.8rem;">Stock mínimo</div>
+        <div class="mono" style="font-size:1.2rem; font-weight:700;">@Model.StockMinimo</div>
+    </div>
+    <div>
+        <div class="text-muted" style="font-size:.8rem;">Última actualización</div>
+        <div>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</div>
+    </div>
+    @if (bajo)
+    {
+        <span class="status-pill off"><span class="dot"></span> Stock bajo</span>
+    }
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="surface-card p-3">
+            <h6 class="fw-bold mb-3">Agregar stock</h6>
+            <form asp-action="AgregarStock" method="post">
+                <input type="hidden" name="productoId" value="@Model.ProductoId" />
+                <input type="number" name="cantidad" min="1" class="form-control mb-2" placeholder="Cantidad" required />
+                <button type="submit" class="btn-pa btn-pa-primary w-100 justify-content-center">
+                    @await Html.PartialAsync("_Icon", "add") Agregar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="surface-card p-3">
+            <h6 class="fw-bold mb-3">Descontar stock</h6>
+            <form asp-action="DescontarStock" method="post">
+                <input type="hidden" name="productoId" value="@Model.ProductoId" />
+                <input type="number" name="cantidad" min="1" class="form-control mb-2" placeholder="Cantidad" required />
+                <button type="submit" class="btn-pa btn-pa-danger w-100 justify-content-center">
+                    @await Html.PartialAsync("_Icon", "minus") Descontar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="surface-card p-3">
+            <h6 class="fw-bold mb-3">Ajustar a valor exacto</h6>
+            <form asp-action="AjustarStock" method="post">
+                <input type="hidden" name="productoId" value="@Model.ProductoId" />
+                <input type="number" name="nuevoStock" min="0" class="form-control mb-2" placeholder="Nuevo stock" required />
+                <button type="submit" class="btn-pa btn-pa-warn w-100 justify-content-center">
+                    @await Html.PartialAsync("_Icon", "target") Ajustar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

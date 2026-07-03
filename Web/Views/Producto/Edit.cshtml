@@ -1,0 +1,67 @@
+@model Web.Models.Modelo_Productos.ProductoModels.UpdateProductoModel
+
+@{
+    ViewData["Title"] = "Editar producto";
+    var categorias = ViewBag.Categorias as List<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>;
+}
+
+<div class="surface-card p-4" style="max-width:640px;">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
+    }
+
+    <form asp-action="Edit">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Nombre" class="form-label d-block">Nombre</label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="CategoriaId" class="form-label d-block">Categoría</label>
+                <select asp-for="CategoriaId" class="form-select">
+                    <option value="">-- Selecciona una categoría --</option>
+                    @if (categorias != null)
+                    {
+                        @foreach (var c in categorias)
+                        {
+                            <option value="@c.Id">@c.Nombre</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="Precio" class="form-label d-block">Precio</label>
+                <input asp-for="Precio" class="form-control" />
+                <span asp-validation-for="Precio" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="Costo" class="form-label d-block">Costo</label>
+                <input asp-for="Costo" class="form-control" />
+                <span asp-validation-for="Costo" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12 mb-4">
+                <label asp-for="Descripcion" class="form-label d-block">Descripción</label>
+                <input asp-for="Descripcion" class="form-control" />
+                <span asp-validation-for="Descripcion" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
+            <button type="submit" class="btn-pa btn-pa-primary">Guardar cambios</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

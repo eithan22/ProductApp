@@ -7,6 +7,7 @@ namespace ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto
     public class InventarioResponseDto
     {
         public int Id { get; set; }
+        public int ProductoId { get; set; }
         public string Producto { get; set; } = string.Empty;
 
         public int StockActual { get; set; }

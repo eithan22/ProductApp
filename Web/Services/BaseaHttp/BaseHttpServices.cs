@@ -173,6 +173,42 @@ namespace Web.Services.Base
 
         }
 
+        // 🔹 PATCH
+        public async Task<TResponse> PatchAsync<TRequest, TResponse>(string url, TRequest data)
+        {
+            var client = CreateClient();
+
+            var response = await client.PatchAsJsonAsync(url, data);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new Exception($"Respuesta vacía. Status: {response.StatusCode}");
+            }
+
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseT<TResponse>>(content, _jsonOptions);
+
+            if (apiResponse == null)
+                throw new Exception("Error al deserializar la respuesta");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                    ? $"Error HTTP {response.StatusCode}"
+                    : apiResponse.Message);
+            }
+
+            if (!apiResponse.Success)
+            {
+                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                    ? "Error en la API sin mensaje"
+                    : apiResponse.Message);
+            }
+
+            return apiResponse.Data!;
+        }
+
         // 🔹 DELETE
         public async Task<bool> DeleteAsync(string url)
         {

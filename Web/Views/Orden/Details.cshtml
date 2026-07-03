@@ -1,0 +1,189 @@
+@model Web.Models.Modelo_Ventas.OrdenModels.OrdenModel
+
+@{
+    ViewData["Title"] = $"Orden #{Model.Id}";
+    var detalles = ViewBag.Detalles as List<Web.Models.Modelo_Ventas.DetalleOrdenModels.DetalleOrdenModel> ?? new();
+    var productos = ViewBag.Productos as List<Web.Models.Modelo_Productos.ProductoModels.ProductoModel> ?? new();
+    var pagos = ViewBag.Pagos as List<Web.Models.Modelo_Ventas.PagoModels.PagoModel> ?? new();
+    var saldoPendiente = ViewBag.SaldoPendiente as decimal? ?? 0;
+    var metodosPago = new[] { "TarjetaCredito", "TarjetaDebito", "PayPal", "TransferenciaBancaria", "Efectivo" };
+
+    var transiciones = new Dictionary<string, string[]>
+    {
+        ["Pendiente"] = new[] { "Procesada", "Pagada" },
+        ["Procesada"] = new[] { "Pagada" },
+        ["Pagada"] = new[] { "Entregada" },
+        ["Entregada"] = Array.Empty<string>(),
+        ["Cancelada"] = Array.Empty<string>()
+    };
+    var puedeCancelar = Model.Estado == "Pendiente" || Model.Estado == "Procesada";
+    var siguientesEstados = transiciones.TryGetValue(Model.Estado, out var t) ? t : Array.Empty<string>();
+    var puedeRegistrarPago = (Model.Estado == "Pendiente" || Model.Estado == "Procesada") && saldoPendiente > 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-0">@Model.NombreCliente &middot; @Model.Fecha.ToString("dd/MM/yyyy")</p>
+    <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
+</div>
+
+<div class="surface-card p-4 mb-2 d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-3">
+        <span class="estado-pill estado-@Model.Estado.ToLower()">@Model.Estado</span>
+        <span class="mono" style="font-size:1.4rem; font-weight:700;">@Model.Total.ToString("C")</span>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        @foreach (var estado in siguientesEstados)
+        {
+            <form asp-action="CambiarEstado" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="nuevoEstado" value="@estado" />
+                <button type="submit" class="btn-pa btn-pa-outline">Marcar @estado</button>
+            </form>
+        }
+        @if (puedeCancelar)
+        {
+            <form asp-action="Cancelar" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn-pa btn-pa-danger">Cancelar orden</button>
+            </form>
+        }
+    </div>
+</div>
+@if (siguientesEstados.Contains("Pagada"))
+{
+    <p class="text-muted mb-4" style="font-size:.82rem;">Nota: "Pagada" normalmente se marca automáticamente al registrar un pago completo. Marcarla aquí no registra ningún pago.</p>
+}
+else
+{
+    <div class="mb-4"></div>
+}
+
+<div class="surface-card p-4 mb-4">
+    <h6 class="fw-bold mb-3">Productos de la orden</h6>
+
+    @if (!detalles.Any())
+    {
+        <p class="text-muted mb-0">Esta orden aún no tiene productos.</p>
+    }
+    else
+    {
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr class="text-muted" style="font-size:.8rem;">
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in detalles)
+                {
+                    <tr>
+                        <td>@d.Producto</td>
+                        <td style="max-width:130px;">
+                            <form asp-action="ActualizarCantidad" method="post" class="d-flex gap-1">
+                                <input type="hidden" name="detalleId" value="@d.ID" />
+                                <input type="hidden" name="ordenId" value="@Model.Id" />
+                                <input type="number" name="cantidad" value="@d.Cantidad" min="1" class="form-control form-control-sm" />
+                                <button type="submit" class="icon-btn" title="Actualizar">@await Html.PartialAsync("_Icon", "check")</button>
+                            </form>
+                        </td>
+                        <td class="mono">@d.PrecioUnitario.ToString("C")</td>
+                        <td class="mono" style="font-weight:700;">@d.Subtotal.ToString("C")</td>
+                        <td class="text-end">
+                            <form asp-action="EliminarProducto" method="post">
+                                <input type="hidden" name="detalleId" value="@d.ID" />
+                                <input type="hidden" name="ordenId" value="@Model.Id" />
+                                <button type="submit" class="icon-btn danger" title="Eliminar">@await Html.PartialAsync("_Icon", "trash")</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="surface-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0">Pagos</h6>
+        <span class="mono" style="font-weight:700; color:@(saldoPendiente > 0 ? "var(--color-danger)" : "var(--color-primary)")">
+            Saldo pendiente: @saldoPendiente.ToString("C")
+        </span>
+    </div>
+
+    @if (!pagos.Any())
+    {
+        <p class="text-muted">Aún no se han registrado pagos para esta orden.</p>
+    }
+    else
+    {
+        <table class="table align-middle">
+            <thead>
+                <tr class="text-muted" style="font-size:.8rem;">
+                    <th>Fecha</th>
+                    <th>Monto</th>
+                    <th>Método</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in pagos)
+                {
+                    <tr>
+                        <td>@p.FechaPago.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="mono" style="font-weight:700;">@p.Monto.ToString("C")</td>
+                        <td>@p.MetodoPago</td>
+                        <td><span class="status-pill @(p.EstadoPago == "Completado" ? "on" : "off")"><span class="dot"></span> @p.EstadoPago</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (puedeRegistrarPago)
+    {
+        <form asp-action="RegistrarPago" method="post" class="row g-2 mt-2">
+            <input type="hidden" name="ordenId" value="@Model.Id" />
+            <div class="col-md-4">
+                <input type="number" name="monto" step="0.01" min="0.01" max="@saldoPendiente" class="form-control" placeholder="Monto a pagar" required />
+            </div>
+            <div class="col-md-4">
+                <select name="metodoPago" class="form-select" required>
+                    <option value="">-- Método de pago --</option>
+                    @foreach (var m in metodosPago)
+                    {
+                        <option value="@m">@m</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn-pa btn-pa-primary w-100 justify-content-center">Registrar pago</button>
+            </div>
+        </form>
+    }
+</div>
+
+<div class="surface-card p-4">
+    <h6 class="fw-bold mb-3">Agregar producto</h6>
+    <form asp-action="AgregarProducto" method="post" class="row g-2">
+        <input type="hidden" name="ordenId" value="@Model.Id" />
+        <div class="col-md-6">
+            <select name="productId" class="form-select" required>
+                <option value="">-- Selecciona un producto --</option>
+                @foreach (var p in productos)
+                {
+                    <option value="@p.Id">@p.Nombre (@p.Precio.ToString("C"))</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="cantidad" min="1" class="form-control" placeholder="Cantidad" required />
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn-pa btn-pa-primary w-100 justify-content-center">@await Html.PartialAsync("_Icon", "add") Agregar</button>
+        </div>
+    </form>
+</div>

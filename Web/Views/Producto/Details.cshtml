@@ -1,0 +1,39 @@
+@model Web.Models.Modelo_Productos.ProductoModels.ProductoModel
+
+@{
+    ViewData["Title"] = "Detalle de producto";
+    var margen = Model.Precio > 0 ? Math.Round((Model.Precio - Model.Costo) / Model.Precio * 100, 1) : 0;
+    var activo = Model.Estado == "Activo";
+}
+
+<div class="surface-card p-4" style="max-width:640px;">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <span class="category-chip">@(Model.Categoria ?? "Sin categoría")</span>
+            <h2 class="mt-1 mb-0">@Model.Nombre</h2>
+        </div>
+        <span class="status-pill @(activo ? "on" : "off")"><span class="dot"></span> @Model.Estado</span>
+    </div>
+
+    <p class="text-muted">@Model.Descripcion</p>
+
+    <div class="row mt-3 mb-4">
+        <div class="col-md-4">
+            <label class="form-label d-block">Precio</label>
+            <div class="producto-precio">@Model.Precio.ToString("C")</div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label d-block">Costo</label>
+            <div class="mono">@Model.Costo.ToString("C")</div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label d-block">Margen</label>
+            <div class="mono">@margen%</div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "edit") Editar</a>
+    </div>
+</div>

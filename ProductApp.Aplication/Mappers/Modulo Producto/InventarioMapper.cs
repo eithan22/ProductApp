@@ -14,6 +14,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
            var responseDto = new InventarioResponseDto
             {
                 Id = inventario.Id,
+                ProductoId = inventario.ProductoId,
                 Producto = inventario.Producto.Nombre,
                 StockActual = inventario.CantidadActual,
                 StockMinimo = inventario.CantidadMinima,

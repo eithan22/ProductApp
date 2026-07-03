@@ -10,6 +10,8 @@ namespace Web.Services.Interfaces.IBase
 
         Task<TResponse> PutAsync<TRequest, TResponse>(string url, TRequest data);
 
+        Task<TResponse> PatchAsync<TRequest, TResponse>(string url, TRequest data);
+
         Task<bool>DeleteAsync(string url);
 
 

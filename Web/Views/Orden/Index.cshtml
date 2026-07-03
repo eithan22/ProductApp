@@ -1,0 +1,49 @@
+@model IEnumerable<Web.Models.Modelo_Ventas.OrdenModels.OrdenModel>
+
+@{
+    ViewData["Title"] = "Órdenes";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-0">Historial de órdenes de venta.</p>
+    <a asp-action="Create" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "add") Nueva orden</a>
+</div>
+
+<div class="surface-card p-3 mb-4">
+    <form asp-action="Buscar" method="get" class="row g-2">
+        <div class="col-md-4">
+            <input type="number" name="clienteId" class="form-control" placeholder="ID de cliente..." />
+        </div>
+        <div class="col-md-4">
+            <input type="date" name="fecha" class="form-control" />
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "search") Buscar</button>
+            <a asp-action="Index" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<div class="surface-card p-2">
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">No hay órdenes registradas.</div>
+    }
+
+    @foreach (var item in Model)
+    {
+        <div class="ledger-row">
+            <div class="ledger-body">
+                <div class="ledger-name">Orden #@item.Id &middot; @item.NombreCliente</div>
+                <div class="ledger-desc">@item.Fecha.ToString("dd/MM/yyyy")</div>
+            </div>
+            <div class="ledger-meta">
+                <span class="mono" style="font-weight:700;">@item.Total.ToString("C")</span>
+                <span class="estado-pill estado-@item.Estado.ToLower()">@item.Estado</span>
+                <div class="ledger-actions">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

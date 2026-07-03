@@ -44,7 +44,7 @@ namespace Web.Services.Mappers.Modulo_Usuarios
             return new CambiarRolDto
             {
                 Id = model.Id,
-                NuevoRol = model.NuevoRol
+                NuevoRol = model.NuevoRol.ToString()
             };
         }
 

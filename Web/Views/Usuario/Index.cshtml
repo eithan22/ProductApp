@@ -1,75 +1,44 @@
-﻿@model IEnumerable<Web.Models.Modelo_Usuarios.UsuarioModels.UsuarioModel>
+@model IEnumerable<Web.Models.Modelo_Usuarios.UsuarioModels.UsuarioModel>
 
 @{
     ViewData["Title"] = "Usuarios";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">👤 Usuarios</h2>
-
-    <a asp-action="Create" class="btn btn-success">
-        ➕ Nuevo Usuario
-    </a>
+    <p class="text-muted mb-0">Usuarios del sistema.</p>
+    <a asp-action="Create" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "add") Nuevo usuario</a>
 </div>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
+<div class="surface-card p-2">
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">No hay usuarios registrados.</div>
+    }
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
+    @foreach (var item in Model)
+    {
+        var activo = item.EstadoUsuario == "Activo";
 
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Usuario</th>
-                        <th>Edad</th>
-                        <th>Rol</th>
-                        <th>Estado</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
+        <div class="ledger-row">
+            <div class="ledger-body">
+                <div class="ledger-name">@item.Nombre</div>
+                <div class="ledger-desc">@item.Email · @item.UserName</div>
+            </div>
 
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="fw-semibold">@item.Id</td>
-                            <td>@item.Nombre</td>
-                            <td>@item.Email</td>
-                            <td>@item.UserName</td>
-                            <td>@item.Edad</td>
-                            <td>
-                                <span class="badge bg-info">@item.RolUsuario</span>
-                            </td>
-                            <td>
-                                @if (item.EstadoUsuario == "Activo")
-                                {
-                                    <span class="badge bg-success">Activo</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger">Inactivo</span>
-                                }
-                            </td>
+            <div class="ledger-meta">
+                <span class="text-muted" style="font-size:.8rem;">@item.RolUsuario</span>
+                <span class="mono text-muted" style="font-size:.8rem;">@item.Edad años</span>
 
-                            <td class="text-center">
-                                <a asp-action="Edit" asp-route-id="@item.Id"
-                                   class="btn btn-sm btn-outline-warning me-1">✏️</a>
+                <span class="status-pill @(activo ? "on" : "off")">
+                    <span class="dot"></span> @item.EstadoUsuario
+                </span>
 
-                                <a asp-action="Details" asp-route-id="@item.Id"
-                                   class="btn btn-sm btn-outline-info me-1">👁️</a>
-
-                                <a asp-action="Delete" asp-route-id="@item.Id"
-                                   class="btn btn-sm btn-outline-danger">🗑️</a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-
-            </table>
+                <div class="ledger-actions">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
+                </div>
+            </div>
         </div>
-
-    </div>
+    }
 </div>

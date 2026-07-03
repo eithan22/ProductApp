@@ -2,6 +2,7 @@
 
 @{
     var token = Context.Session.GetString("TOKEN");
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
 }
 
 <!DOCTYPE html>
@@ -11,90 +12,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ProductApp</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    <style>
-            body {
-                margin: 0;
-                font-family: 'Segoe UI', sans-serif;
-            }
-
-            /* 🔐 LOGIN / REGISTER */
-            .auth-container {
-                height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background: linear-gradient(135deg, #1e293b, #0f172a);
-            }
-
-            .auth-box {
-                background: white;
-                padding: 35px;
-                border-radius: 14px;
-                width: 100%;
-                max-width: 700px; /* 🔥 más ancho */
-                box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-            }
-
-            /* Inputs */
-            .form-control {
-                border-radius: 8px;
-                padding: 10px;
-                border: 1px solid #ced4da;
-            }
-
-                .form-control:focus {
-                    border-color: #6366f1;
-                    box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
-                }
-
-            /* Botón */
-            .btn-primary {
-                background: linear-gradient(135deg, #6366f1, #4f46e5);
-                border: none;
-                border-radius: 8px;
-                padding: 11px;
-                font-weight: 600;
-            }
-
-                .btn-primary:hover {
-                    opacity: 0.9;
-                }
-
-            /* 🔥 SISTEMA (cuando hay sesión) */
-            .sidebar {
-                width: 250px;
-                height: 100vh;
-                background: #0f172a;
-                position: fixed;
-                color: white;
-            }
-
-                .sidebar a {
-                    color: #cbd5e1;
-                    display: block;
-                    padding: 12px 20px;
-                    text-decoration: none;
-                }
-
-                    .sidebar a:hover {
-                        background: #1e293b;
-                        color: white;
-                    }
-
-            .content {
-                margin-left: 250px;
-                padding: 20px;
-            }
-
-            .topbar {
-                background: white;
-                padding: 15px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            }
-    </style>
+    <link rel="stylesheet" href="~/css/site.css" />
 </head>
 
 <body>
@@ -109,24 +32,41 @@
 
     @if (!string.IsNullOrEmpty(token))
     {
-        <!-- 🔥 SIDEBAR -->
-        <div class="sidebar">
-            <h4 class="text-center mt-3">ProductApp</h4>
+        <div class="app-sidebar">
+            <div class="brand">ProductApp</div>
 
-            <a asp-controller="Home" asp-action="Index">Inicio</a>
-            <a asp-controller="Cliente" asp-action="Index">Clientes</a>
-            <a asp-controller="Usuario" asp-action="Index">Usuarios</a>
+            <nav>
+                <a asp-controller="Home" asp-action="Index" class="@(controller == "Home" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "home") Inicio
+                </a>
+                <a asp-controller="Cliente" asp-action="Index" class="@(controller == "Cliente" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "users") Clientes
+                </a>
+                <a asp-controller="Categoria" asp-action="Index" class="@(controller == "Categoria" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "tag") Categorías
+                </a>
+                <a asp-controller="Producto" asp-action="Index" class="@(controller == "Producto" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "box") Productos
+                </a>
+                <a asp-controller="Inventario" asp-action="Index" class="@(controller == "Inventario" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "layers") Inventario
+                </a>
+                <a asp-controller="Orden" asp-action="Index" class="@(controller == "Orden" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "receipt") Órdenes
+                </a>
+                <a asp-controller="Usuario" asp-action="Index" class="@(controller == "Usuario" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "users") Usuarios
+                </a>
+            </nav>
 
-
-            <hr />
-
-            <a asp-controller="Auth" asp-action="Logout" class="text-danger">Cerrar sesión</a>
+            <a asp-controller="Auth" asp-action="Logout" class="logout">
+                @await Html.PartialAsync("_Icon", "logout") Cerrar sesión
+            </a>
         </div>
 
-        <!-- 🔥 CONTENIDO -->
-        <div class="content">
-            <div class="topbar mb-4">
-                <h5>@ViewData["Title"]</h5>
+        <div class="app-content">
+            <div class="app-topbar">
+                <h1>@ViewData["Title"]</h1>
             </div>
 
             @RenderBody()
@@ -134,7 +74,6 @@
     }
     else
     {
-        <!-- 🔐 LOGIN / REGISTER -->
         <div class="auth-container">
             <div class="auth-box">
                 @RenderBody()

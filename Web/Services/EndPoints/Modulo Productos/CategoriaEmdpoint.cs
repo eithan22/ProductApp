@@ -4,13 +4,13 @@ namespace Web.Services.EndPoints.Modulo_Productos
 {
     public class CategoriaEmdpoint : ICategoriaEndpoint
     {
-        public string GetAll => "categorias";
+        public string GetAll => "Categoria/GetAllCategorias";
 
-        public string GetById => "categorias/{id}";
+        public string GetById => "Categoria/GetCategoriaById/";
 
-        public string Create => "categorias";   
-        public string Update => "categorias/{id}";
+        public string Create => "Categoria/CreateCategoria";
+        public string Update => "Categoria/UpdateCategoria/";
 
-        public string Disable => "categorias/{id}";
+        public string Disable => "Categoria/DisableCategoria/";
     }
 }

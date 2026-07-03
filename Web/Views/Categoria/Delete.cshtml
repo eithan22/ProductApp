@@ -1,0 +1,26 @@
+@model Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel
+
+@{
+    ViewData["Title"] = "Desactivar categoría";
+}
+
+<div class="surface-card p-4" style="max-width:560px;">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+        </div>
+    }
+
+    <div class="alert" style="background:var(--color-danger-soft); color:var(--color-danger); border:none;">
+        Esta acción desactivará la categoría <strong>@Model.Nombre</strong>.
+    </div>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <div class="d-flex justify-content-between mt-3">
+            <a asp-action="Index" class="btn-pa btn-pa-outline">Cancelar</a>
+            <button type="submit" class="btn-pa btn-pa-danger">@await Html.PartialAsync("_Icon", "trash") Desactivar categoría</button>
+        </div>
+    </form>
+</div>

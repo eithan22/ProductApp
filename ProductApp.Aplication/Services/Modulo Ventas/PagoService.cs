@@ -113,7 +113,7 @@ namespace ProductApp.Aplication.Services
 
             var pagos = await _pagoRepository.ObtenerPagosPorOrdenAsync(ordenId);
             if (!pagos.Any())
-                return OperationResultD<List<PagoResponseDto>>.Failure("No se encontraron pagos para esta orden");
+                return OperationResultD<List<PagoResponseDto>>.Success(new List<PagoResponseDto>(), "Esta orden no tiene pagos todavía");
 
             var totalPagado = pagos.Sum(p => p.Monto);
             var saldoPendiente = orden.Total - totalPagado;

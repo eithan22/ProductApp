@@ -1,0 +1,30 @@
+@model Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel
+
+@{
+    ViewData["Title"] = "Detalle de categoría";
+    string[] tagColors = { "var(--tag-0)", "var(--tag-1)", "var(--tag-2)", "var(--tag-3)", "var(--tag-4)", "var(--tag-5)", "var(--tag-6)", "var(--tag-7)" };
+    var color = tagColors[Model.Id % tagColors.Length];
+    var activo = Model.Estado == "Activo";
+}
+
+<div class="surface-card p-0" style="max-width:640px; overflow:hidden;">
+    <div style="height:6px; background:@color;"></div>
+
+    <div class="p-4">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <span class="ledger-id mono">#@Model.Id</span>
+                <h2 class="mt-1 mb-0">@Model.Nombre</h2>
+            </div>
+            <span class="status-pill @(activo ? "on" : "off")"><span class="dot"></span> @Model.Estado</span>
+        </div>
+
+        <label class="form-label d-block">Descripción</label>
+        <p class="text-muted">@Model.Descripcion</p>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "edit") Editar</a>
+        </div>
+    </div>
+</div>

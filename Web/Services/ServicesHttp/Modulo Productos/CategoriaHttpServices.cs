@@ -1,41 +1,49 @@
-﻿using Web.Models.Modelo_Productos.CategoriaModels;
+using ProductApp.Aplication.Dtos.CategoriaDto;
+using Web.Models.Modelo_Productos.CategoriaModels;
+using Web.Services.Interfaces.IBase;
 using Web.Services.Interfaces.IEndPoints.Modulo_Productos;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Productos;
+using Web.Services.Mappers.Modulo_Productos;
 
 namespace Web.Services.ServicesHttp.Modulo_Productos
 {
     public class CategoriaHttpServices : ICategoriaHttpServices
     {
-        private readonly HttpClient _httpClient;
+        private readonly IBaseHttpServices _baseHttpServices;
         private readonly ICategoriaEndpoint _categoriaEndpoint;
-        public CategoriaHttpServices(HttpClient httpClient, ICategoriaEndpoint categoriaEndpoint)
+
+        public CategoriaHttpServices(IBaseHttpServices baseHttpServices, ICategoriaEndpoint categoriaEndpoint)
         {
-            _httpClient = httpClient;
+            _baseHttpServices = baseHttpServices;
             _categoriaEndpoint = categoriaEndpoint;
         }
-        public Task<CategoriaModel> CreateCategoriaAsync(CreateCategoriaModel model)
+
+        public async Task<CategoriaModel> CreateCategoriaAsync(CreateCategoriaModel model)
         {
-            throw new NotImplementedException();
+            var dto = CategoriaMapperM.MapAddCategoriaDto(model);
+            return await _baseHttpServices.PostAsync<CreateCategoriaDto, CategoriaModel>(_categoriaEndpoint.Create, dto);
         }
 
-        public Task<bool> DeleteCategoriaAsync(int id)
+        public async Task<bool> DeleteCategoriaAsync(int id)
         {
-            throw new NotImplementedException();
+            await _baseHttpServices.PatchAsync<object, object>($"{_categoriaEndpoint.Disable}{id}", new { });
+            return true;
         }
 
-        public Task<CategoriaModel> GetCategoriaByIdAsync(int id)
+        public async Task<CategoriaModel> GetCategoriaByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _baseHttpServices.GetAsync<CategoriaModel>($"{_categoriaEndpoint.GetById}{id}");
         }
 
-        public Task<List<CategoriaModel>> GetCategoriasAsync()
+        public async Task<List<CategoriaModel>> GetCategoriasAsync()
         {
-            throw new NotImplementedException();
+            return await _baseHttpServices.GetAsync<List<CategoriaModel>>(_categoriaEndpoint.GetAll);
         }
 
-        public Task<CategoriaModel> UpdateCategoriaAsync(UpdateCategoriaModel model)
+        public async Task<CategoriaModel> UpdateCategoriaAsync(UpdateCategoriaModel model)
         {
-            throw new NotImplementedException();
+            var dto = CategoriaMapperM.MapUpdateCategoriaDto(model);
+            return await _baseHttpServices.PutAsync<UpdateCategoriaDto, CategoriaModel>($"{_categoriaEndpoint.Update}{model.Id}", dto);
         }
     }
 }

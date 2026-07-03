@@ -1,0 +1,65 @@
+@model IEnumerable<Web.Models.Modelo_Productos.InventarioModels.InventarioModel>
+
+@{
+    ViewData["Title"] = "Inventario";
+    var soloBajo = ViewBag.SoloBajo as bool? ?? false;
+    var totalBajo = Model.Count(i => i.StockActual <= i.StockMinimo);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <p class="text-muted mb-0">Niveles de stock por producto.</p>
+
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn-pa @(!soloBajo ? "btn-pa-primary" : "btn-pa-outline")">Ver todo</a>
+        <a asp-action="StockBajo" class="btn-pa @(soloBajo ? "btn-pa-primary" : "btn-pa-outline")">Solo stock bajo</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="surface-card stat-mini">
+            <div class="label">Productos con inventario</div>
+            <div class="value">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="surface-card stat-mini">
+            <div class="label">En stock bajo</div>
+            <div class="value" style="color:var(--color-danger)">@totalBajo</div>
+        </div>
+    </div>
+</div>
+
+<div class="surface-card p-3">
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-4">No hay registros de inventario.</div>
+    }
+
+    @foreach (var item in Model)
+    {
+        var bajo = item.StockActual <= item.StockMinimo;
+        var cerca = !bajo && item.StockActual <= item.StockMinimo * 1.5;
+        var color = bajo ? "var(--color-danger)" : cerca ? "var(--color-warn)" : "var(--color-primary)";
+        var referencia = item.StockMinimo > 0 ? item.StockMinimo * 2 : Math.Max(item.StockActual, 1);
+        var ancho = Math.Min(100, (int)Math.Round((double)item.StockActual / referencia * 100));
+
+        <div class="inv-row">
+            <div>
+                <div class="ledger-name">@item.Producto</div>
+                <div class="inv-bar">
+                    <div class="inv-bar-fill" style="width:@(ancho)%; background:@color;"></div>
+                </div>
+                <div class="text-muted mono" style="font-size:.78rem; margin-top:4px;">@item.StockActual en stock · mínimo @item.StockMinimo</div>
+            </div>
+            <div class="text-muted" style="font-size:.8rem;">
+                Actualizado: @item.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")
+            </div>
+            <div class="text-end">
+                <a asp-action="Movimiento" asp-route-productoId="@item.ProductoId" class="btn-pa btn-pa-outline">
+                    @await Html.PartialAsync("_Icon", "layers") Gestionar
+                </a>
+            </div>
+        </div>
+    }
+</div>

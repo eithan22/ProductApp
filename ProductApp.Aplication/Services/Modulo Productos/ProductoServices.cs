@@ -280,11 +280,10 @@ namespace ProductApp.Aplication.Services
 
             var producto = await _productorepository.BuscarProductosAsync(nombre, categoria);
 
-            //mas adelante podre el si existe 
             if (producto.Count == 0)
             {
                 return OperationResultD<List<ProductoResponseDto>>
-                    .Failure("No se encontraron productos");
+                    .Success(new List<ProductoResponseDto>(), "No se encontraron productos con ese criterio");
             }
 
             var ProductoResponse = producto.Select(p => _mapperProductoMapper.MapToProductoResponse(p)).ToList();

@@ -1,0 +1,49 @@
+@model IEnumerable<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>
+
+@{
+    ViewData["Title"] = "Categorías";
+    string[] tagColors = { "var(--tag-0)", "var(--tag-1)", "var(--tag-2)", "var(--tag-3)", "var(--tag-4)", "var(--tag-5)", "var(--tag-6)", "var(--tag-7)" };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-0">Organiza tu catálogo en categorías. El color de cada una es su identificador visual en todo el sistema.</p>
+    <a asp-action="Create" class="btn-pa btn-pa-primary">
+        @await Html.PartialAsync("_Icon", "add") Nueva categoría
+    </a>
+</div>
+
+<div class="surface-card p-2">
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">No hay categorías registradas todavía.</div>
+    }
+
+    @foreach (var item in Model)
+    {
+        var color = tagColors[item.Id % tagColors.Length];
+        var activo = item.Estado == "Activo";
+
+        <div class="ledger-row">
+            <div class="ledger-tag" style="background:@color"></div>
+
+            <div class="ledger-body">
+                <div class="ledger-name">@item.Nombre</div>
+                <div class="ledger-desc">@item.Descripcion</div>
+            </div>
+
+            <div class="ledger-meta">
+                <span class="ledger-id mono">#@item.Id</span>
+
+                <span class="status-pill @(activo ? "on" : "off")">
+                    <span class="dot"></span> @item.Estado
+                </span>
+
+                <div class="ledger-actions">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -120,7 +120,7 @@ namespace ProductApp.Aplication.Services
         {
             var inventarios = await _inventarioRepository.GetAllConProductoAsync();
             if (inventarios == null || !inventarios.Any())
-                return OperationResultD<List<InventarioResponseDto>>.Failure("No se encontraron inventarios.");
+                return OperationResultD<List<InventarioResponseDto>>.Success(new List<InventarioResponseDto>(), "No hay inventarios registrados.");
 
             var response = inventarios.Select(i => _mapperInventario.MapToInventarioResponse(i)).ToList();
             return OperationResultD<List<InventarioResponseDto>>.Success(response, "Todos los inventarios obtenidos exitosamente.");
