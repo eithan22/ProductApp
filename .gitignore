@@ -361,9 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-# Instrucciones locales para asistentes de IA (no publicas)
-CLAUDE.md
-skills-lock.json
 
 # Configuracion local con secretos reales (llave JWT, cadena de conexion)
 ProductApp/appsettings.json
