@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Instrucciones locales para asistentes de IA (no publicas)
+CLAUDE.md
