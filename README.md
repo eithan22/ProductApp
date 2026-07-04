@@ -1,6 +1,6 @@
 # ProductApp 🛒
 
-A multi-layered **Sales Management REST API** built with **ASP.NET Core 8** following **Clean Architecture** principles. Manages products, categories, users, and clients with business validation, secure authentication, and strict separation of concerns across four independent layers.
+A multi-layered **Sales Management REST API** built with **ASP.NET Core 10** following **Clean Architecture** principles. Manages products, categories, users, and clients with business validation, secure authentication, and strict separation of concerns across four independent layers.
 
 ---
 
