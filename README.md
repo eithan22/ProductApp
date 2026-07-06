@@ -166,3 +166,5 @@ Swagger available at: `https://localhost:{port}/swagger`
 ---
 
 *MIT License*
+
+<!-- cache-refresh-marker 2026-07-06 12:15 -->
