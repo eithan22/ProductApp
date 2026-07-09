@@ -119,6 +119,13 @@ Swagger available at: `https://localhost:{port}/swagger`
 }
 ```
 
+The JWT signing key is not stored in `appsettings.json`. Set it locally with the .NET Secret Manager before running the API:
+
+```bash
+dotnet user-secrets init --project ProductApp/ProductApp.Api.csproj
+dotnet user-secrets set "Jwt:Key" "<random-key-at-least-32-characters>" --project ProductApp/ProductApp.Api.csproj
+```
+
 ---
 
 ## 📡 API Endpoints
