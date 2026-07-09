@@ -17,6 +17,10 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator
             RuleFor(x => x.NuevoStock)
                  .NotEmpty().WithMessage("El nuevo stock es obligatorio.")
                  .GreaterThanOrEqualTo(0).WithMessage("El nuevo stock debe ser mayor o igual a cero.");
+
+            RuleFor(x => x.NuevoStockMinimo)
+                 .GreaterThanOrEqualTo(0).WithMessage("El nuevo stock mínimo debe ser mayor o igual a cero.")
+                 .When(x => x.NuevoStockMinimo.HasValue);
         }
     }
 }

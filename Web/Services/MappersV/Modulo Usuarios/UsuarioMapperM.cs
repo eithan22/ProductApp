@@ -58,5 +58,15 @@ namespace Web.Services.Mappers.Modulo_Usuarios
                 NuevaContraseña = model.NuevaContraseña
             };
         }
+
+        public static ActualizarMiPerfilDto MapMiPerfilDto(UsuarioModel model)
+        {
+            return new ActualizarMiPerfilDto
+            {
+                Nombre = model.Nombre,
+                Email = model.Email,
+                FechaNacimiento = model.FechaNacimiento
+            };
+        }
     }
 }

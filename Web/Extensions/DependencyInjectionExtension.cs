@@ -1,3 +1,4 @@
+using Web.Extensions.Modulo_Configuracion;
 using Web.Extensions.Modulo_Productos;
 using Web.Extensions.Modulo_Reportes;
 using Web.Extensions.Modulo_Usuarios;
@@ -14,6 +15,7 @@ namespace Web.Extensions
             services.AddModuloProductos();
             services.AddModuloVentas();
             services.AddModuloReportes();
+            services.AddModuloConfiguracion();
 
             return services;
         }

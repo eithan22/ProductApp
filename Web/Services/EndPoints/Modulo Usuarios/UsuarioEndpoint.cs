@@ -21,5 +21,7 @@ namespace Web.Services.EndPoints.Modulo_Usuarios
         public string CambiarRol => "Usuario/CambiarRol";
 
         public string ResetPassword => "Usuario/ResetearPassword";
+
+        public string MiPerfil => "Usuario/MiPerfil";
     }
 }

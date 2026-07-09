@@ -46,7 +46,7 @@
                 <div class="ledger-desc">@item.CantidadVendida unidades vendidas</div>
             </div>
             <div class="ledger-meta">
-                <span class="mono">@item.Total.ToString("C")</span>
+                <span class="mono">@Html.Moneda(item.Total)</span>
             </div>
         </div>
     }

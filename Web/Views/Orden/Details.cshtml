@@ -29,7 +29,7 @@
 <div class="surface-card p-4 mb-2 d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div class="d-flex align-items-center gap-3">
         <span class="estado-pill estado-@Model.Estado.ToLower()">@Model.Estado</span>
-        <span class="mono" style="font-size:1.4rem; font-weight:700;">@Model.Total.ToString("C")</span>
+        <span class="mono" style="font-size:1.4rem; font-weight:700;">@Html.Moneda(Model.Total)</span>
     </div>
     <div class="d-flex gap-2 flex-wrap">
         @foreach (var estado in siguientesEstados)
@@ -90,8 +90,8 @@ else
                                 <button type="submit" class="icon-btn" title="Actualizar">@await Html.PartialAsync("_Icon", "check")</button>
                             </form>
                         </td>
-                        <td class="mono">@d.PrecioUnitario.ToString("C")</td>
-                        <td class="mono" style="font-weight:700;">@d.Subtotal.ToString("C")</td>
+                        <td class="mono">@Html.Moneda(d.PrecioUnitario)</td>
+                        <td class="mono" style="font-weight:700;">@Html.Moneda(d.Subtotal)</td>
                         <td class="text-end">
                             <form asp-action="EliminarProducto" method="post">
                                 <input type="hidden" name="detalleId" value="@d.ID" />
@@ -110,7 +110,7 @@ else
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-bold mb-0">Pagos</h6>
         <span class="mono" style="font-weight:700; color:@(saldoPendiente > 0 ? "var(--color-danger)" : "var(--color-primary)")">
-            Saldo pendiente: @saldoPendiente.ToString("C")
+            Saldo pendiente: @Html.Moneda(saldoPendiente)
         </span>
     </div>
 
@@ -134,7 +134,7 @@ else
                 {
                     <tr>
                         <td>@p.FechaPago.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td class="mono" style="font-weight:700;">@p.Monto.ToString("C")</td>
+                        <td class="mono" style="font-weight:700;">@Html.Moneda(p.Monto)</td>
                         <td>@p.MetodoPago</td>
                         <td><span class="status-pill @(p.EstadoPago == "Completado" ? "on" : "off")"><span class="dot"></span> @p.EstadoPago</span></td>
                     </tr>
@@ -175,7 +175,7 @@ else
                 <option value="">-- Selecciona un producto --</option>
                 @foreach (var p in productos)
                 {
-                    <option value="@p.Id">@p.Nombre (@p.Precio.ToString("C"))</option>
+                    <option value="@p.Id">@p.Nombre (@Html.Moneda(p.Precio))</option>
                 }
             </select>
         </div>

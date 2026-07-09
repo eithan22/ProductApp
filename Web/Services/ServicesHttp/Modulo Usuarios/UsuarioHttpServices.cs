@@ -114,5 +114,20 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
             return response;
 
         }
+
+        public async Task<UsuarioModel> ObtenerMiPerfilAsync()
+        {
+            var response = await _baseHttpServices.GetAsync<UsuarioModel>(_usuarioEndpoint.MiPerfil);
+            return response;
+        }
+
+        public async Task<UsuarioModel> ActualizarMiPerfilAsync(UsuarioModel model)
+        {
+            var dto = UsuarioMapperM.MapMiPerfilDto(model);
+
+            var response = await _baseHttpServices.PutAsync<ActualizarMiPerfilDto, UsuarioModel>(_usuarioEndpoint.MiPerfil, dto);
+
+            return response;
+        }
     }
 }

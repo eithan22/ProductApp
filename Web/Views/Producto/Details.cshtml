@@ -20,11 +20,11 @@
     <div class="row mt-3 mb-4">
         <div class="col-md-4">
             <label class="form-label d-block">Precio</label>
-            <div class="producto-precio">@Model.Precio.ToString("C")</div>
+            <div class="producto-precio">@Html.Moneda(Model.Precio)</div>
         </div>
         <div class="col-md-4">
             <label class="form-label d-block">Costo</label>
-            <div class="mono">@Model.Costo.ToString("C")</div>
+            <div class="mono">@Html.Moneda(Model.Costo)</div>
         </div>
         <div class="col-md-4">
             <label class="form-label d-block">Margen</label>

@@ -50,8 +50,8 @@
             <div class="producto-nombre">@item.Nombre</div>
             <div class="producto-desc">@item.Descripcion</div>
 
-            <div class="producto-precio">@item.Precio.ToString("C")</div>
-            <div class="producto-sub">Costo @item.Costo.ToString("C") · margen @margen%</div>
+            <div class="producto-precio">@Html.Moneda(item.Precio)</div>
+            <div class="producto-sub">Costo @Html.Moneda(item.Costo) · margen @margen%</div>
 
             <div class="producto-footer">
                 <span class="status-pill @(activo ? "on" : "off")"><span class="dot"></span> @item.Estado</span>

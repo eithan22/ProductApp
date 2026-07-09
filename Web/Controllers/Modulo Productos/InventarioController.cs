@@ -74,11 +74,11 @@ namespace Web.Controllers.Modulo_Productos
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> AjustarStock(int productoId, int nuevoStock)
+        public async Task<ActionResult> AjustarStock(int productoId, int nuevoStock, int? nuevoStockMinimo)
         {
             try
             {
-                await _inventarioHttpServices.AjustarInventarioAsync(new AjustarStockModel { ProductoId = productoId, NuevoStock = nuevoStock });
+                await _inventarioHttpServices.AjustarInventarioAsync(new AjustarStockModel { ProductoId = productoId, NuevoStock = nuevoStock, NuevoStockMinimo = nuevoStockMinimo });
                 return RedirectToAction(nameof(Movimiento), new { productoId });
             }
             catch (Exception ex)

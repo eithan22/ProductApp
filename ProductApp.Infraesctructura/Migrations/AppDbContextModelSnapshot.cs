@@ -105,6 +105,44 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                     b.ToTable("Clientes");
                 });
 
+            modelBuilder.Entity("ProductApp.Domian.Entitis.ConfiguracionSistema", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CantidadMinimaInventarioDefecto")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DuracionTokenMinutos")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("EstaEliminado")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ModificadoEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Moneda")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("NombreEmpresa")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ConfiguracionSistema");
+                });
+
             modelBuilder.Entity("ProductApp.Domian.Entitis.Inventario", b =>
                 {
                     b.Property<int>("Id")

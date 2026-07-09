@@ -51,7 +51,7 @@
                 <div class="ledger-desc">@item.CantidadOrdenes órdenes</div>
             </div>
             <div class="ledger-meta">
-                <span class="mono">@item.Total.ToString("C")</span>
+                <span class="mono">@Html.Moneda(item.Total)</span>
             </div>
         </div>
     }

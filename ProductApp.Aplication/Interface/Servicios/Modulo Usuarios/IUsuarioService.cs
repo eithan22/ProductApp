@@ -22,6 +22,8 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<bool>> EnableUsuario(int id);
 
+        Task<OperationResultD<UsuarioResponseDto>> ObtenerMiPerfilAsync(int usuarioId);
 
+        Task<OperationResultD<UsuarioResponseDto>> ActualizarMiPerfilAsync(int usuarioId, ActualizarMiPerfilDto dto);
     }
 }

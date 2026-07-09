@@ -38,7 +38,7 @@
                 <div class="ledger-desc">@item.Fecha.ToString("dd/MM/yyyy")</div>
             </div>
             <div class="ledger-meta">
-                <span class="mono" style="font-weight:700;">@item.Total.ToString("C")</span>
+                <span class="mono" style="font-weight:700;">@Html.Moneda(item.Total)</span>
                 <span class="estado-pill estado-@item.Estado.ToLower()">@item.Estado</span>
                 <div class="ledger-actions">
                     <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>

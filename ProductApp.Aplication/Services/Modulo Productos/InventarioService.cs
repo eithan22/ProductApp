@@ -101,6 +101,10 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<InventarioResponseDto>.Failure(businessResult.Message);
 
             inventario.AjustarStock(dto.NuevoStock);
+
+            if (dto.NuevoStockMinimo.HasValue)
+                inventario.AjustarStockMinimo(dto.NuevoStockMinimo.Value);
+
             await _inventarioRepository.UpdateAsync(inventario);
 
             return OperationResultD<InventarioResponseDto>.Success(

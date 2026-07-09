@@ -2,6 +2,8 @@
 
 @{
     var token = Context.Session.GetString("TOKEN");
+    var rol = Context.Session.GetString("ROL");
+    var empresa = Context.Session.GetString("EMPRESA") ?? "ProductApp";
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
 }
 
@@ -10,7 +12,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ProductApp</title>
+    <title>@ViewData["Title"] - @empresa</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,7 +51,7 @@
     @if (!string.IsNullOrEmpty(token))
     {
         <div class="app-sidebar">
-            <div class="brand">ProductApp</div>
+            <div class="brand">@empresa</div>
 
             <nav>
                 <a asp-controller="Home" asp-action="Index" class="@(controller == "Home" ? "active" : "")">
@@ -76,8 +78,14 @@
                 <a asp-controller="Usuario" asp-action="Index" class="@(controller == "Usuario" ? "active" : "")">
                     @await Html.PartialAsync("_Icon", "users") Usuarios
                 </a>
-                <a asp-controller="Usuario" asp-action="CambiarPassword">
-                    @await Html.PartialAsync("_Icon", "reset") Cambiar contraseña
+                @if (rol == "Administrador")
+                {
+                    <a asp-controller="Configuracion" asp-action="Index" class="@(controller == "Configuracion" ? "active" : "")">
+                        @await Html.PartialAsync("_Icon", "settings") Configuración
+                    </a>
+                }
+                <a asp-controller="Usuario" asp-action="MiPerfil">
+                    @await Html.PartialAsync("_Icon", "users") Mi Perfil
                 </a>
             </nav>
 

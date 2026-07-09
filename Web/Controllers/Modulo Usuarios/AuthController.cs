@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Web.Models.Modelo_Usuarios.UsuarioModels.AuthModel;
+using Web.Services.Interfaces.ServicesHttp.Modulo_Configuracion;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Usuarios;
 
 namespace Web.Controllers.Modulo_Usuarios
@@ -9,10 +10,12 @@ namespace Web.Controllers.Modulo_Usuarios
     public class AuthController : Controller
     {
         private readonly IAuthHttpServices _authHttpServices;
+        private readonly IConfiguracionHttpServices _configuracionHttpServices;
 
-        public AuthController(IAuthHttpServices authHttpServices)
+        public AuthController(IAuthHttpServices authHttpServices, IConfiguracionHttpServices configuracionHttpServices)
         {
             _authHttpServices = authHttpServices;
+            _configuracionHttpServices = configuracionHttpServices;
         }
 
 
@@ -34,8 +37,21 @@ namespace Web.Controllers.Modulo_Usuarios
                
                     var result = await _authHttpServices.Login(model);
 
-                    // Guardar el token en la sesión
+                    // Guardar el token y el rol en la sesión
                     HttpContext.Session.SetString("TOKEN", result.Token);
+                    HttpContext.Session.SetString("ROL", result.Usuario.RolUsuario);
+                    HttpContext.Session.SetString("NOMBRE", result.Usuario.Nombre);
+
+                    try
+                    {
+                        var configuracion = await _configuracionHttpServices.ObtenerAsync();
+                        HttpContext.Session.SetString("EMPRESA", configuracion.NombreEmpresa);
+                        HttpContext.Session.SetString("MONEDA", configuracion.Moneda);
+                    }
+                    catch
+                    {
+                        // La configuración es informativa; si falla, seguimos con los valores por defecto.
+                    }
 
                     if (result.DebeCambiarPassword)
                     {

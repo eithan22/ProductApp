@@ -18,7 +18,7 @@
         <div class="col-md-3">
             <div class="surface-card stat-mini">
                 <div class="label">Ingresos totales</div>
-                <div class="value mono">@Model.Ingresos.Total.ToString("C")</div>
+                <div class="value mono">@Html.Moneda(Model.Ingresos.Total)</div>
             </div>
         </div>
         <div class="col-md-3">
@@ -30,7 +30,7 @@
         <div class="col-md-3">
             <div class="surface-card stat-mini">
                 <div class="label">Ticket promedio</div>
-                <div class="value mono">@Model.Ingresos.TicketPromedio.ToString("C")</div>
+                <div class="value mono">@Html.Moneda(Model.Ingresos.TicketPromedio)</div>
             </div>
         </div>
         <div class="col-md-3">

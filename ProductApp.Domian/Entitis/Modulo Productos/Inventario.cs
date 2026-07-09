@@ -45,6 +45,16 @@ namespace ProductApp.Domian.Entitis
             ActualizarFechaModificacion();
         }
 
+        public void AjustarStockMinimo(int nuevoMinimo)
+        {
+            if (nuevoMinimo < 0)
+                throw new ValidacionDominioException("StockMinimo", "El stock mínimo no puede ser negativo.");
+
+            CantidadMinima = nuevoMinimo;
+            UltimaActualizacion = DateTime.UtcNow;
+            ActualizarFechaModificacion();
+        }
+
         public void RegistrarEntradaStock(int cantidad)
         {
             if (cantidad <= 0)

@@ -1,0 +1,53 @@
+@model Web.Models.Modelo_Usuarios.UsuarioModels.UsuarioModel
+
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="surface-card p-4" style="max-width:640px;">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
+    }
+
+    <form asp-action="MiPerfil">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Nombre" class="form-label d-block"></label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Email" class="form-label d-block"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="FechaNacimiento" class="form-label d-block"></label>
+                <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                <span asp-validation-for="FechaNacimiento" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label d-block">Usuario</label>
+                <div>@Model.UserName</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label d-block">Rol</label>
+                <div>@Model.RolUsuario</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label d-block">Estado</label>
+                <div>@Model.EstadoUsuario</div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="CambiarPassword" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "reset") Cambiar contraseña</a>
+            <button type="submit" class="btn-pa btn-pa-primary">Guardar cambios</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

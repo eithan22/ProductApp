@@ -261,13 +261,47 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
             {
                 return BadRequest(ApiResponse.FailureResponse(ex.Message));
             }
+        }
 
+        [HttpGet("MiPerfil")]
+        [Authorize]
+        [PermitirConPasswordPendiente]
+        public async Task<IActionResult> MiPerfil()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                var result = await _usuarioService.ObtenerMiPerfilAsync(userId);
+                if (!result.IsSuccess)
+                {
+                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+                }
+                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
+            }
+        }
 
-
-
-
-
-
+        [HttpPut("MiPerfil")]
+        [Authorize]
+        public async Task<IActionResult> ActualizarMiPerfil(ActualizarMiPerfilDto dto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                var result = await _usuarioService.ActualizarMiPerfilAsync(userId, dto);
+                if (!result.IsSuccess)
+                {
+                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+                }
+                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
+            }
         }
 
     }

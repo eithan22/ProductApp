@@ -17,7 +17,10 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
 {
     public class AuthServices : IAuthService
     {
+        private const int DuracionTokenMinutosRespaldo = 60;
+
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IConfiguracionSistemaRepository _configuracionSistemaRepository;
         private readonly IMapperUsuario _mapperUsuario;
         private readonly IConfiguration _config;
         private readonly IValidator<LoginDto> _loginValidator;
@@ -25,12 +28,14 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
 
         public AuthServices(
             IUsuarioRepository usuarioRepository,
+            IConfiguracionSistemaRepository configuracionSistemaRepository,
             IMapperUsuario mapperUsuario,
             IConfiguration config,
             IValidatorBusinessAuth validatorBusinessAuth,
             IValidator<LoginDto> loginValidator)
         {
             _usuarioRepository = usuarioRepository;
+            _configuracionSistemaRepository = configuracionSistemaRepository;
             _mapperUsuario = mapperUsuario;
             _config = config;
             _validatorBusinessAuth = validatorBusinessAuth;
@@ -60,6 +65,9 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
                 new Claim("DebeCambiarPassword", usuario.DebeCambiarPassword.ToString())
             };
 
+            var configuracion = await _configuracionSistemaRepository.ObtenerAsync();
+            var duracionTokenMinutos = configuracion?.DuracionTokenMinutos ?? DuracionTokenMinutosRespaldo;
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -67,7 +75,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(60),
+                expires: DateTime.UtcNow.AddMinutes(duracionTokenMinutos),
                 signingCredentials: creds);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);

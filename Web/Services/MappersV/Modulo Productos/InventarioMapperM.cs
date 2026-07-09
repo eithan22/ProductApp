@@ -19,7 +19,8 @@ namespace Web.Services.Mappers.Modulo_Productos
             return new AjustarStockDto
             {
                 ProductoId = model.ProductoId,
-                NuevoStock = model.NuevoStock
+                NuevoStock = model.NuevoStock,
+                NuevoStockMinimo = model.NuevoStockMinimo
             };
         }
     }

@@ -15,5 +15,7 @@
         string CambiarRol { get; }
 
         string ResetPassword { get; }
+
+        string MiPerfil { get; }
     }
 }

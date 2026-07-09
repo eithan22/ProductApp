@@ -21,6 +21,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
         private readonly IValidator<ResetearPasswordDto> _resetPasswordValidator;
         private readonly IValidator<CambiarRolDto> _cambiarRolValidator;
+        private readonly IValidator<ActualizarMiPerfilDto> _actualizarMiPerfilValidator;
         private readonly IValidatorBusinessUsuario _validatorBusinessUsuarios;
 
         public UsuarioService(
@@ -31,7 +32,8 @@ namespace ProductApp.Aplication.Services
             IValidatorBusinessUsuario validatorBusinessUsuarios,
             IValidator<ChangePasswordDto> changePasswordValidator,
             IValidator<ResetearPasswordDto> resetPasswordValidator,
-            IValidator<CambiarRolDto> cambiarRolValidator)
+            IValidator<CambiarRolDto> cambiarRolValidator,
+            IValidator<ActualizarMiPerfilDto> actualizarMiPerfilValidator)
         {
             _usuarioRepository = usuarioRepository;
             _mapperUsuario = mapperUsuario;
@@ -41,6 +43,7 @@ namespace ProductApp.Aplication.Services
             _changePasswordValidator = changePasswordValidator;
             _resetPasswordValidator = resetPasswordValidator;
             _cambiarRolValidator = cambiarRolValidator;
+            _actualizarMiPerfilValidator = actualizarMiPerfilValidator;
         }
 
         public async Task<OperationResultD<UsuarioResponseDto>> CreateAsync(CreateUsuarioDto dto)
@@ -247,6 +250,38 @@ namespace ProductApp.Aplication.Services
 
             var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
             return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto, "Usuario actualizado correctamente");
+        }
+
+        public async Task<OperationResultD<UsuarioResponseDto>> ObtenerMiPerfilAsync(int usuarioId)
+        {
+            var usuario = await _usuarioRepository.GetByIdAsync(usuarioId);
+            if (usuario == null)
+                return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
+
+            var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
+            return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto, "Perfil obtenido correctamente");
+        }
+
+        public async Task<OperationResultD<UsuarioResponseDto>> ActualizarMiPerfilAsync(int usuarioId, ActualizarMiPerfilDto dto)
+        {
+            var validationResult = await _actualizarMiPerfilValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<UsuarioResponseDto>.Failure($"Validación fallida: {errors}");
+            }
+
+            var usuario = await _usuarioRepository.GetByIdAsync(usuarioId);
+            if (usuario == null)
+                return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
+
+            usuario.CambiarNombre(dto.Nombre);
+            usuario.CambiarEmail(dto.Email);
+            usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
+            await _usuarioRepository.UpdateAsync(usuario);
+
+            var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
+            return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto, "Perfil actualizado correctamente");
         }
     }
 }

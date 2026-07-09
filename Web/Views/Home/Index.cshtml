@@ -1,5 +1,8 @@
 ﻿@{
     ViewData["Title"] = "Inicio";
+    var empresa = Context.Session.GetString("EMPRESA") ?? "ProductApp";
+    var nombre = Context.Session.GetString("NOMBRE");
+    var rol = Context.Session.GetString("ROL");
 }
 
 <div class="container">
@@ -7,7 +10,12 @@
     <!-- 🔥 HERO / BIENVENIDA -->
     <div class="card card-custom p-4 mb-4 text-center">
 
-        <h1 class="fw-bold"> Bienvenido a ProductApp</h1>
+        <h1 class="fw-bold">Bienvenido a @empresa</h1>
+
+        @if (!string.IsNullOrEmpty(nombre))
+        {
+            <p class="mt-2 mb-0">¡Hola, <strong>@nombre</strong>! <span class="text-muted">(@rol)</span></p>
+        }
 
         <p class="text-muted mt-2">
             Sistema de gestión moderno para administrar tus Ventas de forma eficiente.
@@ -68,9 +76,9 @@
                     Ajusta opciones del sistema.
                 </p>
 
-                <button class="btn btn-outline-secondary btn-sm" disabled>
-                    Próximamente
-                </button>
+                <a asp-controller="Configuracion" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    Ir a Configuración
+                </a>
 
             </div>
         </div>

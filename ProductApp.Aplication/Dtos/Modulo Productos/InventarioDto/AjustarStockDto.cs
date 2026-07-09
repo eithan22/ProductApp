@@ -9,5 +9,7 @@ namespace ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto
         public int ProductoId { get; set; }
 
         public int NuevoStock { get; set; }
+
+        public int? NuevoStockMinimo { get; set; }
     }
 }

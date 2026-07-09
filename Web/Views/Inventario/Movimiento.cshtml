@@ -67,6 +67,7 @@
             <form asp-action="AjustarStock" method="post">
                 <input type="hidden" name="productoId" value="@Model.ProductoId" />
                 <input type="number" name="nuevoStock" min="0" class="form-control mb-2" placeholder="Nuevo stock" required />
+                <input type="number" name="nuevoStockMinimo" min="0" class="form-control mb-2" placeholder="Nuevo stock mínimo (opcional)" />
                 <button type="submit" class="btn-pa btn-pa-warn w-100 justify-content-center">
                     @await Html.PartialAsync("_Icon", "target") Ajustar
                 </button>

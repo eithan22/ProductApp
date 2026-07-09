@@ -10,19 +10,26 @@ namespace ProductApp.Api.Seed
     {
         public static async Task SeedAsync(AppDbContext context, IConfiguration configuration)
         {
-            if (await context.Usuarios.AnyAsync())
-                return;
+            if (!await context.Usuarios.AnyAsync())
+            {
+                var username = configuration["Seed:AdminUsername"]!;
+                var email = configuration["Seed:AdminEmail"]!;
+                var password = configuration["Seed:AdminPassword"]!;
 
-            var username = configuration["Seed:AdminUsername"]!;
-            var email = configuration["Seed:AdminEmail"]!;
-            var password = configuration["Seed:AdminPassword"]!;
+                var admin = new Usuario("Administrador", email, username, RolUsuario.Administrador);
+                admin.EstablecerPasswordHash(PasswordHelper.Hash(password));
+                admin.MarcarPasswordComoTemporal();
 
-            var admin = new Usuario("Administrador", email, username, RolUsuario.Administrador);
-            admin.EstablecerPasswordHash(PasswordHelper.Hash(password));
-            admin.MarcarPasswordComoTemporal();
+                context.Usuarios.Add(admin);
+                await context.SaveChangesAsync();
+            }
 
-            context.Usuarios.Add(admin);
-            await context.SaveChangesAsync();
+            if (!await context.ConfiguracionSistema.AnyAsync())
+            {
+                var configuracionSistema = new ConfiguracionSistema(5, 60, "Mi Empresa", "USD");
+                context.ConfiguracionSistema.Add(configuracionSistema);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

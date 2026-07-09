@@ -14,10 +14,11 @@ namespace ProductApp.Aplication.Services
 {
     public class ProductoServices : IProductoServices
     {
-        private const int CantidadMinimaDefecto = 5;
+        private const int CantidadMinimaDefectoRespaldo = 5;
 
         private readonly IProductoRepository _productorepository;
         private readonly IInventarioRepository _inventarioRepository;
+        private readonly IConfiguracionSistemaRepository _configuracionSistemaRepository;
         private readonly IMapperProducto _mapperProductoMapper;
         private readonly IValidator<CreateProductoDto> _validatorCreateProductoDto;
         private readonly IValidator<UpdateProductoDto> _validatorUpdateProductoDto;
@@ -29,7 +30,8 @@ namespace ProductApp.Aplication.Services
             IValidator<CreateProductoDto> validatorCreateProductoDto,
             IValidator<UpdateProductoDto> validatorUpdateProductoDto,
             IValidatorBusinessProducto validatorBusinessProducto,
-            IInventarioRepository inventarioRepository
+            IInventarioRepository inventarioRepository,
+            IConfiguracionSistemaRepository configuracionSistemaRepository
             )
         {
             _productorepository = productorepository;
@@ -38,6 +40,7 @@ namespace ProductApp.Aplication.Services
             _validatorUpdateProductoDto = validatorUpdateProductoDto;
             _validatorBusinessProducto = validatorBusinessProducto;
             _inventarioRepository = inventarioRepository;
+            _configuracionSistemaRepository = configuracionSistemaRepository;
 
         }
         /*
@@ -142,11 +145,13 @@ namespace ProductApp.Aplication.Services
             await _productorepository.CreateAsync(producto);
 
 
-            //crear un inventario para el producto creado con cantidad actual 0 y cantidad minima 5 por defecto
+            //crear un inventario para el producto creado con cantidad actual 0 y la cantidad minima configurada por defecto
+
+            var configuracion = await _configuracionSistemaRepository.ObtenerAsync();
 
             var inventario = new Inventario(
              0,
-             CantidadMinimaDefecto,
+             configuracion?.CantidadMinimaInventarioDefecto ?? CantidadMinimaDefectoRespaldo,
              producto.Id
              );
 

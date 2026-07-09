@@ -35,7 +35,7 @@
     <div class="col-md-6">
         <div class="surface-card stat-mini">
             <div class="label">Total vendido</div>
-            <div class="value mono">@Model.Sum(x => x.Total).ToString("C")</div>
+            <div class="value mono">@Html.Moneda(Model.Sum(x => x.Total))</div>
         </div>
     </div>
 </div>
@@ -61,7 +61,7 @@
                 <div class="ledger-desc">@item.CantidadOrdenes órdenes</div>
             </div>
             <div class="ledger-meta">
-                <span class="mono">@item.Total.ToString("C")</span>
+                <span class="mono">@Html.Moneda(item.Total)</span>
             </div>
         </div>
     }

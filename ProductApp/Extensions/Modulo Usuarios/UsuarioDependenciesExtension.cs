@@ -48,6 +48,7 @@ namespace ProductApp.Extensions.Modulo_Usuarios
             services.AddScoped<IValidator<ChangePasswordDto>, ChangePasswordUsuarioValidator>();
             services.AddScoped<IValidator<ResetearPasswordDto>, ResetearPasswordUsuarioValidator>();
             services.AddScoped<IValidator<CambiarRolDto>, CambiarRolUsuarioValidator>();
+            services.AddScoped<IValidator<ActualizarMiPerfilDto>, ActualizarMiPerfilValidator>();
 
             // Validadores DTO — Auth
             services.AddScoped<IValidator<LoginDto>, LoginValidator>();

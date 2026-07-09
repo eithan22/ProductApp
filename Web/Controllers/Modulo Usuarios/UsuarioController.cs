@@ -254,6 +254,31 @@ namespace Web.Controllers.Modulo_Usuarios
             }
         }
 
+        // GET: UsuarioController/MiPerfil
+        public async Task<ActionResult> MiPerfil()
+        {
+            var usuario = await _usuarioHttpServices.ObtenerMiPerfilAsync();
+            return View(usuario);
+        }
+
+        // POST: UsuarioController/MiPerfil
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> MiPerfil(UsuarioModel model)
+        {
+            try
+            {
+                await _usuarioHttpServices.ActualizarMiPerfilAsync(model);
+                TempData["Mensaje"] = "Perfil actualizado correctamente.";
+                return RedirectToAction(nameof(MiPerfil));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+
         // GET: UsuarioController/CambiarPassword
         public ActionResult CambiarPassword()
         {

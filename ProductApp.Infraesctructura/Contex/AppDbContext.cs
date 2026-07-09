@@ -25,7 +25,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Contex
 
         public DbSet<Inventario> Inventario { get; set; }
 
-        public DbSet<Categoria> Categorias { get; set; }    
+        public DbSet<Categoria> Categorias { get; set; }
+
+        public DbSet<ConfiguracionSistema> ConfiguracionSistema { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
