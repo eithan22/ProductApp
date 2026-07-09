@@ -1,9 +1,9 @@
-@model IEnumerable<Web.Models.Modelo_Productos.InventarioModels.InventarioModel>
+@model ProductApp.Aplication.Common.PagedResult<Web.Models.Modelo_Productos.InventarioModels.InventarioModel>
 
 @{
     ViewData["Title"] = "Inventario";
     var soloBajo = ViewBag.SoloBajo as bool? ?? false;
-    var totalBajo = Model.Count(i => i.StockActual <= i.StockMinimo);
+    var totalBajo = ViewBag.TotalBajo as int? ?? 0;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -19,7 +19,7 @@
     <div class="col-md-4">
         <div class="surface-card stat-mini">
             <div class="label">Productos con inventario</div>
-            <div class="value">@Model.Count()</div>
+            <div class="value">@Model.TotalCount</div>
         </div>
     </div>
     <div class="col-md-4">
@@ -31,12 +31,12 @@
 </div>
 
 <div class="surface-card p-3">
-    @if (!Model.Any())
+    @if (!Model.Items.Any())
     {
         <div class="text-center text-muted py-4">No hay registros de inventario.</div>
     }
 
-    @foreach (var item in Model)
+    @foreach (var item in Model.Items)
     {
         var bajo = item.StockActual <= item.StockMinimo;
         var cerca = !bajo && item.StockActual <= item.StockMinimo * 1.5;
@@ -63,3 +63,8 @@
         </div>
     }
 </div>
+
+@if (!soloBajo)
+{
+    @await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages })
+}

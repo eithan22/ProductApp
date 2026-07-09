@@ -11,6 +11,8 @@
 
         string Disable { get; }
 
+        string Enable { get; }
+
 
 
        

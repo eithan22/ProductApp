@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using Web.Models.ClienteModels;
 using Web.Services.Interfaces.ServicesHttp;
 
@@ -15,9 +16,10 @@ namespace Web.Controllers.Modulo_Usuarios
             _clienteHttpServices = clienteHttpServices;
         }
         // GET: ClienteController
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(bool incluirInactivos = false, int pageNumber = 1)
         {
-            var result = await _clienteHttpServices.GetClientesAsync();
+            var result = await _clienteHttpServices.GetClientesAsync(incluirInactivos, pageNumber);
+            ViewBag.IncluirInactivos = incluirInactivos;
             return View(result);
 
         }
@@ -35,12 +37,13 @@ namespace Web.Controllers.Modulo_Usuarios
             try
             {
                 var result = await _clienteHttpServices.GetBuscarClienteAsync(nombre, telefono, correo);
-                return View("Index", result);
+                var paged = new PagedResult<ClienteModel> { Items = result, PageNumber = 1, PageSize = result.Count, TotalCount = result.Count };
+                return View("Index", paged);
 
             }catch(Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                return View("Index", new List<ClienteModel>());
+                return View("Index", new PagedResult<ClienteModel>());
 
 
 
@@ -185,6 +188,14 @@ namespace Web.Controllers.Modulo_Usuarios
                 return View(cliente);
             }
 
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Enable(int id)
+        {
+            await _clienteHttpServices.EnableClienteAsync(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

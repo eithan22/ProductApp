@@ -1,4 +1,5 @@
 using FluentValidation;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Helper;
@@ -167,14 +168,45 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Usuario Deshabilitado Correctamente");
         }
 
-        public async Task<OperationResultD<List<UsuarioResponseDto>>> GetAllAsync()
+        public async Task<OperationResultD<bool>> EnableUsuario(int id)
         {
-            var usuarios = await _usuarioRepository.GetAllAsync();
-            if (usuarios == null || !usuarios.Any())
-                return OperationResultD<List<UsuarioResponseDto>>.Success(new List<UsuarioResponseDto>(), "No hay usuarios registrados");
+            if (id <= 0)
+                return OperationResultD<bool>.Failure("Id no valido");
+
+            var usuario = await _usuarioRepository.GetByIdAsync(id);
+            if (usuario == null)
+                return OperationResultD<bool>.Failure("Usuario no encontrado");
+
+            usuario.Activar();
+            await _usuarioRepository.UpdateAsync(usuario);
+
+            return OperationResultD<bool>.Success(true, "Usuario activado correctamente");
+        }
+
+        public Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+            => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
+
+        public async Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        {
+            if (pageNumber < 1)
+                return OperationResultD<PagedResult<UsuarioResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
+
+            if (pageSize < 1 || pageSize > 100)
+                return OperationResultD<PagedResult<UsuarioResponseDto>>.Failure("pageSize debe estar entre 1 y 100");
+
+            var (usuarios, totalCount) = await _usuarioRepository.GetAllUsuariosAsync(incluirInactivos, pageNumber, pageSize);
 
             var usuarioResponseDtos = usuarios.Select(u => _mapperUsuario.ToDto(u)).ToList();
-            return OperationResultD<List<UsuarioResponseDto>>.Success(usuarioResponseDtos, "Usuarios obtenidos correctamente");
+
+            var pagedResult = new PagedResult<UsuarioResponseDto>
+            {
+                Items = usuarioResponseDtos,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+
+            return OperationResultD<PagedResult<UsuarioResponseDto>>.Success(pagedResult, "Usuarios obtenidos correctamente");
         }
 
         public async Task<OperationResultD<UsuarioResponseDto>> GetByIdAsync(int id)

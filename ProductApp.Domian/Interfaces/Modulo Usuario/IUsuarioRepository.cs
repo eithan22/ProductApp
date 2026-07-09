@@ -7,5 +7,6 @@ namespace ProductApp.Domian.Interfaces
     {
         Task<Usuario?> GetByEmailAsync(string email);
         Task<Usuario?> GetByUsernameAsync(string username);
+        Task<(List<Usuario> Items, int TotalCount)> GetAllUsuariosAsync(bool incluirInactivos, int pageNumber, int pageSize);
     }
 }

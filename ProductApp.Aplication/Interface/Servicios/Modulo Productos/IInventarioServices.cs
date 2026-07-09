@@ -1,4 +1,5 @@
-﻿using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
+﻿using ProductApp.Aplication.Common;
+using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Aplication.Result.OperationResult;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,6 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<List<InventarioResponseDto>>> ObtenerStockBajoAsync();
 
         // Este método se puede usar para obtener una lista de todos los inventarios, lo que es útil para mostrar un resumen del estado del inventario en la interfaz de usuario o para realizar análisis y reportes sobre el inventario.
-        Task<OperationResultD<List<InventarioResponseDto>>> ObtenerTodosInventariosAsync();
+        Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = 10);
     }
 }

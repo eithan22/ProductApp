@@ -12,5 +12,6 @@ namespace Web.Services.EndPoints.Modulo_Productos
         public string Update => "Categoria/UpdateCategoria/";
 
         public string Disable => "Categoria/DisableCategoria/";
+        public string Enable => "Categoria/EnableCategoria/";
     }
 }

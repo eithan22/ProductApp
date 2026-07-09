@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface;
@@ -23,17 +24,17 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [Authorize(Roles = "Administrador")]
         [HttpGet("GetUsuarios")]
-        public async Task<IActionResult> GetUsuarios()
+        public async Task<IActionResult> GetUsuarios([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var result = await _usuarioService.GetAllAsync();
+                var result = await _usuarioService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
                 if (!result.IsSuccess)
                 {
                     return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
                 }
 
-                return Ok(ApiResponseT<List<UsuarioResponseDto>>.SuccessResponse(result.Data, result.Message));
+                return Ok(ApiResponseT<PagedResult<UsuarioResponseDto>>.SuccessResponse(result.Data, result.Message));
 
             }
             catch (Exception ex)
@@ -146,13 +147,33 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
 
 
-        [HttpDelete("DisableUsuario/{id}")]
+        [HttpPatch("DisableUsuario/{id}")]
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Disable(int id)
         {
             try
             {
                 var result = await _usuarioService.DisableAsync(id);
+                if (!result.IsSuccess)
+                {
+                    return BadRequest(ApiResponse.FailureResponse(result.Message));
+                }
+                return Ok(ApiResponse.SuccessResponse(result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse.FailureResponse(ex.Message));
+            }
+        }
+
+
+        [HttpPatch("EnableUsuario/{id}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> EnableUsuario(int id)
+        {
+            try
+            {
+                var result = await _usuarioService.EnableUsuario(id);
                 if (!result.IsSuccess)
                 {
                     return BadRequest(ApiResponse.FailureResponse(result.Message));

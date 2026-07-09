@@ -7,6 +7,6 @@ namespace ProductApp.Domian.Interfaces
     {
         Task<Inventario?> GetByProductoIdAsync(int productoId);
         Task<List<Inventario>> GetStockBajoAsync();
-        Task<List<Inventario>> GetAllConProductoAsync();
+        Task<(List<Inventario> Items, int TotalCount)> GetAllConProductoAsync(int pageNumber, int pageSize);
     }
 }

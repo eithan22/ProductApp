@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
@@ -43,18 +44,18 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [Authorize]
         [HttpGet("GetAllCategorias")]
 
-        public async Task<IActionResult> GetAllCategorias()
+        public async Task<IActionResult> GetAllCategorias([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var result = await _categoriaService.GetAllAsync();
+                var result = await _categoriaService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 
 
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
 
-                return Ok(ApiResponseT<List<CategoriaResponseDto>>.SuccessResponse(result.Data, result.Message));
+                return Ok(ApiResponseT<PagedResult<CategoriaResponseDto>>.SuccessResponse(result.Data, result.Message));
             }
             catch (Exception ex)
             {
@@ -116,6 +117,25 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
             try
             {
                 var result = await _categoriaService.DisableAsync(id);
+                if (!result.IsSuccess)
+                    return BadRequest(ApiResponse.FailureResponse(result.Message));
+                return Ok(ApiResponse.SuccessResponse(result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse.FailureResponse(ex.Message));
+            }
+        }
+
+
+        [Authorize]
+        [HttpPatch("EnableCategoria/{id}")]
+
+        public async Task<IActionResult> EnableCategoria(int id)
+        {
+            try
+            {
+                var result = await _categoriaService.EnableCategoria(id);
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponse.FailureResponse(result.Message));
                 return Ok(ApiResponse.SuccessResponse(result.Message));

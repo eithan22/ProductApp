@@ -59,7 +59,7 @@ namespace ProductApp.Aplication.Services
 
         public async Task<OperationResultD<List<InventarioActualDto>>> ObtenerInventarioActualAsync()
         {
-            var inventarios = await _inventarioRepository.GetAllConProductoAsync();
+            var (inventarios, _) = await _inventarioRepository.GetAllConProductoAsync(pageNumber: 1, pageSize: int.MaxValue);
             var response = inventarios.Select(_mapperReporte.MapToInventarioActualDto).ToList();
 
             return OperationResultD<List<InventarioActualDto>>.Success(response, "Inventario actual obtenido exitosamente");

@@ -70,6 +70,20 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
 
         //aun no lo entiendo.
 
+        public async Task<(List<T> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            var query = Entity.Where(x => !x.EstaEliminado);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<T?> GetByIdAsync(int id)
         {
            var result = await Entity

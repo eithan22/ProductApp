@@ -1,3 +1,4 @@
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using Web.Models.Modelo_Productos.CategoriaModels;
 using Web.Services.Interfaces.IBase;
@@ -37,7 +38,20 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
 
         public async Task<List<CategoriaModel>> GetCategoriasAsync()
         {
-            return await _baseHttpServices.GetAsync<List<CategoriaModel>>(_categoriaEndpoint.GetAll);
+            var paged = await _baseHttpServices.GetAsync<PagedResult<CategoriaModel>>($"{_categoriaEndpoint.GetAll}?pageSize=100");
+            return paged.Items;
+        }
+
+        public async Task<PagedResult<CategoriaModel>> GetCategoriasPagedAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        {
+            return await _baseHttpServices.GetAsync<PagedResult<CategoriaModel>>(
+                $"{_categoriaEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");
+        }
+
+        public async Task<bool> EnableCategoriaAsync(int id)
+        {
+            await _baseHttpServices.PatchAsync<object, object>($"{_categoriaEndpoint.Enable}{id}", new { });
+            return true;
         }
 
         public async Task<CategoriaModel> UpdateCategoriaAsync(UpdateCategoriaModel model)

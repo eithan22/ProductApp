@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.WebUtilities
+@model Web.Models.Common.PaginationInfo
+
+@{
+    var totalPages = Math.Max(Model.TotalPages, 1);
+    var isFirst = Model.PageNumber <= 1;
+    var isLast = Model.PageNumber >= totalPages;
+
+    string PageUrl(int page)
+    {
+        var query = Context.Request.Query.ToDictionary(q => q.Key, q => q.Value.ToString());
+        query["pageNumber"] = page.ToString();
+        return QueryHelpers.AddQueryString(Context.Request.Path, query);
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <span class="text-muted" style="font-size:.85rem;">Página @Model.PageNumber de @totalPages</span>
+
+    <div class="d-flex gap-2">
+        @if (isFirst)
+        {
+            <span class="btn-pa btn-pa-outline disabled" aria-disabled="true" tabindex="-1">Anterior</span>
+        }
+        else
+        {
+            <a class="btn-pa btn-pa-outline" href="@PageUrl(Model.PageNumber - 1)">Anterior</a>
+        }
+
+        @if (isLast)
+        {
+            <span class="btn-pa btn-pa-outline disabled" aria-disabled="true" tabindex="-1">Siguiente</span>
+        }
+        else
+        {
+            <a class="btn-pa btn-pa-outline" href="@PageUrl(Model.PageNumber + 1)">Siguiente</a>
+        }
+    </div>
+</div>

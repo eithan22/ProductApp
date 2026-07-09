@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.IdentityModel.Tokens;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios;
@@ -39,17 +40,17 @@ namespace ProductApp.Aplication.Services
         }
 
 
-        //falta hacer el bussenes aqui 
-        public async Task<OperationResultD<List<ClienteResponseDto>>> BuscarAsync(string? nombre, string? telefono, string? correo)
+        //falta hacer el bussenes aqui
+        public async Task<OperationResultD<List<ClienteResponseDto>>> BuscarAsync(string? nombre, string? telefono, string? correo, bool incluirInactivos = false)
         {
-            
+
                 if (string.IsNullOrEmpty(nombre) && string.IsNullOrEmpty(telefono) && string.IsNullOrEmpty(correo))
                 {
                     return OperationResultD<List<ClienteResponseDto>>.Failure("Debe proporcionar al menos un criterio de búsqueda");
                 }
 
 
-                var clientes = await _clienteRepository.BuscarClientesAsync(nombre, telefono, correo);
+                var clientes = await _clienteRepository.BuscarClientesAsync(nombre, telefono, correo, incluirInactivos);
 
                 var clienteresponsedto = clientes.
                     Select(c => _mapperCliente.MapToClienteResponseDto(c))
@@ -153,27 +154,59 @@ namespace ProductApp.Aplication.Services
             await _clienteRepository.UpdateAsync(cliente);
             return OperationResultD<bool>.Success(true, "Cliente desactivado correctamente");
 
-            
+
 
         }
 
 
-
-        public async Task<OperationResultD<List<ClienteResponseDto>>> GetAllAsync()
+        public async Task<OperationResultD<bool>> EnableCliente(int id)
         {
-            var clientes = await _clienteRepository.GetAllAsync();
-
-            if (clientes == null || !clientes.Any())
+            if (id <= 0)
             {
-                return OperationResultD<List<ClienteResponseDto>>
-                   .Success(new List<ClienteResponseDto>(), "No hay clientes registrados");
+                return OperationResultD<bool>.Failure("El id no puede ser menor o igual a 0");
             }
 
+            var cliente = await _clienteRepository.GetByIdAsync(id);
+
+            if (cliente == null)
+            {
+                return OperationResultD<bool>.Failure("El cliente no fue encontrado");
+            }
+
+            cliente.Activar();
+
+            await _clienteRepository.UpdateAsync(cliente);
+
+            return OperationResultD<bool>.Success(true, "Cliente activado correctamente");
+        }
+
+
+
+        public Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+            => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
+
+        public async Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        {
+            if (pageNumber < 1)
+                return OperationResultD<PagedResult<ClienteResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
+
+            if (pageSize < 1 || pageSize > 100)
+                return OperationResultD<PagedResult<ClienteResponseDto>>.Failure("pageSize debe estar entre 1 y 100");
+
+            var (clientes, totalCount) = await _clienteRepository.GetAllClientesAsync(incluirInactivos, pageNumber, pageSize);
 
             var clienteresponsedto = clientes.Select(c => _mapperCliente.MapToClienteResponseDto(c))
                 .ToList();
 
-            return OperationResultD<List<ClienteResponseDto>>.Success(clienteresponsedto, "Clientes obtenidos correctamente");
+            var pagedResult = new PagedResult<ClienteResponseDto>
+            {
+                Items = clienteresponsedto,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+
+            return OperationResultD<PagedResult<ClienteResponseDto>>.Success(pagedResult, "Clientes obtenidos correctamente");
 
 
 

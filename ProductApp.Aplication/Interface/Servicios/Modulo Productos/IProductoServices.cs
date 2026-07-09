@@ -1,4 +1,5 @@
-﻿using ProductApp.Aplication.Dtos.ProductoDto;
+﻿using ProductApp.Aplication.Common;
+using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface.Servicios.BaseServices;
 using ProductApp.Aplication.Result.OperationResult;
@@ -13,9 +14,9 @@ namespace ProductApp.Aplication.Interface
 
          Task<OperationResultD<bool>>EnableProducto(int id);
 
-        
+        Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
 
-        Task<OperationResultD<List<ProductoResponseDto>>> BuscarProductosPorNombreOCategoria(string? nombre, string? categoria);
+        Task<OperationResultD<List<ProductoResponseDto>>> BuscarProductosPorNombreOCategoria(string? nombre, string? categoria, bool incluirInactivos = false);
       
 
         

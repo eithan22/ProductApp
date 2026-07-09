@@ -12,12 +12,20 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
         }
 
-        public async Task<List<Inventario>> GetAllConProductoAsync()
+        public async Task<(List<Inventario> Items, int TotalCount)> GetAllConProductoAsync(int pageNumber, int pageSize)
         {
-            return await _context.Inventario
+            var query = _context.Inventario
                 .Include(i => i.Producto)
-                .Where(i => !i.EstaEliminado)
+                .Where(i => !i.EstaEliminado);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
         public async Task<Inventario?> GetByProductoIdAsync(int productoId)

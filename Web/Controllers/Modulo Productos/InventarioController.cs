@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using Web.Models.Modelo_Productos.InventarioModels;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Productos;
 
@@ -13,18 +14,22 @@ namespace Web.Controllers.Modulo_Productos
             _inventarioHttpServices = inventarioHttpServices;
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(int pageNumber = 1)
         {
-            var result = await _inventarioHttpServices.GetAllInventariosAsync();
+            var result = await _inventarioHttpServices.GetAllInventariosAsync(pageNumber);
+            var stockBajo = await _inventarioHttpServices.GetStockBajoAsync();
             ViewBag.SoloBajo = false;
+            ViewBag.TotalBajo = stockBajo.Count;
             return View(result);
         }
 
         public async Task<ActionResult> StockBajo()
         {
             var result = await _inventarioHttpServices.GetStockBajoAsync();
+            var paged = new PagedResult<InventarioModel> { Items = result, PageNumber = 1, PageSize = result.Count, TotalCount = result.Count };
             ViewBag.SoloBajo = true;
-            return View("Index", result);
+            ViewBag.TotalBajo = result.Count;
+            return View("Index", paged);
         }
 
         public async Task<ActionResult> Movimiento(int productoId)

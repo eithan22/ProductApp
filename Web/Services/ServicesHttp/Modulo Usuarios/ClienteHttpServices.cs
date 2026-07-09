@@ -1,4 +1,5 @@
-﻿using ProductApp.Aplication.Dtos.ClienteDto;
+﻿using ProductApp.Aplication.Common;
+using ProductApp.Aplication.Dtos.ClienteDto;
 using System.Buffers.Text;
 using System.Net;
 using Web.Models.ClienteModels;
@@ -34,8 +35,14 @@ namespace Web.Services.ServicesHttp
 
         public async Task<bool> DeleteClienteAsync(int id)
         {
-          var result =  await _baseHttpServices.DeleteAsync($"{_clienteEndpointcs.Delete}{id}");
-            return result;
+            await _baseHttpServices.PatchAsync<object, object>($"{_clienteEndpointcs.Delete}{id}", new { });
+            return true;
+        }
+
+        public async Task<bool> EnableClienteAsync(int id)
+        {
+            await _baseHttpServices.PatchAsync<object, object>($"{_clienteEndpointcs.Enable}{id}", new { });
+            return true;
         }
 
 
@@ -55,9 +62,10 @@ namespace Web.Services.ServicesHttp
 
         }
 
-        public async Task<List<ClienteModel>> GetClientesAsync()
+        public async Task<PagedResult<ClienteModel>> GetClientesAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
         {
-           var response = await _baseHttpServices.GetAsync<List<ClienteModel>>(_clienteEndpointcs.GetAll);
+           var response = await _baseHttpServices.GetAsync<PagedResult<ClienteModel>>(
+                $"{_clienteEndpointcs.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");
             return response;
         }
 

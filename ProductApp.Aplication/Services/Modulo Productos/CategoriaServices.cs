@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulos_Productos;
@@ -123,25 +124,56 @@ namespace ProductApp.Aplication.Services
         }
 
 
-
-
-
-
-        public async Task<OperationResultD<List<CategoriaResponseDto>>> GetAllAsync()
+        public async Task<OperationResultD<bool>> EnableCategoria(int id)
         {
-            var categorias = await _categoriaRepository.GetAllAsync();
-
-            if (categorias == null || !categorias.Any())
+            if (id <= 0)
             {
-                return OperationResultD<List<CategoriaResponseDto>>
-                   .Success(new List<CategoriaResponseDto>(), "No hay categorias registradas");
+                return OperationResultD<bool>.Failure("El id no puede ser menor o igual a 0");
             }
 
+            var categoria = await _categoriaRepository.GetByIdIncluyendoEliminadosAsync(id);
+
+            if (categoria == null)
+            {
+                return OperationResultD<bool>.Failure("La categoria no fue encontrada");
+            }
+
+            categoria.Activar();
+
+            await _categoriaRepository.UpdateAsync(categoria);
+
+            return OperationResultD<bool>.Success(true, "Categoria activada correctamente");
+        }
+
+
+
+
+
+
+        public Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+            => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
+
+        public async Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        {
+            if (pageNumber < 1)
+                return OperationResultD<PagedResult<CategoriaResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
+
+            if (pageSize < 1 || pageSize > 100)
+                return OperationResultD<PagedResult<CategoriaResponseDto>>.Failure("pageSize debe estar entre 1 y 100");
+
+            var (categorias, totalCount) = await _categoriaRepository.GetPagedAsync(incluirInactivos, pageNumber, pageSize);
 
             var categoriaresponsedto = categorias.Select(c => _mapperCategoria.MapToCategoriaResponseDto(c)).ToList();
-             
-          
-            return OperationResultD<List<CategoriaResponseDto>>.Success(categoriaresponsedto, "Categorias obtenidas correctamente");
+
+            var pagedResult = new PagedResult<CategoriaResponseDto>
+            {
+                Items = categoriaresponsedto,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+
+            return OperationResultD<PagedResult<CategoriaResponseDto>>.Success(pagedResult, "Categorias obtenidas correctamente");
         }
 
 

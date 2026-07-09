@@ -1,4 +1,5 @@
 using FluentValidation;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulos_Productos;
@@ -116,14 +117,27 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<List<InventarioResponseDto>>.Success(response, "Inventarios con stock bajo obtenidos exitosamente.");
         }
 
-        public async Task<OperationResultD<List<InventarioResponseDto>>> ObtenerTodosInventariosAsync()
+        public async Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var inventarios = await _inventarioRepository.GetAllConProductoAsync();
-            if (inventarios == null || !inventarios.Any())
-                return OperationResultD<List<InventarioResponseDto>>.Success(new List<InventarioResponseDto>(), "No hay inventarios registrados.");
+            if (pageNumber < 1)
+                return OperationResultD<PagedResult<InventarioResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
+
+            if (pageSize < 1 || pageSize > 100)
+                return OperationResultD<PagedResult<InventarioResponseDto>>.Failure("pageSize debe estar entre 1 y 100");
+
+            var (inventarios, totalCount) = await _inventarioRepository.GetAllConProductoAsync(pageNumber, pageSize);
 
             var response = inventarios.Select(i => _mapperInventario.MapToInventarioResponse(i)).ToList();
-            return OperationResultD<List<InventarioResponseDto>>.Success(response, "Todos los inventarios obtenidos exitosamente.");
+
+            var pagedResult = new PagedResult<InventarioResponseDto>
+            {
+                Items = response,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+
+            return OperationResultD<PagedResult<InventarioResponseDto>>.Success(pagedResult, "Todos los inventarios obtenidos exitosamente.");
         }
     }
 }

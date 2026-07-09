@@ -14,7 +14,8 @@ namespace Web.Services.EndPoints.Modulo_Usuarios
 
       // public string Delete => "Usuario/DeleteUsuario";
 
-        public string Disable => "Usuario/DisableUsuario"; 
+        public string Disable => "Usuario/DisableUsuario";
+        public string Enable => "Usuario/EnableUsuario";
         public string cambiarPassword => "Usuario/CambiarPassword";
 
         public string CambiarRol => "Usuario/CambiarRol";

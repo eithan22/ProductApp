@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
@@ -44,18 +45,18 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [Authorize]
         [HttpGet("GetAllProductos")]
 
-        public async Task<IActionResult> GetAllProductos()
+        public async Task<IActionResult> GetAllProductos([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var result = await _productoServices.GetAllAsync();
+                var result = await _productoServices.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 
 
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
 
-                return Ok(ApiResponseT<List<ProductoResponseDto>>.SuccessResponse(result.Data, result.Message));
+                return Ok(ApiResponseT<PagedResult<ProductoResponseDto>>.SuccessResponse(result.Data, result.Message));
             }
             catch (Exception ex)
             {
@@ -108,7 +109,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("DisableProducto/{id}")]
 
         public async Task<IActionResult> DisableProducto(int id)
@@ -127,7 +128,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("EnableProducto/{id}")]
 
         public async Task<IActionResult> EnableProducto(int id)
@@ -152,11 +153,11 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [Authorize]
         [HttpGet("BuscarProductos")]
 
-        public async Task<IActionResult> BuscarProducto(string? nombre, string? categoria)
+        public async Task<IActionResult> BuscarProducto(string? nombre, string? categoria, [FromQuery] bool incluirInactivos = false)
         {
             try
             {
-                var result = await _productoServices.BuscarProductosPorNombreOCategoria(nombre, categoria);
+                var result = await _productoServices.BuscarProductosPorNombreOCategoria(nombre, categoria, incluirInactivos);
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 

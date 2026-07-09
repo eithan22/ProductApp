@@ -17,11 +17,12 @@ namespace Web.Controllers.Modulo_Usuarios
 
         // GET: UsuarioControlle
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(bool incluirInactivos = false, int pageNumber = 1)
         {
             try
             {
-                var result = await _usuarioHttpServices.GetUsuariosAsync();
+                var result = await _usuarioHttpServices.GetUsuariosAsync(incluirInactivos, pageNumber);
+                ViewBag.IncluirInactivos = incluirInactivos;
                 return View(result);
             }
             catch (Exception ex)
@@ -170,6 +171,14 @@ namespace Web.Controllers.Modulo_Usuarios
 
 
             }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Enable(int id)
+        {
+            await _usuarioHttpServices.EnableUsuarioAsync(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

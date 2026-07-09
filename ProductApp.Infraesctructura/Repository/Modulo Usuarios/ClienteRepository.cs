@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProductApp.Domian.Common.Enums.EnumsCliente;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Contex;
@@ -12,9 +13,33 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
         }
 
-        public Task<List<Cliente>> BuscarClientesAsync(string? nombre, string? telefono, string? correo)
+        public async Task<(List<Cliente> Items, int TotalCount)> GetAllClientesAsync(bool incluirInactivos, int pageNumber, int pageSize)
         {
-            var query = _context.Clientes.AsQueryable();
+            var query = _context.Clientes.Where(c => !c.EstaEliminado).AsQueryable();
+
+            if (!incluirInactivos)
+            {
+                query = query.Where(c => c.Estado == EstadoCliente.Activo);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        public Task<List<Cliente>> BuscarClientesAsync(string? nombre, string? telefono, string? correo, bool incluirInactivos = false)
+        {
+            var query = _context.Clientes.Where(c => !c.EstaEliminado).AsQueryable();
+
+            if (!incluirInactivos)
+            {
+                query = query.Where(c => c.Estado == EstadoCliente.Activo);
+            }
 
             if (!string.IsNullOrWhiteSpace(nombre))
             {

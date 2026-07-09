@@ -13,9 +13,10 @@ namespace Web.Controllers.Modulo_Productos
             _categoriaHttpServices = categoriaHttpServices;
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(bool incluirInactivos = false, int pageNumber = 1)
         {
-            var result = await _categoriaHttpServices.GetCategoriasAsync();
+            var result = await _categoriaHttpServices.GetCategoriasPagedAsync(incluirInactivos, pageNumber);
+            ViewBag.IncluirInactivos = incluirInactivos;
             return View(result);
         }
 
@@ -122,6 +123,14 @@ namespace Web.Controllers.Modulo_Productos
                 var categoria = await _categoriaHttpServices.GetCategoriaByIdAsync(id);
                 return View(categoria);
             }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Enable(int id)
+        {
+            await _categoriaHttpServices.EnableCategoriaAsync(id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

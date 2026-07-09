@@ -6,6 +6,7 @@ namespace ProductApp.Domian.Interfaces.IGeneryRepos
     public interface IGenericRepository<T> where T : BaseEntity
     {
         Task<IEnumerable<T>> GetAllAsync();
+        Task<(List<T> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
         Task<T> CreateAsync(T entity);
         Task<T?> GetByIdAsync(int id);
         Task UpdateAsync(T entity);

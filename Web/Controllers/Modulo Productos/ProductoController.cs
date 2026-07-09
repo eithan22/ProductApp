@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using Web.Models.Modelo_Productos.ProductoModels;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Productos;
 
@@ -15,9 +16,10 @@ namespace Web.Controllers.Modulo_Productos
             _categoriaHttpServices = categoriaHttpServices;
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(bool incluirInactivos = false, int pageNumber = 1)
         {
-            var result = await _productoHttpServices.GetProductosAsync();
+            var result = await _productoHttpServices.GetProductosAsync(incluirInactivos, pageNumber);
+            ViewBag.IncluirInactivos = incluirInactivos;
             return View(result);
         }
 
@@ -27,12 +29,13 @@ namespace Web.Controllers.Modulo_Productos
             try
             {
                 var result = await _productoHttpServices.BuscarProductosAsync(nombre, categoria);
-                return View("Index", result);
+                var paged = new PagedResult<ProductoModel> { Items = result, PageNumber = 1, PageSize = result.Count, TotalCount = result.Count };
+                return View("Index", paged);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                return View("Index", new List<ProductoModel>());
+                return View("Index", new PagedResult<ProductoModel>());
             }
         }
 

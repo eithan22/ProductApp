@@ -1,8 +1,9 @@
-@model IEnumerable<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>
+@model ProductApp.Aplication.Common.PagedResult<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>
 
 @{
     ViewData["Title"] = "Categorías";
     string[] tagColors = { "var(--tag-0)", "var(--tag-1)", "var(--tag-2)", "var(--tag-3)", "var(--tag-4)", "var(--tag-5)", "var(--tag-6)", "var(--tag-7)" };
+    var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -12,13 +13,20 @@
     </a>
 </div>
 
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="incluirInactivos" name="incluirInactivos" value="true" onchange="this.form.submit()" @(incluirInactivos ? "checked" : "") />
+        <label class="form-check-label" for="incluirInactivos">Mostrar inactivas</label>
+    </div>
+</form>
+
 <div class="surface-card p-2">
-    @if (!Model.Any())
+    @if (!Model.Items.Any())
     {
         <div class="text-center text-muted py-5">No hay categorías registradas todavía.</div>
     }
 
-    @foreach (var item in Model)
+    @foreach (var item in Model.Items)
     {
         var color = tagColors[item.Id % tagColors.Length];
         var activo = item.Estado == "Activo";
@@ -39,11 +47,22 @@
                 </span>
 
                 <div class="ledger-actions">
-                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
+                    @if (activo)
+                    {
+                        <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
+                    }
+                    else
+                    {
+                        <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button type="submit" class="icon-btn" title="Activar">@await Html.PartialAsync("_Icon", "check")</button>
+                        </form>
+                    }
                 </div>
             </div>
         </div>
     }
 </div>
+
+@await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages })

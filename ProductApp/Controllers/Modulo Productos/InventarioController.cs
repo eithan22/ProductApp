@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Aplication.Interface;
@@ -47,18 +48,18 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         [Authorize]
         [HttpGet("GetAllInventarios")]
-        public async Task<IActionResult> GetAllInventarios()
+        public async Task<IActionResult> GetAllInventarios([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var result = await _inventarioService.ObtenerTodosInventariosAsync();
+                var result = await _inventarioService.ObtenerTodosInventariosAsync(pageNumber, pageSize);
 
 
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
 
-                return Ok(ApiResponseT<List<InventarioResponseDto>>.SuccessResponse(result.Data, result.Message));
+                return Ok(ApiResponseT<PagedResult<InventarioResponseDto>>.SuccessResponse(result.Data, result.Message));
             }
             catch (Exception ex)
             {
@@ -141,7 +142,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPut("AjustarInventario")]
         public async Task<IActionResult> AjustarInventario([FromQuery] int productoId, AjustarStockDto dto)
         {

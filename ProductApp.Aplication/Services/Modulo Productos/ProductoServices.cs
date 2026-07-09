@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
@@ -161,20 +162,31 @@ namespace ProductApp.Aplication.Services
 
 
 
-        //ver todos os productos 
-       public async Task<OperationResultD<List<ProductoResponseDto>>> GetAllAsync()
+        //ver todos os productos
+       public Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+            => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
+
+       public async Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
         {
-            var productos = await _productorepository.GetAllConCategoriaAsync();
+            if (pageNumber < 1)
+                return OperationResultD<PagedResult<ProductoResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
 
-            if(productos == null)
-            {
-                return OperationResultD<List<ProductoResponseDto>>.Failure("No se encontraron los productos");
-            };
+            if (pageSize < 1 || pageSize > 100)
+                return OperationResultD<PagedResult<ProductoResponseDto>>.Failure("pageSize debe estar entre 1 y 100");
 
+            var (productos, totalCount) = await _productorepository.GetAllConCategoriaAsync(incluirInactivos, pageNumber, pageSize);
 
             var productoresponsedto = productos.Select(c => _mapperProductoMapper.MapToProductoResponse(c)).ToList();
-               
-               return OperationResultD<List<ProductoResponseDto>>.Success(productoresponsedto, "Productos obtenidos correctamente");
+
+            var pagedResult = new PagedResult<ProductoResponseDto>
+            {
+                Items = productoresponsedto,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+
+            return OperationResultD<PagedResult<ProductoResponseDto>>.Success(pagedResult, "Productos obtenidos correctamente");
         }
 
         
@@ -268,17 +280,17 @@ namespace ProductApp.Aplication.Services
 
 
         //buscar productor por nombre y categoria
-        public async Task<OperationResultD<List<ProductoResponseDto>>> BuscarProductosPorNombreOCategoria(string? nombre, string? categoria)
+        public async Task<OperationResultD<List<ProductoResponseDto>>> BuscarProductosPorNombreOCategoria(string? nombre, string? categoria, bool incluirInactivos = false)
         {
-            if (string.IsNullOrEmpty(nombre) && string.IsNullOrEmpty(categoria)) 
+            if (string.IsNullOrEmpty(nombre) && string.IsNullOrEmpty(categoria))
             {
                 return OperationResultD<List<ProductoResponseDto>>.Failure("Debe proporcionar al menos un criterio de búsqueda");
-            
+
             }
 
-           
 
-            var producto = await _productorepository.BuscarProductosAsync(nombre, categoria);
+
+            var producto = await _productorepository.BuscarProductosAsync(nombre, categoria, incluirInactivos);
 
             if (producto.Count == 0)
             {

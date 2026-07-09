@@ -60,7 +60,7 @@ namespace Web.Controllers.Modulo_Ventas
 
         public async Task<ActionResult> Create()
         {
-            ViewBag.Clientes = await _clienteHttpServices.GetClientesAsync();
+            ViewBag.Clientes = (await _clienteHttpServices.GetClientesAsync(pageSize: 100)).Items;
             return View();
         }
 
@@ -75,13 +75,13 @@ namespace Web.Controllers.Modulo_Ventas
                     var orden = await _ordenHttpServices.CreateOrdenAsync(model);
                     return RedirectToAction(nameof(Details), new { id = orden.Id });
                 }
-                ViewBag.Clientes = await _clienteHttpServices.GetClientesAsync();
+                ViewBag.Clientes = (await _clienteHttpServices.GetClientesAsync(pageSize: 100)).Items;
                 return View(model);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                ViewBag.Clientes = await _clienteHttpServices.GetClientesAsync();
+                ViewBag.Clientes = (await _clienteHttpServices.GetClientesAsync(pageSize: 100)).Items;
                 return View(model);
             }
         }
@@ -92,7 +92,7 @@ namespace Web.Controllers.Modulo_Ventas
             var detalles = await _detalleOrdenHttpServices.GetDetallesPorOrdenAsync(id);
 
             ViewBag.Detalles = detalles;
-            var productos = await _productoHttpServices.GetProductosAsync();
+            var productos = (await _productoHttpServices.GetProductosAsync(pageSize: 100)).Items;
             ViewBag.Productos = productos.Where(p => p.Estado == "Activo").ToList();
 
             List<PagoModel> pagos;

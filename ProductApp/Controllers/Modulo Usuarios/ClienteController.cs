@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
@@ -49,16 +50,16 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize]
         // get 
         [HttpGet("GetClientes")]
-        public async Task<IActionResult> GetClientes()
+        public async Task<IActionResult> GetClientes([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var result = await _clienteService.GetAllAsync();
+                var result = await _clienteService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
                 if (!result.IsSuccess)
                     return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
 
-                return Ok(ApiResponseT<List<ClienteResponseDto>>.SuccessResponse(result.Data, result.Message));
+                return Ok(ApiResponseT<PagedResult<ClienteResponseDto>>.SuccessResponse(result.Data, result.Message));
 
             }
             catch (Exception ex)
@@ -72,7 +73,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [Authorize]
 
-        [HttpGet("GetByIdClientes{id}")]
+        [HttpGet("GetByIdClientes/{id}")]
 
         public async Task<IActionResult> GetByIdClientes(int id)
         {
@@ -95,7 +96,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [Authorize]
 
-        [HttpDelete("DisableCliente{id}")]
+        [HttpPatch("DisableCliente/{id}")]
         public async Task<IActionResult> DisableClientes(int id)
         {
 
@@ -109,18 +110,39 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
                 return Ok(ApiResponse.SuccessResponse(result.Message)); //no usamos data porque solo queremos indicar que se deshabilito correctamente
 
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            
+
             }
-            
+
         }
 
 
         [Authorize]
 
-        [HttpPut("UpdateCliente{id}")]
+        [HttpPatch("EnableCliente/{id}")]
+        public async Task<IActionResult> EnableCliente(int id)
+        {
+            try
+            {
+                var result = await _clienteService.EnableCliente(id);
+
+                if (!result.IsSuccess)
+                    return BadRequest(ApiResponse.FailureResponse(result.Message));
+
+                return Ok(ApiResponse.SuccessResponse(result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse.FailureResponse(ex.Message));
+            }
+        }
+
+
+        [Authorize]
+
+        [HttpPut("UpdateCliente/{id}")]
 
         public async Task<IActionResult> UpdateCliente(int id ,UpdateClienteDto dto)
         {
@@ -147,11 +169,11 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [HttpGet("GetBuscar")]
 
         //tambien puedo hacer un dto de busquedad pero asi sta bien 
-        public async Task<IActionResult> BuscarAsync(string? nombre, string? telefono, string? correo)
+        public async Task<IActionResult> BuscarAsync(string? nombre, string? telefono, string? correo, [FromQuery] bool incluirInactivos = false)
         {
             try
             {
-                var result = await _clienteService.BuscarAsync(nombre, telefono, correo);
+                var result = await _clienteService.BuscarAsync(nombre, telefono, correo, incluirInactivos);
                 if(!result.IsSuccess)
                  return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 

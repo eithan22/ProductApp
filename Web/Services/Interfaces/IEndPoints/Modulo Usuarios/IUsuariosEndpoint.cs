@@ -8,6 +8,7 @@
         string Update { get; }
         //string Delete { get; }
         string Disable { get; }
+        string Enable { get; }
 
         string cambiarPassword { get; }
 

@@ -1,4 +1,5 @@
-﻿using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
+﻿using ProductApp.Aplication.Common;
+using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface.Servicios.BaseServices;
 using ProductApp.Aplication.Result.OperationResult;
@@ -16,6 +17,10 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<bool>> ResetearPassword(ResetearPasswordDto dto);
 
         Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto);
+
+        Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
+
+        Task<OperationResultD<bool>> EnableUsuario(int id);
 
 
     }

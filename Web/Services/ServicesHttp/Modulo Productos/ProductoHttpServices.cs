@@ -1,3 +1,4 @@
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using Web.Models.Modelo_Productos.ProductoModels;
 using Web.Services.Interfaces.IBase;
@@ -41,9 +42,10 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             return await _baseHttpServices.GetAsync<ProductoModel>($"{_productoEndpoint.GetById}{id}");
         }
 
-        public async Task<List<ProductoModel>> GetProductosAsync()
+        public async Task<PagedResult<ProductoModel>> GetProductosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
         {
-            return await _baseHttpServices.GetAsync<List<ProductoModel>>(_productoEndpoint.GetAll);
+            return await _baseHttpServices.GetAsync<PagedResult<ProductoModel>>(
+                $"{_productoEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");
         }
 
         public async Task<List<ProductoModel>> BuscarProductosAsync(string? nombre, string? categoria)

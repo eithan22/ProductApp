@@ -1,4 +1,5 @@
-﻿using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
+﻿using ProductApp.Aplication.Common;
+using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Mappers;
 using Web.Models.Modelo_Usuarios.UsuarioModels;
@@ -61,8 +62,14 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
 
         public async Task<bool> DisableUsuarioAsync(int id)
         {
-           var response = await _baseHttpServices.DeleteAsync($"{_usuarioEndpoint.Disable}/{id}");
-            return response;
+            await _baseHttpServices.PatchAsync<object, object>($"{_usuarioEndpoint.Disable}/{id}", new { });
+            return true;
+        }
+
+        public async Task<bool> EnableUsuarioAsync(int id)
+        {
+            await _baseHttpServices.PatchAsync<object, object>($"{_usuarioEndpoint.Enable}/{id}", new { });
+            return true;
         }
 
 
@@ -75,9 +82,10 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
             return response;
         }
 
-        public async Task<List<UsuarioModel>> GetUsuariosAsync()
+        public async Task<PagedResult<UsuarioModel>> GetUsuariosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
         {
-            var response =  await _baseHttpServices.GetAsync<List<UsuarioModel>>($"{_usuarioEndpoint.GetAll}");
+            var response = await _baseHttpServices.GetAsync<PagedResult<UsuarioModel>>(
+                $"{_usuarioEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");
             return response;
         }
 

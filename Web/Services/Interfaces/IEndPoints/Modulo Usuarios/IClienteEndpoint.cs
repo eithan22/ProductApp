@@ -8,6 +8,8 @@
         string Update { get; }
         string Delete { get; }
 
+        string Enable { get; }
+
         string GetBuscar { get; }
 
         

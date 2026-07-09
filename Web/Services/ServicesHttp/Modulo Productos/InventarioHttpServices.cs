@@ -1,3 +1,4 @@
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using Web.Models.Modelo_Productos.InventarioModels;
 using Web.Services.Interfaces.IBase;
@@ -18,9 +19,10 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             _inventarioEndpoint = inventarioEndpoint;
         }
 
-        public async Task<List<InventarioModel>> GetAllInventariosAsync()
+        public async Task<PagedResult<InventarioModel>> GetAllInventariosAsync(int pageNumber = 1, int pageSize = 10)
         {
-            return await _baseHttpServices.GetAsync<List<InventarioModel>>(_inventarioEndpoint.GetAll);
+            return await _baseHttpServices.GetAsync<PagedResult<InventarioModel>>(
+                $"{_inventarioEndpoint.GetAll}?pageNumber={pageNumber}&pageSize={pageSize}");
         }
 
         public async Task<List<InventarioModel>> GetStockBajoAsync()
