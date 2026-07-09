@@ -1,4 +1,5 @@
 using ProductApp.Extensions.Modulo_Productos;
+using ProductApp.Extensions.Modulo_Reportes;
 using ProductApp.Extensions.Modulo_Usuarios;
 using ProductApp.Extensions.Modulo_Ventas;
 
@@ -12,6 +13,7 @@ namespace ProductApp.Extensions
             services.AddModuloUsuarios();
             services.AddModuloProductos();
             services.AddModuloVentas();
+            services.AddModuloReportes();
 
             return services;
         }

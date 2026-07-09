@@ -1,0 +1,67 @@
+@model List<Web.Models.Modelo_Reportes.ReporteModels.VentaPorProductoModel>
+
+@{
+    ViewData["Title"] = "Ventas por producto";
+    var desde = ViewBag.Desde as DateTime?;
+    var hasta = ViewBag.Hasta as DateTime?;
+}
+
+<a asp-action="Index" class="btn-pa btn-pa-outline mb-3">@await Html.PartialAsync("_Icon", "back") Reportes</a>
+
+<div class="surface-card p-3 mb-4">
+    <form asp-action="VentasPorProducto" method="get" class="row g-2">
+        <div class="col-md-4">
+            <label class="form-label">Desde</label>
+            <input type="date" name="desde" class="form-control" value="@(desde?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Hasta</label>
+            <input type="date" name="hasta" class="form-control" value="@(hasta?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn-pa btn-pa-primary w-100">@await Html.PartialAsync("_Icon", "search") Filtrar</button>
+            <a asp-action="VentasPorProducto" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+        </div>
+    </form>
+</div>
+
+@if (Model.Any())
+{
+    <div class="surface-card p-3 mb-4">
+        <canvas id="chartVentasPorProducto" height="90"></canvas>
+    </div>
+}
+
+<div class="surface-card p-2">
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">No hay ventas en el período seleccionado.</div>
+    }
+
+    @foreach (var item in Model)
+    {
+        <div class="ledger-row">
+            <div class="ledger-body">
+                <div class="ledger-name">@item.NombreProducto</div>
+                <div class="ledger-desc">@item.CantidadVendida unidades vendidas</div>
+            </div>
+            <div class="ledger-meta">
+                <span class="mono">@item.Total.ToString("C")</span>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(x => x.NombreProducto)));
+    const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(x => x.Total)));
+    if (labels.length > 0) {
+        new Chart(document.getElementById('chartVentasPorProducto'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'Total vendido', data: data, backgroundColor: '#14503F' }] },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+    }
+</script>
+}

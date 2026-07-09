@@ -3,6 +3,7 @@ using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Helper;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
 using ProductApp.Aplication.Result.OperationResult;
+using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Interfaces;
 
 namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
@@ -50,8 +51,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             if (usuario.EstaEliminado)
                 return OperationResult.Failure("Usuario deshabilitado");
 
-            
-            
+            if (usuario.EstadoUsuario != EstadoUsuario.Activo)
+                return OperationResult.Failure("Usuario inactivo o suspendido");
+
             bool valido = PasswordHelper.Verify(dto.Password, usuario.PasswordHash);
 
             if (!valido)

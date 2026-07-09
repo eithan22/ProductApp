@@ -1,0 +1,154 @@
+@model Web.Models.Modelo_Reportes.ReporteModels.ReporteDashboardModel
+
+@{
+    ViewData["Title"] = "Reportes";
+    var labelsFechas = System.Text.Json.JsonSerializer.Serialize(Model.VentasPorFecha.Select(x => x.Fecha.ToString("dd/MM")));
+    var dataFechas = System.Text.Json.JsonSerializer.Serialize(Model.VentasPorFecha.Select(x => x.Total));
+    var labelsProductos = System.Text.Json.JsonSerializer.Serialize(Model.TopProductos.Select(x => x.NombreProducto));
+    var dataProductos = System.Text.Json.JsonSerializer.Serialize(Model.TopProductos.Select(x => x.CantidadVendida));
+}
+
+<p class="text-muted mb-4">
+    Resumen del @Model.Desde.ToString("dd/MM/yyyy") al @Model.Hasta.ToString("dd/MM/yyyy") y acceso a todos los reportes.
+</p>
+
+@if (Model.Ingresos != null)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="surface-card stat-mini">
+                <div class="label">Ingresos totales</div>
+                <div class="value mono">@Model.Ingresos.Total.ToString("C")</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="surface-card stat-mini">
+                <div class="label">Pagos registrados</div>
+                <div class="value">@Model.Ingresos.CantidadPagos</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="surface-card stat-mini">
+                <div class="label">Ticket promedio</div>
+                <div class="value mono">@Model.Ingresos.TicketPromedio.ToString("C")</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="surface-card stat-mini">
+                <div class="label">Stock bajo</div>
+                <div class="value" style="color:var(--color-danger)">@Model.ProductosStockBajo / @Model.TotalProductosInventario</div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-7">
+        <div class="surface-card p-3">
+            <div class="ledger-name mb-3">Ventas de los últimos 30 días</div>
+            @if (Model.VentasPorFecha.Any())
+            {
+                <canvas id="chartVentasPorFecha" height="110"></canvas>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">Sin datos disponibles para este reporte.</div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="surface-card p-3">
+            <div class="ledger-name mb-3">Top 5 productos más vendidos</div>
+            @if (Model.TopProductos.Any())
+            {
+                <canvas id="chartTopProductos" height="110"></canvas>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">Sin datos disponibles para este reporte.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <a asp-action="VentasPorFecha" class="surface-card p-3 d-block text-decoration-none text-reset">
+            @await Html.PartialAsync("_Icon", "chart")
+            <div class="ledger-name mt-2">Ventas por fecha</div>
+            <div class="text-muted" style="font-size:.83rem;">Órdenes agrupadas por día.</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="VentasPorProducto" class="surface-card p-3 d-block text-decoration-none text-reset">
+            @await Html.PartialAsync("_Icon", "box")
+            <div class="ledger-name mt-2">Ventas por producto</div>
+            <div class="text-muted" style="font-size:.83rem;">Unidades e ingresos por producto.</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="VentasPorVendedor" class="surface-card p-3 d-block text-decoration-none text-reset">
+            @await Html.PartialAsync("_Icon", "users")
+            <div class="ledger-name mt-2">Ventas por vendedor</div>
+            <div class="text-muted" style="font-size:.83rem;">Desempeño por usuario.</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="InventarioActual" class="surface-card p-3 d-block text-decoration-none text-reset">
+            @await Html.PartialAsync("_Icon", "layers")
+            <div class="ledger-name mt-2">Inventario actual</div>
+            <div class="text-muted" style="font-size:.83rem;">Stock y niveles mínimos.</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="ProductosMasVendidos" class="surface-card p-3 d-block text-decoration-none text-reset">
+            @await Html.PartialAsync("_Icon", "target")
+            <div class="ledger-name mt-2">Productos más vendidos</div>
+            <div class="text-muted" style="font-size:.83rem;">Top N por unidades.</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="IngresosTotales" class="surface-card p-3 d-block text-decoration-none text-reset">
+            @await Html.PartialAsync("_Icon", "receipt")
+            <div class="ledger-name mt-2">Ingresos totales</div>
+            <div class="text-muted" style="font-size:.83rem;">Ingresos y ticket promedio.</div>
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const ventasLabels = @Html.Raw(labelsFechas);
+    const ventasData = @Html.Raw(dataFechas);
+    if (ventasLabels.length > 0) {
+        new Chart(document.getElementById('chartVentasPorFecha'), {
+            type: 'line',
+            data: {
+                labels: ventasLabels,
+                datasets: [{
+                    label: 'Total vendido',
+                    data: ventasData,
+                    borderColor: '#14503F',
+                    backgroundColor: '#E4EEEA',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    const productosLabels = @Html.Raw(labelsProductos);
+    const productosData = @Html.Raw(dataProductos);
+    if (productosLabels.length > 0) {
+        new Chart(document.getElementById('chartTopProductos'), {
+            type: 'bar',
+            data: {
+                labels: productosLabels,
+                datasets: [{ label: 'Unidades vendidas', data: productosData, backgroundColor: '#14503F' }]
+            },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+    }
+</script>
+}

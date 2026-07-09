@@ -54,6 +54,9 @@
                 <a asp-controller="Orden" asp-action="Index" class="@(controller == "Orden" ? "active" : "")">
                     @await Html.PartialAsync("_Icon", "receipt") Órdenes
                 </a>
+                <a asp-controller="Reporte" asp-action="Index" class="@(controller == "Reporte" ? "active" : "")">
+                    @await Html.PartialAsync("_Icon", "chart") Reportes
+                </a>
                 <a asp-controller="Usuario" asp-action="Index" class="@(controller == "Usuario" ? "active" : "")">
                     @await Html.PartialAsync("_Icon", "users") Usuarios
                 </a>
@@ -82,6 +85,7 @@
     }
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
     @RenderSection("Scripts", required: false)
 

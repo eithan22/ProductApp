@@ -1,0 +1,45 @@
+@model Web.Models.Modelo_Reportes.ReporteModels.IngresosTotalesModel
+
+@{
+    ViewData["Title"] = "Ingresos totales";
+}
+
+<a asp-action="Index" class="btn-pa btn-pa-outline mb-3">@await Html.PartialAsync("_Icon", "back") Reportes</a>
+
+<div class="surface-card p-3 mb-4">
+    <form asp-action="IngresosTotales" method="get" class="row g-2">
+        <div class="col-md-4">
+            <label class="form-label">Desde</label>
+            <input type="date" name="desde" class="form-control" value="@Model.Desde.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Hasta</label>
+            <input type="date" name="hasta" class="form-control" value="@Model.Hasta.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn-pa btn-pa-primary w-100">@await Html.PartialAsync("_Icon", "search") Filtrar</button>
+            <a asp-action="IngresosTotales" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="surface-card stat-mini">
+            <div class="label">Ingresos totales</div>
+            <div class="value mono">@Model.Total.ToString("C")</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="surface-card stat-mini">
+            <div class="label">Pagos registrados</div>
+            <div class="value">@Model.CantidadPagos</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="surface-card stat-mini">
+            <div class="label">Ticket promedio</div>
+            <div class="value mono">@Model.TicketPromedio.ToString("C")</div>
+        </div>
+    </div>
+</div>
