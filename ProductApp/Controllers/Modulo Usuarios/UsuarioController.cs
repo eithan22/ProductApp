@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Api.Filters;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
@@ -192,6 +193,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [HttpPost("CambiarPassword")]
         [Authorize]
+        [PermitirConPasswordPendiente]
         public async Task<IActionResult> CambiarPassword(ChangePasswordDto dto)
         {
             try

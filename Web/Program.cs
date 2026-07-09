@@ -1,4 +1,5 @@
 using Web.Extensions;
+using Web.Filters;
 
 namespace Web
 {
@@ -11,7 +12,10 @@ namespace Web
             builder.Services.AddWebDependencies(builder.Configuration);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add<HandleApiErrorsFilter>();
+            });
 
             var app = builder.Build();
 

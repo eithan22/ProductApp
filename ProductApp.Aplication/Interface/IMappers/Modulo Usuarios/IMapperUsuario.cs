@@ -16,10 +16,6 @@ namespace ProductApp.Aplication.Interface.IMappers.Modulo_Usuarios
 
         void MapUpdate(UpdateUsuarioDto dto, Usuario usuario);
 
-        Usuario MapFromRegisterDto(RegisterDto dto);
-
-
-
 
 
 

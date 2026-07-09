@@ -15,6 +15,7 @@ namespace Web.Services.Mappers.Modulo_Usuarios
                 FechaNacimiento = model.FechaNacimiento,
                 UserName = model.UserName,
                 Password = model.Password,
+                RolUsuario = model.RolUsuario.ToString(),
             };
         }
 
@@ -27,6 +28,7 @@ namespace Web.Services.Mappers.Modulo_Usuarios
                 Email = model.Email,
                 FechaNacimiento = model.FechaNacimiento,
                 UserName = model.UserName,
+                RolUsuario = model.RolUsuario.ToString(),
             };
         }
 

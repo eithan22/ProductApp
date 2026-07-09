@@ -37,10 +37,5 @@ namespace ProductApp.Aplication.Mappers
             usuario.CambiarRol(rol);
             usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
         }
-
-        public Usuario MapFromRegisterDto(RegisterDto dto)
-        {
-            return new Usuario(dto.Nombre, dto.Email, dto.UserName, RolUsuario.Vendedor);
-        }
     }
 }

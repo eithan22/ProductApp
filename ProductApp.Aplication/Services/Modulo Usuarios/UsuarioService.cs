@@ -59,6 +59,7 @@ namespace ProductApp.Aplication.Services
             var usuario = _mapperUsuario.MapToEntity(dto);
             usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
             usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.Password));
+            usuario.MarcarPasswordComoTemporal();
 
             await _usuarioRepository.CreateAsync(usuario);
 
@@ -84,6 +85,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
 
             usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.PasswordNueva));
+            usuario.ConfirmarCambioPassword();
             await _usuarioRepository.UpdateAsync(usuario);
 
             return OperationResultD<bool>.Success(true, "Contraseña actualizada correctamente");
@@ -107,6 +109,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
 
             usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.NuevaContraseña));
+            usuario.MarcarPasswordComoTemporal();
             await _usuarioRepository.UpdateAsync(usuario);
 
             return OperationResultD<bool>.Success(true, "Contraseña reseteada correctamente");

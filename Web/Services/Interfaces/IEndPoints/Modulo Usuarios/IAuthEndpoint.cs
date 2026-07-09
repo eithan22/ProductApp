@@ -3,6 +3,5 @@
     public interface IAuthEndpoint
     {
         string Login { get; }
-        string Register { get; }
     }
 }

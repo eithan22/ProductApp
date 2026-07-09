@@ -21,7 +21,6 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
         private readonly IMapperUsuario _mapperUsuario;
         private readonly IConfiguration _config;
         private readonly IValidator<LoginDto> _loginValidator;
-        private readonly IValidator<RegisterDto> _registerValidator;
         private readonly IValidatorBusinessAuth _validatorBusinessAuth;
 
         public AuthServices(
@@ -29,36 +28,13 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             IMapperUsuario mapperUsuario,
             IConfiguration config,
             IValidatorBusinessAuth validatorBusinessAuth,
-            IValidator<LoginDto> loginValidator,
-            IValidator<RegisterDto> registerValidator)
+            IValidator<LoginDto> loginValidator)
         {
             _usuarioRepository = usuarioRepository;
             _mapperUsuario = mapperUsuario;
             _config = config;
             _validatorBusinessAuth = validatorBusinessAuth;
             _loginValidator = loginValidator;
-            _registerValidator = registerValidator;
-        }
-
-        public async Task<OperationResultD<UsuarioResponseDto>> Register(RegisterDto dto)
-        {
-            var validationResult = await _registerValidator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
-                return OperationResultD<UsuarioResponseDto>.Failure(
-                    string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
-
-            var validatorBusiness = await _validatorBusinessAuth.ValidarRegisterAsync(dto);
-            if (!validatorBusiness.IsSuccess)
-                return OperationResultD<UsuarioResponseDto>.Failure(validatorBusiness.Message);
-
-            var usuario = _mapperUsuario.MapFromRegisterDto(dto);
-            usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
-            usuario.EstablecerPasswordHash(PasswordHelper.Hash(dto.Password));
-
-            await _usuarioRepository.CreateAsync(usuario);
-
-            var response = _mapperUsuario.ToDto(usuario);
-            return OperationResultD<UsuarioResponseDto>.Success(response, "Usuario registrado exitosamente");
         }
 
         public async Task<OperationResultD<AuthResponseDto>> Login(LoginDto dto)
@@ -80,7 +56,8 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
                 new Claim(ClaimTypes.Name, usuario.Nombre),
-                new Claim(ClaimTypes.Role, usuario.RolUsuario.ToString())
+                new Claim(ClaimTypes.Role, usuario.RolUsuario.ToString()),
+                new Claim("DebeCambiarPassword", usuario.DebeCambiarPassword.ToString())
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -98,6 +75,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             return OperationResultD<AuthResponseDto>.Success(new AuthResponseDto
             {
                 Token = tokenString,
+                DebeCambiarPassword = usuario.DebeCambiarPassword,
                 Usuario = _mapperUsuario.ToDto(usuario)
             }, "Login exitoso");
         }

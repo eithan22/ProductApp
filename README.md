@@ -14,7 +14,7 @@ The system handles full product and category lifecycle management, user authenti
 
 ## ✨ Features
 
-- 🔐 **User Authentication** — Register and login with BCrypt password hashing and soft-delete support
+- 🔐 **User Authentication** — Login with BCrypt password hashing, forced password change on first login, and soft-delete support
 - 📦 **Product Management** — Create, update, and disable products with duplicate-name/description validation
 - 🗂️ **Category Management** — Full category lifecycle with business rule enforcement
 - 👥 **Client Management** — Client registration with existence validation
@@ -126,13 +126,22 @@ dotnet user-secrets init --project ProductApp/ProductApp.Api.csproj
 dotnet user-secrets set "Jwt:Key" "<random-key-at-least-32-characters>" --project ProductApp/ProductApp.Api.csproj
 ```
 
+On first run, if the `Usuarios` table is empty, the API seeds an initial Administrador using the following configuration keys (also set via Secret Manager):
+
+```bash
+dotnet user-secrets set "Seed:AdminUsername" "admin" --project ProductApp/ProductApp.Api.csproj
+dotnet user-secrets set "Seed:AdminEmail" "admin@example.com" --project ProductApp/ProductApp.Api.csproj
+dotnet user-secrets set "Seed:AdminPassword" "<a-secure-password>" --project ProductApp/ProductApp.Api.csproj
+```
+
+The seeded admin is created with a temporary password flag, so it must be changed via `/api/Usuario/CambiarPassword` on first login.
+
 ---
 
 ## 📡 API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | /api/auth/register | Register a new user |
 | POST | /api/auth/login | Authenticate and validate credentials |
 | GET | /api/productos | List all products |
 | POST | /api/productos | Create a new product |

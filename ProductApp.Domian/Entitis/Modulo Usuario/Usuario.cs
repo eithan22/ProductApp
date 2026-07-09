@@ -13,6 +13,7 @@ namespace ProductApp.Domian.Entitis
         public RolUsuario RolUsuario { get; private set; }
         public EstadoUsuario EstadoUsuario { get; private set; }
         public DateTime? FechaNacimiento { get; private set; }
+        public bool DebeCambiarPassword { get; private set; } = false;
 
         public int? Edad => FechaNacimiento.HasValue
             ? CalcularEdad(FechaNacimiento.Value)
@@ -91,6 +92,18 @@ namespace ProductApp.Domian.Entitis
                 throw new ValidacionDominioException("PasswordHash", "El hash de contraseña no puede estar vacío.");
 
             PasswordHash = hash;
+        }
+
+        public void MarcarPasswordComoTemporal()
+        {
+            DebeCambiarPassword = true;
+            ActualizarFechaModificacion();
+        }
+
+        public void ConfirmarCambioPassword()
+        {
+            DebeCambiarPassword = false;
+            ActualizarFechaModificacion();
         }
 
         public void CambiarRol(RolUsuario nuevoRol)

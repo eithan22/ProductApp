@@ -20,6 +20,6 @@ namespace Web.Services.EndPoints.Modulo_Usuarios
 
         public string CambiarRol => "Usuario/CambiarRol";
 
-        public string ResetPassword => "Usuario/ResetPassword";
+        public string ResetPassword => "Usuario/ResetearPassword";
     }
 }

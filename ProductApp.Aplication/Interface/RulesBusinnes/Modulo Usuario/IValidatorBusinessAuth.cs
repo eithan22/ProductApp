@@ -8,7 +8,6 @@ namespace ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario
 {
     public interface IValidatorBusinessAuth
     {
-        Task<OperationResult> ValidarRegisterAsync(RegisterDto dto);
          Task<OperationResult> ValidarLoginAsync(LoginDto dto);
     }
 }

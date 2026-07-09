@@ -18,25 +18,6 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 
 
 
-        public async Task<OperationResult> ValidarRegisterAsync(RegisterDto dto)
-        {
-            if(dto.Password != dto.ConfirmPassword)
-                return OperationResult.Failure("Las contraseñas no coinciden");
-
-
-            // 🔴 2. Verificar si el usuario ya existe (email o username)
-            var existe = await _usuarioRepository.ExisteAsync(x =>
-                x.Email == dto.Email || x.Username == dto.UserName);
-
-            if (existe)
-                return OperationResult.Failure("El usuario ya existe");
-
-            // Aquí puedes agregar más validaciones según sea necesario
-
-      
-            return OperationResult.Success();
-        }
-
         public async Task<OperationResult> ValidarLoginAsync(LoginDto dto)
         {
             if(string.IsNullOrEmpty(dto.Username) || string.IsNullOrEmpty(dto.Password))

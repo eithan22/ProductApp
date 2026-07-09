@@ -1,4 +1,5 @@
 @model Web.Models.Modelo_Usuarios.UsuarioModels.CreateUsuarioModel
+@using ProductApp.Domian.Common.Enums.EnumsUsuario
 
 @{
     ViewData["Title"] = "Nuevo usuario";
@@ -31,6 +32,11 @@
                 <label asp-for="FechaNacimiento" class="form-label d-block"></label>
                 <input asp-for="FechaNacimiento" type="date" class="form-control" />
                 <span asp-validation-for="FechaNacimiento" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="RolUsuario" class="form-label d-block"></label>
+                <select asp-for="RolUsuario" asp-items="Html.GetEnumSelectList<RolUsuario>()" class="form-select"></select>
+                <span asp-validation-for="RolUsuario" class="text-danger small"></span>
             </div>
             <div class="col-12 mb-4">
                 <label asp-for="Password" class="form-label d-block"></label>

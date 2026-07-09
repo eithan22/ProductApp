@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Usuarios;
@@ -16,32 +16,6 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         {
             _authService = authService;
         }
-
-        [HttpPost("register")]
-
-        public async Task<IActionResult> Register(RegisterDto dto)
-        {
-
-            try
-            {
-                var result = await _authService.Register(dto);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-
-                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
-
-
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-
-            }
-        }
-
 
         [HttpPost("login")]
 

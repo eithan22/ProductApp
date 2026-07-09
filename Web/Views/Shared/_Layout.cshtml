@@ -30,6 +30,22 @@
         </div>
     }
 
+    @if (TempData["Aviso"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show m-3">
+            @TempData["Aviso"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show m-3">
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     @if (!string.IsNullOrEmpty(token))
     {
         <div class="app-sidebar">
@@ -59,6 +75,9 @@
                 </a>
                 <a asp-controller="Usuario" asp-action="Index" class="@(controller == "Usuario" ? "active" : "")">
                     @await Html.PartialAsync("_Icon", "users") Usuarios
+                </a>
+                <a asp-controller="Usuario" asp-action="CambiarPassword">
+                    @await Html.PartialAsync("_Icon", "reset") Cambiar contraseña
                 </a>
             </nav>
 

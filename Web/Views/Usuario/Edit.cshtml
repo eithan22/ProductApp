@@ -1,4 +1,5 @@
 @model Web.Models.Modelo_Usuarios.UsuarioModels.UpdateUsuarioModel
+@using ProductApp.Domian.Common.Enums.EnumsUsuario
 
 @{
     ViewData["Title"] = "Editar usuario";
@@ -21,9 +22,13 @@
                 <label asp-for="UserName" class="form-label d-block"></label>
                 <input asp-for="UserName" class="form-control" />
             </div>
-            <div class="col-md-6 mb-4">
+            <div class="col-md-6 mb-3">
                 <label asp-for="FechaNacimiento" class="form-label d-block"></label>
                 <input asp-for="FechaNacimiento" type="date" class="form-control" />
+            </div>
+            <div class="col-md-6 mb-4">
+                <label asp-for="RolUsuario" class="form-label d-block"></label>
+                <select asp-for="RolUsuario" asp-items="Html.GetEnumSelectList<RolUsuario>()" class="form-select"></select>
             </div>
         </div>
 

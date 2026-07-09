@@ -44,6 +44,8 @@
                 <div class="ledger-actions">
                     <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
                     <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
+                    <a asp-action="CambiarRol" asp-route-id="@item.Id" class="icon-btn" title="Cambiar rol">@await Html.PartialAsync("_Icon", "target")</a>
+                    <a asp-action="ResetearPassword" asp-route-id="@item.Id" class="icon-btn" title="Resetear contraseña">@await Html.PartialAsync("_Icon", "reset")</a>
 
                     @if (activo)
                     {

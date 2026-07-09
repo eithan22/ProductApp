@@ -14,17 +14,5 @@ namespace Web.Services.Mappers.Modulo_Usuarios
             };
         }
 
-        public static RegisterDto MapRegisterDto(RegisterModel model)
-        {
-            return new RegisterDto
-            {
-                Nombre = model.Nombre,
-                FechaNacimiento = model.FechaNacimiento,
-                Email = model.Email,
-                UserName = model.UserName,
-                Password = model.Password,
-                ConfirmPassword = model.ConfirmPassword
-            };
-        }
     }
 }

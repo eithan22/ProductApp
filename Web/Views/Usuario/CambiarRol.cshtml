@@ -1,0 +1,29 @@
+@model ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.CambiarRolModel
+@using ProductApp.Domian.Common.Enums.EnumsUsuario
+
+@{
+    ViewData["Title"] = "Cambiar rol";
+}
+
+<div class="surface-card p-4" style="max-width:480px;">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
+    }
+
+    <p class="text-muted">Usuario: <strong>@ViewBag.NombreUsuario</strong></p>
+
+    <form asp-action="CambiarRol">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-4">
+            <label asp-for="NuevoRol" class="form-label d-block"></label>
+            <select asp-for="NuevoRol" asp-items="Html.GetEnumSelectList<RolUsuario>()" class="form-select"></select>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
+            <button type="submit" class="btn-pa btn-pa-primary">Guardar</button>
+        </div>
+    </form>
+</div>

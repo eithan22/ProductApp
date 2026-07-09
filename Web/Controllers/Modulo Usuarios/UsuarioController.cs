@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
+using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using Web.Models.Modelo_Usuarios.UsuarioModels;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Usuarios;
 
@@ -90,7 +92,7 @@ namespace Web.Controllers.Modulo_Usuarios
                     Email = usuario.Email,
                     UserName = usuario.UserName,
                     FechaNacimiento = usuario.FechaNacimiento,
-                 
+                    RolUsuario = Enum.Parse<RolUsuario>(usuario.RolUsuario),
                 };
 
                 return View(model);
@@ -179,6 +181,102 @@ namespace Web.Controllers.Modulo_Usuarios
         {
             await _usuarioHttpServices.EnableUsuarioAsync(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: UsuarioController/CambiarRol/5
+        public async Task<ActionResult> CambiarRol(int id)
+        {
+            try
+            {
+                var usuario = await _usuarioHttpServices.GetUsuarioByIdAsync(id);
+                var model = new CambiarRolModel
+                {
+                    Id = usuario.Id,
+                    NuevoRol = Enum.Parse<RolUsuario>(usuario.RolUsuario)
+                };
+                ViewBag.NombreUsuario = usuario.Nombre;
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: UsuarioController/CambiarRol
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CambiarRol(CambiarRolModel model)
+        {
+            try
+            {
+                await _usuarioHttpServices.CambiarRolAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+
+        // GET: UsuarioController/ResetearPassword/5
+        public async Task<ActionResult> ResetearPassword(int id)
+        {
+            try
+            {
+                var usuario = await _usuarioHttpServices.GetUsuarioByIdAsync(id);
+                ViewBag.NombreUsuario = usuario.Nombre;
+                return View(new ResetearPasswordModel { Id = usuario.Id });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: UsuarioController/ResetearPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ResetearPassword(ResetearPasswordModel model)
+        {
+            try
+            {
+                await _usuarioHttpServices.ResetPasswordAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+
+        // GET: UsuarioController/CambiarPassword
+        public ActionResult CambiarPassword()
+        {
+            return View();
+        }
+
+        // POST: UsuarioController/CambiarPassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CambiarPassword(ChangePasswordModel model)
+        {
+            try
+            {
+                await _usuarioHttpServices.CambiarPasswordAsync(model);
+                HttpContext.Session.Clear();
+                TempData["Mensaje"] = "Contraseña actualizada correctamente. Inicia sesión de nuevo.";
+                return RedirectToAction("Login", "Auth");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
         }
     }
 }

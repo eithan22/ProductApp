@@ -1,14 +1,20 @@
+using ProductApp.Api.Filters;
+using ProductApp.Api.Seed;
 using ProductApp.Extensions;
+using ProductApp.Infraesctructura.Persistencia.Contex;
 
 namespace ProductApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<RequiereCambioPasswordFilter>();
+            });
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(options =>
@@ -42,6 +48,13 @@ namespace ProductApp
             builder.Services.AddProjectDependencies(builder.Configuration);
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                await DbInitializer.SeedAsync(context, configuration);
+            }
 
             if (app.Environment.IsDevelopment())
             {

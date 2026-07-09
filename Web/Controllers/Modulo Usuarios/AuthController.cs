@@ -17,32 +17,6 @@ namespace Web.Controllers.Modulo_Usuarios
 
 
 
-        // GET: AuthController
-        [HttpGet]
-        public ActionResult Register()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterModel model)
-        {
-            try
-            {
-                var reuslt = await _authHttpServices.Register(model);
-                return RedirectToAction(("Login"));
-            }
-            catch(Exception ex)
-            {
-                ModelState.AddModelError("", ex.Message);
-                return View(model);
-            }
-        }
-
-
-
-
         // GET: AuthController/Create
         [HttpGet]
         public ActionResult Login()
@@ -62,6 +36,12 @@ namespace Web.Controllers.Modulo_Usuarios
 
                     // Guardar el token en la sesión
                     HttpContext.Session.SetString("TOKEN", result.Token);
+
+                    if (result.DebeCambiarPassword)
+                    {
+                        TempData["Aviso"] = "Debes cambiar tu contraseña antes de continuar.";
+                        return RedirectToAction("CambiarPassword", "Usuario");
+                    }
 
                     return RedirectToAction("Index", "Home");
                 

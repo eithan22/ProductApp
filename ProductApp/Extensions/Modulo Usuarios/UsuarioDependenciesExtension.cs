@@ -51,7 +51,6 @@ namespace ProductApp.Extensions.Modulo_Usuarios
 
             // Validadores DTO — Auth
             services.AddScoped<IValidator<LoginDto>, LoginValidator>();
-            services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
 
             // Validadores DTO — Clientes
             services.AddScoped<IValidator<CreateClienteDto>, CreateClienteValidator>();

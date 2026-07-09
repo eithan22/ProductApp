@@ -41,7 +41,7 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
             if (dto == null)
                 throw new Exception("Error al mapear el modelo de cambio de rol.");
 
-            var response =   await _baseHttpServices.PostAsync<CambiarRolDto,bool>(_usuarioEndpoint.CambiarRol, dto);
+            var response =   await _baseHttpServices.PutAsync<CambiarRolDto,bool>(_usuarioEndpoint.CambiarRol, dto);
             return response;
         }
 
@@ -97,7 +97,7 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
             if (dto == null)
                 throw new Exception("Error al mapear el modelo de reseteo de contraseña.");
 
-            var response = await _baseHttpServices.PostAsync<ResetearPasswordDto,bool>(_usuarioEndpoint.ResetPassword, dto);
+            var response = await _baseHttpServices.PutAsync<ResetearPasswordDto,bool>(_usuarioEndpoint.ResetPassword, dto);
 
             return response;
         }
