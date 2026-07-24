@@ -27,23 +27,14 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> CreateOrden(CreateOrdenDto dto)
         {
-            try
-            {
-                //agregando el usuario id al dto para crear la orden, el usuario id se obtiene del token de autenticacion
-                var usuarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+            //agregando el usuario id al dto para crear la orden, el usuario id se obtiene del token de autenticacion
+            var usuarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
-                var result = await _ordenServices.CrearOrden(dto, usuarioId);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.CrearOrden(dto, usuarioId);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<OrdenResponseDto>.SuccessResponse(result.Data, result.Message));
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<OrdenResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
         //
@@ -53,18 +44,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> GetAllOrdenes()
         {
-            try
-            {
-                var result = await _ordenServices.GetAllOrdenes();
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.GetAllOrdenes();
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -78,21 +62,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> CancelarOrden(int id)
         {
-            try
-            {
-                var result = await _ordenServices.CancelarOrden(id);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.CancelarOrden(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-
-                return Ok(ApiResponse.SuccessResponse(result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-
-            }
-
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -103,19 +77,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> CambiarEstadoOrden(CambiarEstadoOrdenDto dto)
         {
-            try
-            {
-                var result = await _ordenServices.CambiarEstadoOrden(dto);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.CambiarEstadoOrden(dto);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponse.SuccessResponse(result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -123,18 +89,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         [HttpGet("GetOrdenById/{id}")]
         public async Task<IActionResult> GetOrdenById(int id)
         {
-            try
-            {
-                var result = await _ordenServices.GetOrdenByIdAsync(id);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.GetOrdenByIdAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<OrdenResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<OrdenResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize]
@@ -142,18 +101,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> GetOrdenByClientes(int id)
         {
-            try
-            {
-                var result = await _ordenServices.ConsultarOrdenesPorCliente(id);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.ConsultarOrdenesPorCliente(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -162,18 +114,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         [HttpGet("GetOrdenesByUsuario/{usuarioId}")]
         public async Task<IActionResult> GetOrdenesByUsuario(int usuarioId)
         {
-            try
-            {
-                var result = await _ordenServices.GetOrdenesByUsuarioAsync(usuarioId);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.GetOrdenesByUsuarioAsync(usuarioId);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize]
@@ -181,18 +126,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> GetOrdenByFecha(DateTime fecha)
         {
-            try
-            {
-                var result = await _ordenServices.ConsultarOrdenesPorFecha(fecha);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _ordenServices.ConsultarOrdenesPorFecha(fecha);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 

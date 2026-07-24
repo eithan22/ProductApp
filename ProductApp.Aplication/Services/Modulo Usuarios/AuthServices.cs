@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
@@ -25,6 +26,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
         private readonly IConfiguration _config;
         private readonly IValidator<LoginDto> _loginValidator;
         private readonly IValidatorBusinessAuth _validatorBusinessAuth;
+        private readonly ILogger<AuthServices> _logger;
 
         public AuthServices(
             IUsuarioRepository usuarioRepository,
@@ -32,7 +34,8 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             IMapperUsuario mapperUsuario,
             IConfiguration config,
             IValidatorBusinessAuth validatorBusinessAuth,
-            IValidator<LoginDto> loginValidator)
+            IValidator<LoginDto> loginValidator,
+            ILogger<AuthServices> logger)
         {
             _usuarioRepository = usuarioRepository;
             _configuracionSistemaRepository = configuracionSistemaRepository;
@@ -40,6 +43,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             _config = config;
             _validatorBusinessAuth = validatorBusinessAuth;
             _loginValidator = loginValidator;
+            _logger = logger;
         }
 
         public async Task<OperationResultD<AuthResponseDto>> Login(LoginDto dto)
@@ -51,7 +55,10 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
 
             var validatorBusiness = await _validatorBusinessAuth.ValidarLoginAsync(dto);
             if (!validatorBusiness.IsSuccess)
+            {
+                _logger.LogWarning("Intento de login fallido para el usuario {Username} desde {Motivo}", dto.Username, validatorBusiness.Message);
                 return OperationResultD<AuthResponseDto>.Failure(validatorBusiness.Message);
+            }
 
             var usuario = await _usuarioRepository.FirstOrDefaultAsync(x => x.Username == dto.Username);
             if (usuario == null)
@@ -79,6 +86,8 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
                 signingCredentials: creds);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            _logger.LogInformation("Login exitoso para el usuario {Username} (Id {UsuarioId})", usuario.Username, usuario.Id);
 
             return OperationResultD<AuthResponseDto>.Success(new AuthResponseDto
             {

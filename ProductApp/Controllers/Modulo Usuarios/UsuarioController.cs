@@ -27,23 +27,13 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [HttpGet("GetUsuarios")]
         public async Task<IActionResult> GetUsuarios([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            try
+            var result = await _usuarioService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
+            if (!result.IsSuccess)
             {
-                var result = await _usuarioService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-
-                return Ok(ApiResponseT<PagedResult<UsuarioResponseDto>>.SuccessResponse(result.Data, result.Message));
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
             }
 
+            return Ok(ApiResponseT<PagedResult<UsuarioResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -51,21 +41,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> GetUsuarioById(int id)
         {
-            try
+            var result = await _usuarioService.GetByIdAsync(id);
+            if (!result.IsSuccess)
             {
-                var result = await _usuarioService.GetByIdAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
-
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -74,20 +55,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> CreateUsuario( CreateUsuarioDto dto)
         {
-            try
+            var result = await _usuarioService.CreateAsync(dto);
+            if (!result.IsSuccess)
             {
-                var result = await _usuarioService.CreateAsync(dto);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
-
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -95,24 +68,13 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> UpdateUsuario(int id, UpdateUsuarioDto dto)
         {
-            try
+            dto.Id = id;
+            var result = await _usuarioService.UpdateAsync(dto);
+            if (!result.IsSuccess)
             {
-                dto.Id = id;
-                var result = await _usuarioService.UpdateAsync(dto);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
-
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-
-
-            }
-
+            return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -152,19 +114,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Disable(int id)
         {
-            try
+            var result = await _usuarioService.DisableAsync(id);
+            if (!result.IsSuccess)
             {
-                var result = await _usuarioService.DisableAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponse.SuccessResponse(result.Message));
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -172,19 +127,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> EnableUsuario(int id)
         {
-            try
+            var result = await _usuarioService.EnableUsuario(id);
+            if (!result.IsSuccess)
             {
-                var result = await _usuarioService.EnableUsuario(id);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponse.SuccessResponse(result.Message));
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -196,29 +144,21 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [PermitirConPasswordPendiente]
         public async Task<IActionResult> CambiarPassword(ChangePasswordDto dto)
         {
-            try
+            // Obtener el ID del usuario desde el token JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return Unauthorized("Token inválido");
+
+            var userId = int.Parse(userIdClaim.Value);
+            dto.Id = userId;
+
+            var result = await _usuarioService.CambiarPasswordUsuario(dto);
+            if (!result.IsSuccess)
             {
-                // Obtener el ID del usuario desde el token JWT
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-                if (userIdClaim == null)
-                    return Unauthorized("Token inválido");
-
-                var userId = int.Parse(userIdClaim.Value);
-                dto.Id = userId;
-
-                var result = await _usuarioService.CambiarPasswordUsuario(dto);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponse.SuccessResponse(result.Message));
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -227,19 +167,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> CambiarRol(CambiarRolDto dto)
         {
-            try
+            var result = await _usuarioService.CambiarRol(dto);
+            if (!result.IsSuccess)
             {
-                var result = await _usuarioService.CambiarRol(dto);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponse.SuccessResponse(result.Message));
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -248,19 +181,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         public async Task<IActionResult> ResetearPassword(ResetearPasswordDto dto)
         {
-            try
+            var result = await _usuarioService.ResetearPassword(dto);
+            if (!result.IsSuccess)
             {
-                var result = await _usuarioService.ResetearPassword(dto);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponse.SuccessResponse(result.Message));
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
         [HttpGet("MiPerfil")]
@@ -268,40 +194,26 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [PermitirConPasswordPendiente]
         public async Task<IActionResult> MiPerfil()
         {
-            try
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _usuarioService.ObtenerMiPerfilAsync(userId);
+            if (!result.IsSuccess)
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-                var result = await _usuarioService.ObtenerMiPerfilAsync(userId);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
         [HttpPut("MiPerfil")]
         [Authorize]
         public async Task<IActionResult> ActualizarMiPerfil(ActualizarMiPerfilDto dto)
         {
-            try
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _usuarioService.ActualizarMiPerfilAsync(userId, dto);
+            if (!result.IsSuccess)
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-                var result = await _usuarioService.ActualizarMiPerfilAsync(userId, dto);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<UsuarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
     }

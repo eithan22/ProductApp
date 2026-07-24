@@ -21,23 +21,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            try
+            var result = await _authService.Login(dto);
+            if (!result.IsSuccess)
             {
-                var result = await _authService.Login(dto);
-                if (!result.IsSuccess)
-                {
-                    return Unauthorized(ApiResponseT<object>.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponseT<AuthResponseDto>.SuccessResponse(result.Data, result.Message));
+                return Unauthorized(ApiResponseT<object>.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-
-            }
-
-
-
+            return Ok(ApiResponseT<AuthResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
     }

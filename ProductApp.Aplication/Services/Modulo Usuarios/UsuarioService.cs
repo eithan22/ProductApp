@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
@@ -23,6 +24,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<CambiarRolDto> _cambiarRolValidator;
         private readonly IValidator<ActualizarMiPerfilDto> _actualizarMiPerfilValidator;
         private readonly IValidatorBusinessUsuario _validatorBusinessUsuarios;
+        private readonly ILogger<UsuarioService> _logger;
 
         public UsuarioService(
             IUsuarioRepository usuarioRepository,
@@ -33,7 +35,8 @@ namespace ProductApp.Aplication.Services
             IValidator<ChangePasswordDto> changePasswordValidator,
             IValidator<ResetearPasswordDto> resetPasswordValidator,
             IValidator<CambiarRolDto> cambiarRolValidator,
-            IValidator<ActualizarMiPerfilDto> actualizarMiPerfilValidator)
+            IValidator<ActualizarMiPerfilDto> actualizarMiPerfilValidator,
+            ILogger<UsuarioService> logger)
         {
             _usuarioRepository = usuarioRepository;
             _mapperUsuario = mapperUsuario;
@@ -44,6 +47,7 @@ namespace ProductApp.Aplication.Services
             _resetPasswordValidator = resetPasswordValidator;
             _cambiarRolValidator = cambiarRolValidator;
             _actualizarMiPerfilValidator = actualizarMiPerfilValidator;
+            _logger = logger;
         }
 
         public async Task<OperationResultD<UsuarioResponseDto>> CreateAsync(CreateUsuarioDto dto)
@@ -115,6 +119,8 @@ namespace ProductApp.Aplication.Services
             usuario.MarcarPasswordComoTemporal();
             await _usuarioRepository.UpdateAsync(usuario);
 
+            _logger.LogInformation("Contraseña reseteada para el usuario {UsuarioId}", usuario.Id);
+
             return OperationResultD<bool>.Success(true, "Contraseña reseteada correctamente");
         }
 
@@ -138,6 +144,8 @@ namespace ProductApp.Aplication.Services
             var nuevoRol = Enum.Parse<RolUsuario>(dto.NuevoRol, true);
             usuario.CambiarRol(nuevoRol);
             await _usuarioRepository.UpdateAsync(usuario);
+
+            _logger.LogInformation("Rol actualizado para el usuario {UsuarioId}: nuevo rol {NuevoRol}", usuario.Id, nuevoRol);
 
             return OperationResultD<bool>.Success(true, "Rol actualizado correctamente");
         }

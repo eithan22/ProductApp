@@ -47,6 +47,9 @@ namespace ProductApp
 
             builder.Services.AddProjectDependencies(builder.Configuration);
 
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -62,6 +65,7 @@ namespace ProductApp
                 app.UseSwaggerUI();
             }
 
+            app.UseExceptionHandler();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

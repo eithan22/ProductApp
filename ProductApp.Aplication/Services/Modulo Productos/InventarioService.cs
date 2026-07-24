@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Aplication.Interface;
@@ -16,19 +17,22 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<MovimientoStockDto> _movimientoStockValidator;
         private readonly IValidator<AjustarStockDto> _ajustarStockValidator;
         private readonly IValidatorBusinessInventario _validatorBusinessInventario;
+        private readonly ILogger<InventarioService> _logger;
 
         public InventarioService(
             IInventarioRepository inventarioRepository,
             IMapperInventario mapperInventario,
             IValidator<MovimientoStockDto> movimientoStockValidator,
             IValidator<AjustarStockDto> ajustarStockValidator,
-            IValidatorBusinessInventario validatorBusinessInventario)
+            IValidatorBusinessInventario validatorBusinessInventario,
+            ILogger<InventarioService> logger)
         {
             _inventarioRepository = inventarioRepository;
             _mapperInventario = mapperInventario;
             _movimientoStockValidator = movimientoStockValidator;
             _ajustarStockValidator = ajustarStockValidator;
             _validatorBusinessInventario = validatorBusinessInventario;
+            _logger = logger;
         }
 
         public async Task<OperationResultD<InventarioResponseDto>> ObtenerInventarioAsync(int productoId)
@@ -106,6 +110,8 @@ namespace ProductApp.Aplication.Services
                 inventario.AjustarStockMinimo(dto.NuevoStockMinimo.Value);
 
             await _inventarioRepository.UpdateAsync(inventario);
+
+            _logger.LogInformation("Ajuste manual de inventario para el producto {ProductoId}: nuevo stock {NuevoStock}", dto.ProductoId, dto.NuevoStock);
 
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock ajustado exitosamente.");

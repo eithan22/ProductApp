@@ -24,23 +24,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [HttpGet("GetInventarioPorProducto/{productoId}")]
         public async Task<IActionResult> GetInventario(int productoId)
         {
-            try
-            {
-                var result = await _inventarioService.ObtenerInventarioAsync(productoId);
+            var result = await _inventarioService.ObtenerInventarioAsync(productoId);
 
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
-
-
-                return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-
-            }
-
+            return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -50,24 +39,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [HttpGet("GetAllInventarios")]
         public async Task<IActionResult> GetAllInventarios([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            try
-            {
-                var result = await _inventarioService.ObtenerTodosInventariosAsync(pageNumber, pageSize);
+            var result = await _inventarioService.ObtenerTodosInventariosAsync(pageNumber, pageSize);
 
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
-
-
-                return Ok(ApiResponseT<PagedResult<InventarioResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-
-            }
-
-
+            return Ok(ApiResponseT<PagedResult<InventarioResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -75,24 +52,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [HttpGet("GetStockBajo")]
         public async Task<IActionResult> GetStockBajo()
         {
-            try
-            {
-                var result = await _inventarioService.ObtenerStockBajoAsync();
+            var result = await _inventarioService.ObtenerStockBajoAsync();
 
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
-
-
-                return Ok(ApiResponseT<List<InventarioResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-
-            }
-
-
+            return Ok(ApiResponseT<List<InventarioResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -101,19 +66,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> AgregarStockAsync( MovimientoStockDto dto)
         {
-            try
-            {
-                var result = await _inventarioService.AgregarStockAsync(dto);
+            var result = await _inventarioService.AgregarStockAsync(dto);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -123,20 +81,13 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> DescontarStockAsync(int productoId, MovimientoStockDto dto)
         {
-            try
-            {
-                dto.ProductoId = productoId;
-                var result = await _inventarioService.DescontarStockAsync(dto);
+            dto.ProductoId = productoId;
+            var result = await _inventarioService.DescontarStockAsync(dto);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -146,21 +97,14 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [HttpPut("AjustarInventario")]
         public async Task<IActionResult> AjustarInventario([FromQuery] int productoId, AjustarStockDto dto)
         {
-            try { 
-          
-                dto.ProductoId = productoId;
+            dto.ProductoId = productoId;
 
-                var result = await _inventarioService.AjustarStockAsync(dto);
+            var result = await _inventarioService.AjustarStockAsync(dto);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<InventarioResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 

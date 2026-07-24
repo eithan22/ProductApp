@@ -21,36 +21,22 @@ namespace ProductApp.Api.Controllers.Modulo_Configuracion
         [HttpGet]
         public async Task<IActionResult> Obtener()
         {
-            try
-            {
-                var result = await _configuracionSistemaService.ObtenerAsync();
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _configuracionSistemaService.ObtenerAsync();
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<ConfiguracionSistemaDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<ConfiguracionSistemaDto>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize(Roles = "Administrador")]
         [HttpPut]
         public async Task<IActionResult> Actualizar(ActualizarConfiguracionSistemaDto dto)
         {
-            try
-            {
-                var result = await _configuracionSistemaService.ActualizarAsync(dto);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _configuracionSistemaService.ActualizarAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<ConfiguracionSistemaDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<ConfiguracionSistemaDto>.SuccessResponse(result.Data, result.Message));
         }
     }
 }

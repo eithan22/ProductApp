@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using ProductApp.Aplication.Dtos.PagoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
@@ -19,6 +20,7 @@ namespace ProductApp.Aplication.Services
         private readonly IMapperPago _mapperPago;
         private readonly IValidator<CreatePagoDto> _createPagoValidator;
         private readonly IValidatorBusinessPago _validatorBusinessPago;
+        private readonly ILogger<PagoService> _logger;
 
         public PagoService(
             IPagoRepository pagoRepository,
@@ -27,7 +29,8 @@ namespace ProductApp.Aplication.Services
             IInventarioRepository inventarioRepository,
             IMapperPago mapperPago,
             IValidator<CreatePagoDto> createPagoValidator,
-            IValidatorBusinessPago validatorBusinessPago)
+            IValidatorBusinessPago validatorBusinessPago,
+            ILogger<PagoService> logger)
         {
             _pagoRepository = pagoRepository;
             _ordenRepository = ordenRepository;
@@ -36,6 +39,7 @@ namespace ProductApp.Aplication.Services
             _mapperPago = mapperPago;
             _createPagoValidator = createPagoValidator;
             _validatorBusinessPago = validatorBusinessPago;
+            _logger = logger;
         }
 
         public async Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto)
@@ -100,6 +104,8 @@ namespace ProductApp.Aplication.Services
             var mensaje = pagoCompleto
                 ? "Pago registrado. La orden ha sido marcada como Pagada e inventario descontado"
                 : $"Pago parcial registrado exitosamente. Saldo pendiente: {nuevoSaldo}";
+
+            _logger.LogInformation("Pago registrado para la orden {OrdenId}: monto {Monto}, pago completo: {PagoCompleto}", dto.OrdenId, dto.Monto, pagoCompleto);
 
             var response = _mapperPago.MapToPagoResponseDto(pago, nuevoSaldo);
             return OperationResultD<PagoResponseDto>.Success(response, mensaje);

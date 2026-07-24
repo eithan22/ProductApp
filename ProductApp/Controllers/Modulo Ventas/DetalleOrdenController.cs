@@ -27,22 +27,12 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         
         public async Task<IActionResult> CreateDetalleOrden(CreateDetalleOrdenDto  dto)
         {
-            try
-            {
-                var result = await _detalleOrdenServices.AgregarProductoAsync(dto);
+            var result = await _detalleOrdenServices.AgregarProductoAsync(dto);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<OrdenDetalleResponseDto>.SuccessResponse(result.Data, result.Message));
-
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<OrdenDetalleResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
         //actualizar cantidad de producto en el detalle de orden
@@ -52,19 +42,12 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> UpdateDetalleOrden(int id, UpdateDetalleOrdenDto dto)
         {
-            try
-            {
-                dto.id = id;
-                var result = await _detalleOrdenServices.ActualizarDetalleOrden(id, dto);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            dto.id = id;
+            var result = await _detalleOrdenServices.ActualizarDetalleOrden(id, dto);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<OrdenDetalleResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<OrdenDetalleResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -76,20 +59,12 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> GetDetalleOrdenById(int id)
         {
-            try
-            {
-                var result = await _detalleOrdenServices.GetOrdenDetalle(id);
+            var result = await _detalleOrdenServices.GetOrdenDetalle(id);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<OrdenDetalleResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {   
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<List<OrdenDetalleResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -101,18 +76,11 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> DeleteDetalleOrden(int id)
         {
-            try
-            {
-               var result = await _detalleOrdenServices.EliminarProductoAsync(id);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _detalleOrdenServices.EliminarProductoAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponse.SuccessResponse(result.Message));   
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 

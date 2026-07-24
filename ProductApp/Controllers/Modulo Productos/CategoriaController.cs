@@ -24,45 +24,24 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> CreateCategoria(CreateCategoriaDto dto)
         {
-            try
-            {
-                var result = await _categoriaService.CreateAsync(dto);
+            var result = await _categoriaService.CreateAsync(dto);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<CategoriaResponseDto>.SuccessResponse(result.Data, result.Message));
-
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<CategoriaResponseDto>.SuccessResponse(result.Data, result.Message));
         }
         [Authorize]
         [HttpGet("GetAllCategorias")]
 
         public async Task<IActionResult> GetAllCategorias([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            try
-            {
-                var result = await _categoriaService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
+            var result = await _categoriaService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
-
-
-                return Ok(ApiResponseT<PagedResult<CategoriaResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-
-            }
-
+            return Ok(ApiResponseT<PagedResult<CategoriaResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -71,38 +50,23 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> GetCategoriaById(int id)
         {
-            try
-            {
-                var result = await _categoriaService.GetByIdAsync(id);
+            var result = await _categoriaService.GetByIdAsync(id);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<CategoriaResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<CategoriaResponseDto>.SuccessResponse(result.Data, result.Message));
         }
         [Authorize]
         [HttpPut("UpdateCategoria/{id}")]
         public async Task<IActionResult> UpdateCategoria(int id, UpdateCategoriaDto dto)
         {
-            try
-            {
-                dto.Id = id;
-                var result = await _categoriaService.UpdateAsync(dto);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            dto.Id = id;
+            var result = await _categoriaService.UpdateAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<CategoriaResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<CategoriaResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -114,17 +78,10 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> DisableCategoria(int id)
         {
-            try
-            {
-                var result = await _categoriaService.DisableAsync(id);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                return Ok(ApiResponse.SuccessResponse(result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
+            var result = await _categoriaService.DisableAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -133,17 +90,10 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> EnableCategoria(int id)
         {
-            try
-            {
-                var result = await _categoriaService.EnableCategoria(id);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                return Ok(ApiResponse.SuccessResponse(result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
+            var result = await _categoriaService.EnableCategoria(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
     }
 

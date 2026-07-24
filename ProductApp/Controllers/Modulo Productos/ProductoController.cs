@@ -25,45 +25,24 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> CreateProducto(CreateProductoDto dto)
         {
-            try
-            {
-                var result = await _productoServices.CreateAsync(dto);
+            var result = await _productoServices.CreateAsync(dto);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<ProductoResponseDto>.SuccessResponse(result.Data, result.Message));
-
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<ProductoResponseDto>.SuccessResponse(result.Data, result.Message));
         }
         [Authorize]
         [HttpGet("GetAllProductos")]
 
         public async Task<IActionResult> GetAllProductos([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            try
-            {
-                var result = await _productoServices.GetAllAsync(incluirInactivos, pageNumber, pageSize);
+            var result = await _productoServices.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
-
-
-                return Ok(ApiResponseT<PagedResult<ProductoResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-
-            }
-
+            return Ok(ApiResponseT<PagedResult<ProductoResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -72,20 +51,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> GetProductoById(int id)
         {
-            try
-            {
-                var result = await _productoServices.GetByIdAsync(id);
+            var result = await _productoServices.GetByIdAsync(id);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<ProductoResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponseT<ProductoResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
 
@@ -94,19 +65,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> UpdateProducto( int id , UpdateProductoDto dto)
         {
-            try
-            {
-               dto.Id = id;
-                var result = await _productoServices.UpdateAsync(dto);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            dto.Id = id;
+            var result = await _productoServices.UpdateAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<ProductoResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<ProductoResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize(Roles = "Administrador")]
@@ -114,17 +78,10 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> DisableProducto(int id)
         {
-            try
-            {
-                var result = await _productoServices.DisableAsync(id);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                return Ok(ApiResponse.SuccessResponse(result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
+            var result = await _productoServices.DisableAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -133,20 +90,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> EnableProducto(int id)
         {
-            try
-            {
-                var result = await _productoServices.EnableProducto(id);
+            var result = await _productoServices.EnableProducto(id);
 
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
 
-                return Ok(ApiResponse.SuccessResponse(result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-            }
-
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
 
@@ -155,20 +104,11 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         public async Task<IActionResult> BuscarProducto(string? nombre, string? categoria, [FromQuery] bool incluirInactivos = false)
         {
-            try
-            {
-                var result = await _productoServices.BuscarProductosPorNombreOCategoria(nombre, categoria, incluirInactivos);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+            var result = await _productoServices.BuscarProductosPorNombreOCategoria(nombre, categoria, incluirInactivos);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<ProductoResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<Object>.FailureResponse(ex.Message));
-
-            }
-
+            return Ok(ApiResponseT<List<ProductoResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
 

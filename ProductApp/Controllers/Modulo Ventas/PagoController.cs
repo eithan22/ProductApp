@@ -21,54 +21,33 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         [HttpPost("RegistrarPago")]
         public async Task<IActionResult> RegistrarPago(CreatePagoDto dto)
         {
-            try
-            {
-                var result = await _pagoServices.RegistrarPagoAsync(dto);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _pagoServices.RegistrarPagoAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<PagoResponseDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<PagoResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize]
         [HttpGet("GetPagosByOrden/{ordenId}")]
         public async Task<IActionResult> GetPagosByOrden(int ordenId)
         {
-            try
-            {
-                var result = await _pagoServices.ObtenerPagosPorOrdenAsync(ordenId);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _pagoServices.ObtenerPagosPorOrdenAsync(ordenId);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<PagoResponseDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<PagoResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize]
         [HttpGet("GetSaldoPendiente/{ordenId}")]
         public async Task<IActionResult> GetSaldoPendiente(int ordenId)
         {
-            try
-            {
-                var result = await _pagoServices.ObtenerSaldoPendienteAsync(ordenId);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _pagoServices.ObtenerSaldoPendienteAsync(ordenId);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<decimal>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<decimal>.SuccessResponse(result.Data, result.Message));
         }
     }
 }

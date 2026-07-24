@@ -22,111 +22,69 @@ namespace ProductApp.Api.Controllers.Modulo_Reportes
         [HttpGet("VentasPorFecha")]
         public async Task<IActionResult> VentasPorFecha([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
         {
-            try
-            {
-                var result = await _reporteServices.ObtenerVentasPorFechaAsync(desde, hasta);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _reporteServices.ObtenerVentasPorFechaAsync(desde, hasta);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<VentaPorFechaDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<VentaPorFechaDto>>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize(Roles = "Administrador")]
         [HttpGet("VentasPorProducto")]
         public async Task<IActionResult> VentasPorProducto([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
         {
-            try
-            {
-                var result = await _reporteServices.ObtenerVentasPorProductoAsync(desde, hasta);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _reporteServices.ObtenerVentasPorProductoAsync(desde, hasta);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<VentaPorProductoDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<VentaPorProductoDto>>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize]
         [HttpGet("VentasPorVendedor")]
         public async Task<IActionResult> VentasPorVendedor([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta, [FromQuery] int? usuarioId)
         {
-            try
-            {
-                var usuarioAutenticadoId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-                var esAdministrador = User.IsInRole("Administrador");
+            var usuarioAutenticadoId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var esAdministrador = User.IsInRole("Administrador");
 
-                var result = await _reporteServices.ObtenerVentasPorVendedorAsync(desde, hasta, usuarioId, usuarioAutenticadoId, esAdministrador);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _reporteServices.ObtenerVentasPorVendedorAsync(desde, hasta, usuarioId, usuarioAutenticadoId, esAdministrador);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<VentaPorVendedorDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<VentaPorVendedorDto>>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize(Roles = "Administrador")]
         [HttpGet("InventarioActual")]
         public async Task<IActionResult> InventarioActual()
         {
-            try
-            {
-                var result = await _reporteServices.ObtenerInventarioActualAsync();
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _reporteServices.ObtenerInventarioActualAsync();
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<InventarioActualDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<InventarioActualDto>>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize(Roles = "Administrador")]
         [HttpGet("ProductosMasVendidos")]
         public async Task<IActionResult> ProductosMasVendidos([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta, [FromQuery] int top = 10)
         {
-            try
-            {
-                var result = await _reporteServices.ObtenerProductosMasVendidosAsync(desde, hasta, top);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _reporteServices.ObtenerProductosMasVendidosAsync(desde, hasta, top);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<List<ProductoMasVendidoDto>>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<List<ProductoMasVendidoDto>>.SuccessResponse(result.Data, result.Message));
         }
 
         [Authorize(Roles = "Administrador")]
         [HttpGet("IngresosTotales")]
         public async Task<IActionResult> IngresosTotales([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
         {
-            try
-            {
-                var result = await _reporteServices.ObtenerIngresosTotalesAsync(desde, hasta);
-                if (!result.IsSuccess)
-                    return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+            var result = await _reporteServices.ObtenerIngresosTotalesAsync(desde, hasta);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
-                return Ok(ApiResponseT<IngresosTotalesDto>.SuccessResponse(result.Data, result.Message));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponseT<object>.FailureResponse(ex.Message));
-            }
+            return Ok(ApiResponseT<IngresosTotalesDto>.SuccessResponse(result.Data, result.Message));
         }
     }
 }

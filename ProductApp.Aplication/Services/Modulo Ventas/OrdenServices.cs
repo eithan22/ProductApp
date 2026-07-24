@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
 using ProductApp.Aplication.Dtos.OrdenDto;
 using ProductApp.Aplication.Interface;
@@ -19,6 +20,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<CreateOrdenDto> _createOrdenValidator;
         private readonly IValidator<CambiarEstadoOrdenDto> _cambiarEstadoValidator;
         private readonly IValidatorBusinessOrden _validatorBusinessOrden;
+        private readonly ILogger<OrdenServices> _logger;
 
         public OrdenServices(
             IOrdenRepository ordenRepository,
@@ -27,7 +29,8 @@ namespace ProductApp.Aplication.Services
             IDetalleOrdenRepository detalleOrdenRepository,
             IValidator<CreateOrdenDto> createOrdenValidator,
             IValidator<CambiarEstadoOrdenDto> cambiarEstadoValidator,
-            IValidatorBusinessOrden validatorBusinessOrden)
+            IValidatorBusinessOrden validatorBusinessOrden,
+            ILogger<OrdenServices> logger)
         {
             _ordenRepository = ordenRepository;
             _clienteRepository = clienteRepository;
@@ -36,6 +39,7 @@ namespace ProductApp.Aplication.Services
             _createOrdenValidator = createOrdenValidator;
             _cambiarEstadoValidator = cambiarEstadoValidator;
             _validatorBusinessOrden = validatorBusinessOrden;
+            _logger = logger;
         }
 
         public async Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto, int usuarioId)
@@ -83,6 +87,8 @@ namespace ProductApp.Aplication.Services
 
             orden.CancelarOrden();
             await _ordenRepository.UpdateAsync(orden);
+
+            _logger.LogInformation("Orden {OrdenId} cancelada", id);
 
             return OperationResultD<bool>.Success(true, "Orden cancelada exitosamente");
         }
