@@ -5,6 +5,7 @@ using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
+using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Productos
 {
@@ -99,7 +100,8 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         {
             dto.ProductoId = productoId;
 
-            var result = await _inventarioService.AjustarStockAsync(dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _inventarioService.AjustarStockAsync(dto, usuarioSolicitanteId);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));

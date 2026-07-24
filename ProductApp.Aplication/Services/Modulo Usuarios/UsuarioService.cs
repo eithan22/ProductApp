@@ -98,7 +98,7 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Contraseña actualizada correctamente");
         }
 
-        public async Task<OperationResultD<bool>> ResetearPassword(ResetearPasswordDto dto)
+        public async Task<OperationResultD<bool>> ResetearPassword(ResetearPasswordDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _resetPasswordValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -119,12 +119,12 @@ namespace ProductApp.Aplication.Services
             usuario.MarcarPasswordComoTemporal();
             await _usuarioRepository.UpdateAsync(usuario);
 
-            _logger.LogInformation("Contraseña reseteada para el usuario {UsuarioId}", usuario.Id);
+            _logger.LogInformation("Contraseña reseteada para el usuario {UsuarioId}, por el usuario {UsuarioSolicitanteId}", usuario.Id, usuarioSolicitanteId);
 
             return OperationResultD<bool>.Success(true, "Contraseña reseteada correctamente");
         }
 
-        public async Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto)
+        public async Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _cambiarRolValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -145,7 +145,7 @@ namespace ProductApp.Aplication.Services
             usuario.CambiarRol(nuevoRol);
             await _usuarioRepository.UpdateAsync(usuario);
 
-            _logger.LogInformation("Rol actualizado para el usuario {UsuarioId}: nuevo rol {NuevoRol}", usuario.Id, nuevoRol);
+            _logger.LogInformation("Rol actualizado para el usuario {UsuarioId}: nuevo rol {NuevoRol}, por el usuario {UsuarioSolicitanteId}", usuario.Id, nuevoRol, usuarioSolicitanteId);
 
             return OperationResultD<bool>.Success(true, "Rol actualizado correctamente");
         }

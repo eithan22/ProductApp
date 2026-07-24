@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Dtos.PagoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
+using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Ventas
 {
@@ -21,7 +22,8 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         [HttpPost("RegistrarPago")]
         public async Task<IActionResult> RegistrarPago(CreatePagoDto dto)
         {
-            var result = await _pagoServices.RegistrarPagoAsync(dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _pagoServices.RegistrarPagoAsync(dto, usuarioSolicitanteId);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 

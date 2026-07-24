@@ -79,7 +79,7 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Estado de la orden actualizado exitosamente");
         }
 
-        public async Task<OperationResultD<bool>> CancelarOrden(int id)
+        public async Task<OperationResultD<bool>> CancelarOrden(int id, int usuarioSolicitanteId)
         {
             var orden = await _ordenRepository.GetByIdAsync(id);
             if (orden == null)
@@ -88,7 +88,7 @@ namespace ProductApp.Aplication.Services
             orden.CancelarOrden();
             await _ordenRepository.UpdateAsync(orden);
 
-            _logger.LogInformation("Orden {OrdenId} cancelada", id);
+            _logger.LogInformation("Orden {OrdenId} cancelada por el usuario {UsuarioSolicitanteId}", id, usuarioSolicitanteId);
 
             return OperationResultD<bool>.Success(true, "Orden cancelada exitosamente");
         }

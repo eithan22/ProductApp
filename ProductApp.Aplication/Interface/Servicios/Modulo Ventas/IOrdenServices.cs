@@ -11,7 +11,7 @@ namespace ProductApp.Aplication.Interface
     public interface IOrdenServices 
     {
           Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto, int usuarioId);
-          Task<OperationResultD<bool>> CancelarOrden(int id);
+          Task<OperationResultD<bool>> CancelarOrden(int id, int usuarioSolicitanteId);
             Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorFecha(DateTime fecha);
 
         Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId);

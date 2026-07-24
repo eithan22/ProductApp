@@ -42,7 +42,7 @@ namespace ProductApp.Aplication.Services
             _logger = logger;
         }
 
-        public async Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto)
+        public async Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _createPagoValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -105,7 +105,7 @@ namespace ProductApp.Aplication.Services
                 ? "Pago registrado. La orden ha sido marcada como Pagada e inventario descontado"
                 : $"Pago parcial registrado exitosamente. Saldo pendiente: {nuevoSaldo}";
 
-            _logger.LogInformation("Pago registrado para la orden {OrdenId}: monto {Monto}, pago completo: {PagoCompleto}", dto.OrdenId, dto.Monto, pagoCompleto);
+            _logger.LogInformation("Pago registrado para la orden {OrdenId}: monto {Monto}, pago completo: {PagoCompleto}, por el usuario {UsuarioSolicitanteId}", dto.OrdenId, dto.Monto, pagoCompleto, usuarioSolicitanteId);
 
             var response = _mapperPago.MapToPagoResponseDto(pago, nuevoSaldo);
             return OperationResultD<PagoResponseDto>.Success(response, mensaje);

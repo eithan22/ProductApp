@@ -14,7 +14,7 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<InventarioResponseDto>> DescontarStockAsync(MovimientoStockDto descontarStockDto);
 
         // El método AjustarStockAsync se utiliza para ajustar el stock de un producto a una cantidad específica, independientemente de la cantidad actual. Esto es útil para corregir errores de inventario o para sincronizar el stock con una cantidad real después de una auditoría.
-        Task<OperationResultD<InventarioResponseDto>> AjustarStockAsync(AjustarStockDto ajustarStockDto);
+        Task<OperationResultD<InventarioResponseDto>> AjustarStockAsync(AjustarStockDto ajustarStockDto, int usuarioSolicitanteId);
 
         // Este método se puede usar para obtener el inventario de un producto específico, incluyendo la cantidad actual, la cantidad mínima y cualquier otra información relevante. Es útil para mostrar el estado del inventario en la interfaz de usuario o para tomar decisiones basadas en el stock disponible.
         Task<OperationResultD<InventarioResponseDto>> ObtenerInventarioAsync(int productoId);

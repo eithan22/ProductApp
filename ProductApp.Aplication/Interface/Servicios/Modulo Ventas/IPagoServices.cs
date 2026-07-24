@@ -8,7 +8,7 @@ namespace ProductApp.Aplication.Interface
 {
     public interface IPagoServices
     {
-        Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto);
+        Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto, int usuarioSolicitanteId);
         Task<OperationResultD<List<PagoResponseDto>>> ObtenerPagosPorOrdenAsync(int ordenId);
         Task<OperationResultD<decimal>> ObtenerSaldoPendienteAsync(int ordenId);
     }

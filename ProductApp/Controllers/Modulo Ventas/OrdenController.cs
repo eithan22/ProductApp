@@ -4,6 +4,7 @@ using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
 using ProductApp.Aplication.Dtos.OrdenDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
+using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Ventas
 {
@@ -62,7 +63,8 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> CancelarOrden(int id)
         {
-            var result = await _ordenServices.CancelarOrden(id);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _ordenServices.CancelarOrden(id, usuarioSolicitanteId);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 

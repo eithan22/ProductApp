@@ -86,24 +86,12 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         public async Task<IActionResult> DeleteUsuario(int id)
         {
-
-            try
+            var result = await _usuarioService.DeleteAsync(id);
+            if (!result.IsSuccess)
             {
-
-                var result = await _usuarioService.DeleteAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(ApiResponse.FailureResponse(result.Message));
-                }
-                return Ok(ApiResponse.SuccessResponse(result.Message));
-
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ApiResponse.FailureResponse(ex.Message));
-
-            }
-
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
         */
 
@@ -167,7 +155,8 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> CambiarRol(CambiarRolDto dto)
         {
-            var result = await _usuarioService.CambiarRol(dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _usuarioService.CambiarRol(dto, usuarioSolicitanteId);
             if (!result.IsSuccess)
             {
                 return BadRequest(ApiResponse.FailureResponse(result.Message));
@@ -181,7 +170,8 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         public async Task<IActionResult> ResetearPassword(ResetearPasswordDto dto)
         {
-            var result = await _usuarioService.ResetearPassword(dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _usuarioService.ResetearPassword(dto, usuarioSolicitanteId);
             if (!result.IsSuccess)
             {
                 return BadRequest(ApiResponse.FailureResponse(result.Message));

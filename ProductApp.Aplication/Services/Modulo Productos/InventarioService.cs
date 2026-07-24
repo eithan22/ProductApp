@@ -89,7 +89,7 @@ namespace ProductApp.Aplication.Services
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock descontado exitosamente.");
         }
 
-        public async Task<OperationResultD<InventarioResponseDto>> AjustarStockAsync(AjustarStockDto dto)
+        public async Task<OperationResultD<InventarioResponseDto>> AjustarStockAsync(AjustarStockDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _ajustarStockValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -111,7 +111,7 @@ namespace ProductApp.Aplication.Services
 
             await _inventarioRepository.UpdateAsync(inventario);
 
-            _logger.LogInformation("Ajuste manual de inventario para el producto {ProductoId}: nuevo stock {NuevoStock}", dto.ProductoId, dto.NuevoStock);
+            _logger.LogInformation("Ajuste manual de inventario para el producto {ProductoId}: nuevo stock {NuevoStock}, por el usuario {UsuarioSolicitanteId}", dto.ProductoId, dto.NuevoStock, usuarioSolicitanteId);
 
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock ajustado exitosamente.");

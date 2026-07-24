@@ -14,9 +14,9 @@ namespace ProductApp.Aplication.Interface
     {
         Task<OperationResultD<bool>> CambiarPasswordUsuario( ChangePasswordDto dto);
 
-        Task<OperationResultD<bool>> ResetearPassword(ResetearPasswordDto dto);
+        Task<OperationResultD<bool>> ResetearPassword(ResetearPasswordDto dto, int usuarioSolicitanteId);
 
-        Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto);
+        Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto, int usuarioSolicitanteId);
 
         Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
 
