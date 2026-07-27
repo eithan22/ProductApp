@@ -214,5 +214,20 @@ namespace Web.Controllers.Modulo_Ventas
             }
             return RedirectToAction(nameof(Details), new { id });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Confirmar(int id)
+        {
+            try
+            {
+                await _ordenHttpServices.ConfirmarOrdenAsync(id);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+            return RedirectToAction(nameof(Details), new { id });
+        }
     }
 }

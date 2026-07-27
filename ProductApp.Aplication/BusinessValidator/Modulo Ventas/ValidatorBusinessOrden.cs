@@ -33,6 +33,10 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
                 return Task.FromResult(OperationResult.Failure(
                     "El estado 'Pagada' no se puede asignar manualmente; se establece automáticamente al registrar un pago completo."));
 
+            if (nuevoEstado == EstadoOrden.Procesada)
+                return Task.FromResult(OperationResult.Failure(
+                    "El estado 'Procesada' no se puede asignar manualmente; use el endpoint ConfirmarOrden."));
+
             return Task.FromResult(OperationResult.Success());
         }
     }

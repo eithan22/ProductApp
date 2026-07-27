@@ -62,5 +62,11 @@ namespace Web.Services.ServicesHttp.Modulo_Ventas
             await _baseHttpServices.PatchAsync<object, object>($"{_ordenEndpoint.Cancelar}{id}", new { });
             return true;
         }
+
+        public async Task<bool> ConfirmarOrdenAsync(int id)
+        {
+            await _baseHttpServices.PatchAsync<object, object>($"{_ordenEndpoint.Confirmar}{id}", new { });
+            return true;
+        }
     }
 }

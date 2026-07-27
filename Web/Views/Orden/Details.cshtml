@@ -10,12 +10,13 @@
 
     var transiciones = new Dictionary<string, string[]>
     {
-        ["Pendiente"] = new[] { "Procesada" },
+        ["Pendiente"] = Array.Empty<string>(),
         ["Procesada"] = Array.Empty<string>(),
         ["Pagada"] = new[] { "Entregada" },
         ["Entregada"] = Array.Empty<string>(),
         ["Cancelada"] = Array.Empty<string>()
     };
+    var puedeConfirmar = Model.Estado == "Pendiente";
     var puedeCancelar = Model.Estado == "Pendiente" || Model.Estado == "Procesada";
     var siguientesEstados = transiciones.TryGetValue(Model.Estado, out var t) ? t : Array.Empty<string>();
     var puedeRegistrarPago = (Model.Estado == "Pendiente" || Model.Estado == "Procesada") && saldoPendiente > 0;
@@ -38,6 +39,13 @@
                 <input type="hidden" name="id" value="@Model.Id" />
                 <input type="hidden" name="nuevoEstado" value="@estado" />
                 <button type="submit" class="btn-pa btn-pa-outline">Marcar @estado</button>
+            </form>
+        }
+        @if (puedeConfirmar)
+        {
+            <form asp-action="Confirmar" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn-pa btn-pa-outline">Confirmar orden</button>
             </form>
         }
         @if (puedeCancelar)

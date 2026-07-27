@@ -71,6 +71,21 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
             return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
+        //Confirmar orden por id (pendiente -> procesada), solo si tiene productos
+
+        [Authorize]
+        [HttpPatch("ConfirmarOrden/{id}")]
+
+        public async Task<IActionResult> ConfirmarOrden(int id)
+        {
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _ordenServices.ConfirmarOrden(id, usuarioSolicitanteId);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponse.SuccessResponse(result.Message));
+        }
+
 
         //
 

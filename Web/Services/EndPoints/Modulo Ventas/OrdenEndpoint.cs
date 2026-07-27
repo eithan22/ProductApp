@@ -12,5 +12,6 @@ namespace Web.Services.EndPoints.Modulo_Ventas
         public string GetByFecha => "Orden/GetOrdenByFecha/";
         public string CambiarEstado => "Orden/CambiarEstadoOrden";
         public string Cancelar => "Orden/CancelarOrden/";
+        public string Confirmar => "Orden/ConfirmarOrden/";
     }
 }

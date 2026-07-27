@@ -12,6 +12,7 @@ namespace ProductApp.Aplication.Interface
     {
           Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto, int usuarioId);
           Task<OperationResultD<bool>> CancelarOrden(int id, int usuarioSolicitanteId);
+          Task<OperationResultD<bool>> ConfirmarOrden(int id, int usuarioSolicitanteId);
             Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorFecha(DateTime fecha);
 
         Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId);

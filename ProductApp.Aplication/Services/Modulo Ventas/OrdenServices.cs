@@ -98,6 +98,24 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Orden cancelada exitosamente");
         }
 
+        public async Task<OperationResultD<bool>> ConfirmarOrden(int id, int usuarioSolicitanteId)
+        {
+            var orden = await _ordenRepository.GetByIdAsync(id);
+            if (orden == null)
+                return OperationResultD<bool>.Failure("Orden no encontrada");
+
+            var detallesOrden = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(id);
+            if (detallesOrden == null || detallesOrden.Count == 0 || orden.Total <= 0)
+                return OperationResultD<bool>.Failure("No se puede confirmar una orden sin productos");
+
+            orden.ConfirmarOrden();
+            await _ordenRepository.UpdateAsync(orden);
+
+            _logger.LogInformation("Orden {OrdenId} confirmada por el usuario {UsuarioSolicitanteId}", id, usuarioSolicitanteId);
+
+            return OperationResultD<bool>.Success(true, "Orden confirmada exitosamente");
+        }
+
         public async Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId)
         {
             var cliente = await _clienteRepository.GetByIdAsync(clienteId);

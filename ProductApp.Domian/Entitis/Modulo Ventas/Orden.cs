@@ -63,6 +63,11 @@ namespace ProductApp.Domian.Entitis
             CambiarEstado(EstadoOrden.Cancelada);
         }
 
+        public void ConfirmarOrden()
+        {
+            CambiarEstado(EstadoOrden.Procesada);
+        }
+
         public void ActualizarTotal(decimal total)
         {
             if (total < 0)

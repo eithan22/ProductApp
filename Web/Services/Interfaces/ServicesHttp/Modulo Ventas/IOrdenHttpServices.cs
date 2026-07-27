@@ -12,5 +12,6 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Ventas
         Task<List<OrdenModel>> GetOrdenesByFechaAsync(DateTime fecha);
         Task<bool> CambiarEstadoAsync(CambiarEstadoOrdenModel model);
         Task<bool> CancelarOrdenAsync(int id);
+        Task<bool> ConfirmarOrdenAsync(int id);
     }
 }

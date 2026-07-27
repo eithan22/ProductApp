@@ -10,9 +10,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
     {
         public Task<OperationResult> ValidarRegistrarPagoAsync(CreatePagoDto dto, Orden orden, decimal saldoActual)
         {
-            if (orden.Estado != EstadoOrden.Pendiente)
+            if (orden.Estado != EstadoOrden.Pendiente && orden.Estado != EstadoOrden.Procesada)
                 return Task.FromResult(OperationResult.Failure(
-                    "Solo se pueden registrar pagos para órdenes en estado Pendiente."));
+                    "Solo se pueden registrar pagos para órdenes en estado Pendiente o Procesada."));
 
             if (orden.Total <= 0)
                 return Task.FromResult(OperationResult.Failure(
