@@ -9,5 +9,6 @@ namespace Web.Models.Modelo_Reportes.ReporteModels
         public List<ProductoMasVendidoModel> TopProductos { get; set; } = new();
         public int TotalProductosInventario { get; set; }
         public int ProductosStockBajo { get; set; }
+        public bool EsAdministrador { get; set; }
     }
 }

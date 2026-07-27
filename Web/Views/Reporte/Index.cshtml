@@ -8,9 +8,18 @@
     var dataProductos = System.Text.Json.JsonSerializer.Serialize(Model.TopProductos.Select(x => x.CantidadVendida));
 }
 
-<p class="text-muted mb-4">
-    Resumen del @Model.Desde.ToString("dd/MM/yyyy") al @Model.Hasta.ToString("dd/MM/yyyy") y acceso a todos los reportes.
-</p>
+@if (Model.EsAdministrador)
+{
+    <p class="text-muted mb-4">
+        Resumen del @Model.Desde.ToString("dd/MM/yyyy") al @Model.Hasta.ToString("dd/MM/yyyy") y acceso a todos los reportes.
+    </p>
+}
+else
+{
+    <p class="text-muted mb-4">
+        El resumen general y los demás reportes requieren rol Administrador. Podés consultar tu propio desempeño de ventas abajo.
+    </p>
+}
 
 @if (Model.Ingresos != null)
 {
@@ -42,50 +51,56 @@
     </div>
 }
 
-<div class="row g-3 mb-4">
-    <div class="col-lg-7">
-        <div class="surface-card p-3">
-            <div class="ledger-name mb-3">Ventas de los últimos 30 días</div>
-            @if (Model.VentasPorFecha.Any())
-            {
-                <canvas id="chartVentasPorFecha" height="110"></canvas>
-            }
-            else
-            {
-                <div class="text-center text-muted py-5">Sin datos disponibles para este reporte.</div>
-            }
+@if (Model.EsAdministrador)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <div class="surface-card p-3">
+                <div class="ledger-name mb-3">Ventas de los últimos 30 días</div>
+                @if (Model.VentasPorFecha.Any())
+                {
+                    <canvas id="chartVentasPorFecha" height="110"></canvas>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">Sin datos disponibles para este reporte.</div>
+                }
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="surface-card p-3">
+                <div class="ledger-name mb-3">Top 5 productos más vendidos</div>
+                @if (Model.TopProductos.Any())
+                {
+                    <canvas id="chartTopProductos" height="110"></canvas>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">Sin datos disponibles para este reporte.</div>
+                }
+            </div>
         </div>
     </div>
-    <div class="col-lg-5">
-        <div class="surface-card p-3">
-            <div class="ledger-name mb-3">Top 5 productos más vendidos</div>
-            @if (Model.TopProductos.Any())
-            {
-                <canvas id="chartTopProductos" height="110"></canvas>
-            }
-            else
-            {
-                <div class="text-center text-muted py-5">Sin datos disponibles para este reporte.</div>
-            }
-        </div>
-    </div>
-</div>
+}
 
 <div class="row g-3">
-    <div class="col-md-4">
-        <a asp-action="VentasPorFecha" class="surface-card p-3 d-block text-decoration-none text-reset">
-            @await Html.PartialAsync("_Icon", "chart")
-            <div class="ledger-name mt-2">Ventas por fecha</div>
-            <div class="text-muted" style="font-size:.83rem;">Órdenes agrupadas por día.</div>
-        </a>
-    </div>
-    <div class="col-md-4">
-        <a asp-action="VentasPorProducto" class="surface-card p-3 d-block text-decoration-none text-reset">
-            @await Html.PartialAsync("_Icon", "box")
-            <div class="ledger-name mt-2">Ventas por producto</div>
-            <div class="text-muted" style="font-size:.83rem;">Unidades e ingresos por producto.</div>
-        </a>
-    </div>
+    @if (Model.EsAdministrador)
+    {
+        <div class="col-md-4">
+            <a asp-action="VentasPorFecha" class="surface-card p-3 d-block text-decoration-none text-reset">
+                @await Html.PartialAsync("_Icon", "chart")
+                <div class="ledger-name mt-2">Ventas por fecha</div>
+                <div class="text-muted" style="font-size:.83rem;">Órdenes agrupadas por día.</div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="VentasPorProducto" class="surface-card p-3 d-block text-decoration-none text-reset">
+                @await Html.PartialAsync("_Icon", "box")
+                <div class="ledger-name mt-2">Ventas por producto</div>
+                <div class="text-muted" style="font-size:.83rem;">Unidades e ingresos por producto.</div>
+            </a>
+        </div>
+    }
     <div class="col-md-4">
         <a asp-action="VentasPorVendedor" class="surface-card p-3 d-block text-decoration-none text-reset">
             @await Html.PartialAsync("_Icon", "users")
@@ -93,27 +108,30 @@
             <div class="text-muted" style="font-size:.83rem;">Desempeño por usuario.</div>
         </a>
     </div>
-    <div class="col-md-4">
-        <a asp-action="InventarioActual" class="surface-card p-3 d-block text-decoration-none text-reset">
-            @await Html.PartialAsync("_Icon", "layers")
-            <div class="ledger-name mt-2">Inventario actual</div>
-            <div class="text-muted" style="font-size:.83rem;">Stock y niveles mínimos.</div>
-        </a>
-    </div>
-    <div class="col-md-4">
-        <a asp-action="ProductosMasVendidos" class="surface-card p-3 d-block text-decoration-none text-reset">
-            @await Html.PartialAsync("_Icon", "target")
-            <div class="ledger-name mt-2">Productos más vendidos</div>
-            <div class="text-muted" style="font-size:.83rem;">Top N por unidades.</div>
-        </a>
-    </div>
-    <div class="col-md-4">
-        <a asp-action="IngresosTotales" class="surface-card p-3 d-block text-decoration-none text-reset">
-            @await Html.PartialAsync("_Icon", "receipt")
-            <div class="ledger-name mt-2">Ingresos totales</div>
-            <div class="text-muted" style="font-size:.83rem;">Ingresos y ticket promedio.</div>
-        </a>
-    </div>
+    @if (Model.EsAdministrador)
+    {
+        <div class="col-md-4">
+            <a asp-action="InventarioActual" class="surface-card p-3 d-block text-decoration-none text-reset">
+                @await Html.PartialAsync("_Icon", "layers")
+                <div class="ledger-name mt-2">Inventario actual</div>
+                <div class="text-muted" style="font-size:.83rem;">Stock y niveles mínimos.</div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="ProductosMasVendidos" class="surface-card p-3 d-block text-decoration-none text-reset">
+                @await Html.PartialAsync("_Icon", "target")
+                <div class="ledger-name mt-2">Productos más vendidos</div>
+                <div class="text-muted" style="font-size:.83rem;">Top N por unidades.</div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="IngresosTotales" class="surface-card p-3 d-block text-decoration-none text-reset">
+                @await Html.PartialAsync("_Icon", "receipt")
+                <div class="ledger-name mt-2">Ingresos totales</div>
+                <div class="text-muted" style="font-size:.83rem;">Ingresos y ticket promedio.</div>
+            </a>
+        </div>
+    }
 </div>
 
 @section Scripts {

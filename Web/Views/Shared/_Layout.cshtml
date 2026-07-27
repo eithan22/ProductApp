@@ -75,11 +75,11 @@
                 <a asp-controller="Reporte" asp-action="Index" class="@(controller == "Reporte" ? "active" : "")">
                     @await Html.PartialAsync("_Icon", "chart") Reportes
                 </a>
-                <a asp-controller="Usuario" asp-action="Index" class="@(controller == "Usuario" ? "active" : "")">
-                    @await Html.PartialAsync("_Icon", "users") Usuarios
-                </a>
                 @if (rol == "Administrador")
                 {
+                    <a asp-controller="Usuario" asp-action="Index" class="@(controller == "Usuario" ? "active" : "")">
+                        @await Html.PartialAsync("_Icon", "users") Usuarios
+                    </a>
                     <a asp-controller="Configuracion" asp-action="Index" class="@(controller == "Configuracion" ? "active" : "")">
                         @await Html.PartialAsync("_Icon", "settings") Configuración
                     </a>

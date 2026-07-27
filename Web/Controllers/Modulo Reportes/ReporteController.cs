@@ -17,24 +17,19 @@ namespace Web.Controllers.Modulo_Reportes
         {
             var hasta = DateTime.Today;
             var desde = hasta.AddDays(-30);
-            var model = new ReporteDashboardModel { Desde = desde, Hasta = hasta };
+            var esAdministrador = HttpContext.Session.GetString("ROL") == "Administrador";
+            var model = new ReporteDashboardModel { Desde = desde, Hasta = hasta, EsAdministrador = esAdministrador };
 
-            try { model.Ingresos = await _reporteHttpServices.GetIngresosTotalesAsync(desde, hasta); }
-            catch { }
-
-            try { model.VentasPorFecha = await _reporteHttpServices.GetVentasPorFechaAsync(desde, hasta); }
-            catch { }
-
-            try { model.TopProductos = await _reporteHttpServices.GetProductosMasVendidosAsync(desde, hasta, 5); }
-            catch { }
-
-            try
+            if (esAdministrador)
             {
+                model.Ingresos = await _reporteHttpServices.GetIngresosTotalesAsync(desde, hasta);
+                model.VentasPorFecha = await _reporteHttpServices.GetVentasPorFechaAsync(desde, hasta);
+                model.TopProductos = await _reporteHttpServices.GetProductosMasVendidosAsync(desde, hasta, 5);
+
                 var inventario = await _reporteHttpServices.GetInventarioActualAsync();
                 model.TotalProductosInventario = inventario.Count;
                 model.ProductosStockBajo = inventario.Count(i => i.StockBajo);
             }
-            catch { }
 
             return View(model);
         }
