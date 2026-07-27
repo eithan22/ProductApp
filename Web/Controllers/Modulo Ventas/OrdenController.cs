@@ -30,25 +30,27 @@ namespace Web.Controllers.Modulo_Ventas
             _pagoHttpServices = pagoHttpServices;
         }
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string? estado = null)
         {
-            var result = await _ordenHttpServices.GetOrdenesAsync();
+            var result = await _ordenHttpServices.GetOrdenesAsync(estado);
+            ViewBag.EstadoFiltro = estado;
             return View(result);
         }
 
         [HttpGet]
-        public async Task<ActionResult> Buscar(int? clienteId, DateTime? fecha)
+        public async Task<ActionResult> Buscar(int? clienteId, DateTime? fecha, string? estado)
         {
             try
             {
                 List<OrdenModel> result;
                 if (clienteId.HasValue)
-                    result = await _ordenHttpServices.GetOrdenesByClienteAsync(clienteId.Value);
+                    result = await _ordenHttpServices.GetOrdenesByClienteAsync(clienteId.Value, estado);
                 else if (fecha.HasValue)
-                    result = await _ordenHttpServices.GetOrdenesByFechaAsync(fecha.Value);
+                    result = await _ordenHttpServices.GetOrdenesByFechaAsync(fecha.Value, estado);
                 else
-                    result = await _ordenHttpServices.GetOrdenesAsync();
+                    result = await _ordenHttpServices.GetOrdenesAsync(estado);
 
+                ViewBag.EstadoFiltro = estado;
                 return View("Index", result);
             }
             catch (Exception ex)

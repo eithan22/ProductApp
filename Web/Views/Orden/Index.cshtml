@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Órdenes";
+    var estadoFiltro = ViewBag.EstadoFiltro as string;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,13 +12,23 @@
 
 <div class="surface-card p-3 mb-4">
     <form asp-action="Buscar" method="get" class="row g-2">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <input type="number" name="clienteId" class="form-control" placeholder="ID de cliente..." />
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <input type="date" name="fecha" class="form-control" />
         </div>
-        <div class="col-md-4 d-flex gap-2">
+        <div class="col-md-3">
+            <select name="estado" class="form-select">
+                <option value="" selected="@(string.IsNullOrEmpty(estadoFiltro))">Todas (sin canceladas)</option>
+                <option value="Pendiente" selected="@(estadoFiltro == "Pendiente")">Pendiente</option>
+                <option value="Procesada" selected="@(estadoFiltro == "Procesada")">Procesada</option>
+                <option value="Pagada" selected="@(estadoFiltro == "Pagada")">Pagada</option>
+                <option value="Entregada" selected="@(estadoFiltro == "Entregada")">Entregada</option>
+                <option value="Cancelada" selected="@(estadoFiltro == "Cancelada")">Cancelada</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
             <button type="submit" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "search") Buscar</button>
             <a asp-action="Index" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
         </div>

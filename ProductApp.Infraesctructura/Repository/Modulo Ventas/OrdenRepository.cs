@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ProductApp.Domian.Common.Enums.EnumsOrden;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Contex;
@@ -12,23 +13,35 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
         }
 
-        public async Task<List<Orden>> GetAllConDetallesAsync()
+        public async Task<List<Orden>> GetAllConDetallesAsync(EstadoOrden? estado = null)
         {
-            return await _context.Ordenes
+            var query = _context.Ordenes
                 .Include(o => o.Cliente)
                 .Include(o => o.Detalles)
                     .ThenInclude(d => d.Producto)
                 .Where(o => !o.EstaEliminado)
-                .ToListAsync();
+                .AsQueryable();
+
+            query = estado.HasValue
+                ? query.Where(o => o.Estado == estado.Value)
+                : query.Where(o => o.Estado != EstadoOrden.Cancelada);
+
+            return await query.ToListAsync();
         }
 
-        public async Task<List<Orden>> ObtenerPorClienteAsync(int clienteId)
+        public async Task<List<Orden>> ObtenerPorClienteAsync(int clienteId, EstadoOrden? estado = null)
         {
-            return await _context.Ordenes
+            var query = _context.Ordenes
                 .Include(o => o.Cliente)
                 .Include(o => o.Detalles)
                 .Where(o => !o.EstaEliminado && o.ClienteId == clienteId)
-                .ToListAsync();
+                .AsQueryable();
+
+            query = estado.HasValue
+                ? query.Where(o => o.Estado == estado.Value)
+                : query.Where(o => o.Estado != EstadoOrden.Cancelada);
+
+            return await query.ToListAsync();
         }
 
         public async Task<List<Orden>> ObtenerPorUsuarioAsync(int usuarioId)
@@ -40,12 +53,18 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 .ToListAsync();
         }
 
-        public async Task<List<Orden>> ObtenerPorRangoFechaAsync(DateTime desde, DateTime hasta)
+        public async Task<List<Orden>> ObtenerPorRangoFechaAsync(DateTime desde, DateTime hasta, EstadoOrden? estado = null)
         {
-            return await _context.Ordenes
+            var query = _context.Ordenes
                 .Include(o => o.Cliente)
                 .Where(o => !o.EstaEliminado && o.Fecha >= desde && o.Fecha <= hasta)
-                .ToListAsync();
+                .AsQueryable();
+
+            query = estado.HasValue
+                ? query.Where(o => o.Estado == estado.Value)
+                : query.Where(o => o.Estado != EstadoOrden.Cancelada);
+
+            return await query.ToListAsync();
         }
 
         public async Task<Orden?> GetByIdConClienteAsync(int id)

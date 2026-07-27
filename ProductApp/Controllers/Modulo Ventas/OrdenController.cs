@@ -4,6 +4,7 @@ using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
 using ProductApp.Aplication.Dtos.OrdenDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
+using ProductApp.Domian.Common.Enums.EnumsOrden;
 using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Ventas
@@ -43,9 +44,12 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         [Authorize]
         [HttpGet("GetAllOrdenes")]
 
-        public async Task<IActionResult> GetAllOrdenes()
+        public async Task<IActionResult> GetAllOrdenes([FromQuery] string? estado = null)
         {
-            var result = await _ordenServices.GetAllOrdenes();
+            if (!TryParseEstadoFiltro(estado, out var estadoFiltro, out var error))
+                return error!;
+
+            var result = await _ordenServices.GetAllOrdenes(estadoFiltro);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
@@ -116,9 +120,12 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         [Authorize]
         [HttpGet("GetOrdenByClientes/{id}")]
 
-        public async Task<IActionResult> GetOrdenByClientes(int id)
+        public async Task<IActionResult> GetOrdenByClientes(int id, [FromQuery] string? estado = null)
         {
-            var result = await _ordenServices.ConsultarOrdenesPorCliente(id);
+            if (!TryParseEstadoFiltro(estado, out var estadoFiltro, out var error))
+                return error!;
+
+            var result = await _ordenServices.ConsultarOrdenesPorCliente(id, estadoFiltro);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
@@ -141,18 +148,35 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         [Authorize]
         [HttpGet("GetOrdenByFecha/{fecha}")]
 
-        public async Task<IActionResult> GetOrdenByFecha(DateTime fecha)
+        public async Task<IActionResult> GetOrdenByFecha(DateTime fecha, [FromQuery] string? estado = null)
         {
-            var result = await _ordenServices.ConsultarOrdenesPorFecha(fecha);
+            if (!TryParseEstadoFiltro(estado, out var estadoFiltro, out var error))
+                return error!;
+
+            var result = await _ordenServices.ConsultarOrdenesPorFecha(fecha, estadoFiltro);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
             return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
 
+        private bool TryParseEstadoFiltro(string? estado, out EstadoOrden? estadoFiltro, out IActionResult? error)
+        {
+            estadoFiltro = null;
+            error = null;
 
+            if (string.IsNullOrWhiteSpace(estado))
+                return true;
 
-       
+            if (!Enum.TryParse<EstadoOrden>(estado, true, out var parsed))
+            {
+                error = BadRequest(ApiResponseT<Object>.FailureResponse("Estado inválido"));
+                return false;
+            }
+
+            estadoFiltro = parsed;
+            return true;
+        }
 
     }
 

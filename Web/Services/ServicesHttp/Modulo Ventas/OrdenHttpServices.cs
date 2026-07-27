@@ -25,9 +25,10 @@ namespace Web.Services.ServicesHttp.Modulo_Ventas
             return await _baseHttpServices.PostAsync<CreateOrdenDto, OrdenModel>(_ordenEndpoint.Create, dto);
         }
 
-        public async Task<List<OrdenModel>> GetOrdenesAsync()
+        public async Task<List<OrdenModel>> GetOrdenesAsync(string? estado = null)
         {
-            return await _baseHttpServices.GetAsync<List<OrdenModel>>(_ordenEndpoint.GetAll);
+            var query = string.IsNullOrWhiteSpace(estado) ? "" : $"?estado={estado}";
+            return await _baseHttpServices.GetAsync<List<OrdenModel>>($"{_ordenEndpoint.GetAll}{query}");
         }
 
         public async Task<OrdenModel> GetOrdenByIdAsync(int id)
@@ -35,9 +36,10 @@ namespace Web.Services.ServicesHttp.Modulo_Ventas
             return await _baseHttpServices.GetAsync<OrdenModel>($"{_ordenEndpoint.GetById}{id}");
         }
 
-        public async Task<List<OrdenModel>> GetOrdenesByClienteAsync(int clienteId)
+        public async Task<List<OrdenModel>> GetOrdenesByClienteAsync(int clienteId, string? estado = null)
         {
-            return await _baseHttpServices.GetAsync<List<OrdenModel>>($"{_ordenEndpoint.GetByCliente}{clienteId}");
+            var query = string.IsNullOrWhiteSpace(estado) ? "" : $"?estado={estado}";
+            return await _baseHttpServices.GetAsync<List<OrdenModel>>($"{_ordenEndpoint.GetByCliente}{clienteId}{query}");
         }
 
         public async Task<List<OrdenModel>> GetOrdenesByUsuarioAsync(int usuarioId)
@@ -45,9 +47,10 @@ namespace Web.Services.ServicesHttp.Modulo_Ventas
             return await _baseHttpServices.GetAsync<List<OrdenModel>>($"{_ordenEndpoint.GetByUsuario}{usuarioId}");
         }
 
-        public async Task<List<OrdenModel>> GetOrdenesByFechaAsync(DateTime fecha)
+        public async Task<List<OrdenModel>> GetOrdenesByFechaAsync(DateTime fecha, string? estado = null)
         {
-            return await _baseHttpServices.GetAsync<List<OrdenModel>>($"{_ordenEndpoint.GetByFecha}{fecha:yyyy-MM-dd}");
+            var query = string.IsNullOrWhiteSpace(estado) ? "" : $"?estado={estado}";
+            return await _baseHttpServices.GetAsync<List<OrdenModel>>($"{_ordenEndpoint.GetByFecha}{fecha:yyyy-MM-dd}{query}");
         }
 
         public async Task<bool> CambiarEstadoAsync(CambiarEstadoOrdenModel model)

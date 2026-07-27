@@ -116,13 +116,13 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Orden confirmada exitosamente");
         }
 
-        public async Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId)
+        public async Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId, EstadoOrden? estado = null)
         {
             var cliente = await _clienteRepository.GetByIdAsync(clienteId);
             if (cliente == null)
                 return OperationResultD<List<OrdenResponseDto>>.Failure("Cliente no encontrado");
 
-            var ordenes = await _ordenRepository.ObtenerPorClienteAsync(clienteId);
+            var ordenes = await _ordenRepository.ObtenerPorClienteAsync(clienteId, estado);
             if (ordenes == null || ordenes.Count == 0)
                 return OperationResultD<List<OrdenResponseDto>>.Success(new List<OrdenResponseDto>(), "El cliente no tiene órdenes");
 
@@ -130,9 +130,9 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
         }
 
-        public async Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorFecha(DateTime fecha)
+        public async Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorFecha(DateTime fecha, EstadoOrden? estado = null)
         {
-            var ordenes = await _ordenRepository.ObtenerPorRangoFechaAsync(fecha.Date, fecha.Date.AddDays(1).AddTicks(-1));
+            var ordenes = await _ordenRepository.ObtenerPorRangoFechaAsync(fecha.Date, fecha.Date.AddDays(1).AddTicks(-1), estado);
             if (ordenes.Count == 0)
                 return OperationResultD<List<OrdenResponseDto>>.Success(new List<OrdenResponseDto>(), "No se encontraron órdenes para la fecha especificada");
 
@@ -140,9 +140,9 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
         }
 
-        public async Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes()
+        public async Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes(EstadoOrden? estado = null)
         {
-            var ordenes = await _ordenRepository.GetAllConDetallesAsync();
+            var ordenes = await _ordenRepository.GetAllConDetallesAsync(estado);
             if (ordenes.Count == 0)
                 return OperationResultD<List<OrdenResponseDto>>.Success(new List<OrdenResponseDto>(), "No se encontraron órdenes");
 
