@@ -1,6 +1,4 @@
-﻿using Azure;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
-using ProductApp.Aplication.Result.ApiResponses;
+﻿using ProductApp.Aplication.Result.ApiResponses;
 using System.Net.Http;
 using System.Text.Json;
 using Web.Services.Interfaces.IBase;

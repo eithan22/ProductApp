@@ -28,6 +28,7 @@ namespace Web.Controllers.Modulo_Usuarios
         public async Task<ActionResult> Details(int id)
         {
            var result = await _clienteHttpServices.GetClienteByIdAsync(id);
+           ViewBag.TotalCompras = await _clienteHttpServices.GetTotalComprasAsync(id);
             return View(result);
         }
 

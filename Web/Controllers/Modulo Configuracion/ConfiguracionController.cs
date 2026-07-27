@@ -15,6 +15,12 @@ namespace Web.Controllers.Modulo_Configuracion
 
         public async Task<ActionResult> Index()
         {
+            if (HttpContext.Session.GetString("ROL") != "Administrador")
+            {
+                TempData["Error"] = "No tenés permisos para acceder a Configuración.";
+                return RedirectToAction("Index", "Home");
+            }
+
             var result = await _configuracionHttpServices.ObtenerAsync();
             return View(result);
         }
@@ -23,6 +29,12 @@ namespace Web.Controllers.Modulo_Configuracion
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Index(ConfiguracionModel model)
         {
+            if (HttpContext.Session.GetString("ROL") != "Administrador")
+            {
+                TempData["Error"] = "No tenés permisos para acceder a Configuración.";
+                return RedirectToAction("Index", "Home");
+            }
+
             try
             {
                 await _configuracionHttpServices.ActualizarAsync(model);

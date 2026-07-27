@@ -270,5 +270,32 @@ namespace ProductApp.Aplication.Services
 
         }
 
+        public async Task<OperationResultD<ClienteTotalComprasDto>> ObtenerTotalComprasAsync(int clienteId)
+        {
+            if (clienteId <= 0)
+            {
+                return OperationResultD<ClienteTotalComprasDto>.Failure("El id no puede ser menor o igual a 0");
+            }
+
+            var cliente = await _clienteRepository.GetByIdAsync(clienteId);
+            if (cliente == null)
+            {
+                return OperationResultD<ClienteTotalComprasDto>.Failure("El cliente no fue encontrado");
+            }
+
+            var (cantidadOrdenes, totalComprado, fechaUltimaCompra) = await _clienteRepository.ObtenerTotalComprasAsync(clienteId);
+
+            var dto = new ClienteTotalComprasDto
+            {
+                ClienteId = cliente.Id,
+                NombreCliente = cliente.Nombre,
+                CantidadOrdenes = cantidadOrdenes,
+                TotalComprado = totalComprado,
+                FechaUltimaCompra = fechaUltimaCompra
+            };
+
+            return OperationResultD<ClienteTotalComprasDto>.Success(dto, "Total de compras obtenido correctamente");
+        }
+
     }
 }

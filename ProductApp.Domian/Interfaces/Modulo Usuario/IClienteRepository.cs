@@ -9,5 +9,6 @@ namespace ProductApp.Domian.Interfaces
         Task<List<Cliente>> BuscarClientesAsync(string? nombre, string? telefono, string? correo, bool incluirInactivos = false);
         Task<bool> ExistePorCorreoAsync(string correo);
         Task<bool> ExistePorCedulaAsync(string cedula);
+        Task<(int CantidadOrdenes, decimal TotalComprado, DateTime? FechaUltimaCompra)> ObtenerTotalComprasAsync(int clienteId);
     }
 }

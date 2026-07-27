@@ -120,6 +120,17 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
             return Ok(ApiResponseT<List<ClienteResponseDto>>.SuccessResponse(result.Data, result.Message));
         }
+
+        [Authorize]
+        [HttpGet("TotalCompras/{id}")]
+        public async Task<IActionResult> GetTotalCompras(int id)
+        {
+            var result = await _clienteService.ObtenerTotalComprasAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<ClienteTotalComprasDto>.SuccessResponse(result.Data, result.Message));
+        }
     }
 
 

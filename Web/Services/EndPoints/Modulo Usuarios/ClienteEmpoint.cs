@@ -16,5 +16,7 @@ namespace Web.Services.EndPoints
         public string Enable => "Cliente/EnableCliente/";
 
         public string GetBuscar => "Cliente/GetBuscar";
+
+        public string TotalCompras => "Cliente/TotalCompras/";
     }
 }

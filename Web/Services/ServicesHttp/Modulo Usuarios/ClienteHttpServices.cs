@@ -78,5 +78,11 @@ namespace Web.Services.ServicesHttp
             return response;
 
         }
+
+        public async Task<ClienteTotalComprasModel> GetTotalComprasAsync(int id)
+        {
+            var response = await _baseHttpServices.GetAsync<ClienteTotalComprasModel>($"{_clienteEndpointcs.TotalCompras}{id}");
+            return response;
+        }
     }
 }

@@ -29,14 +29,7 @@ namespace Web.Controllers.Modulo_Usuarios
             }
             catch (Exception ex)
             {
-                // 🔥 Detectar acceso denegado
-                if (ex.Message.Contains("Forbidden"))
-                {
-                    TempData["Error"] = "⛔ No tienes permisos para acceder a Usuarios.";
-                    return RedirectToAction("Index", "Home"); // o donde quieras
-                }
-
-                TempData["Error"] = ex.Message;
+                TempData["Error"] = MensajeAmigable(ex);
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -46,8 +39,16 @@ namespace Web.Controllers.Modulo_Usuarios
         // GET: UsuarioController/Details/5
         public async Task<ActionResult> Details(int id)
         {
-            var result = await _usuarioHttpServices.GetUsuarioByIdAsync(id);
-            return View(result);
+            try
+            {
+                var result = await _usuarioHttpServices.GetUsuarioByIdAsync(id);
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = MensajeAmigable(ex);
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // GET: UsuarioController/Create
@@ -73,7 +74,7 @@ namespace Web.Controllers.Modulo_Usuarios
             }
             catch(Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                ModelState.AddModelError("", MensajeAmigable(ex));
                 return View(createUsuarioModel);
             }
         }
@@ -100,8 +101,8 @@ namespace Web.Controllers.Modulo_Usuarios
             }
             catch (Exception ex)
             {
-                return Content($"Error: {ex.Message}");
-
+                TempData["Error"] = MensajeAmigable(ex);
+                return RedirectToAction(nameof(Index));
             }
 
         }
@@ -121,10 +122,10 @@ namespace Web.Controllers.Modulo_Usuarios
                 }
                 return View(updateUsuarioModel);
             }
-                
+
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                ModelState.AddModelError("", MensajeAmigable(ex));
                 return View(updateUsuarioModel);
             }
         }
@@ -142,10 +143,10 @@ namespace Web.Controllers.Modulo_Usuarios
                 }
                 return View(usuario);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                return Content($"Error: {ex.Message}");
-
+                TempData["Error"] = MensajeAmigable(ex);
+                return RedirectToAction(nameof(Index));
             }
         }
 
@@ -163,9 +164,9 @@ namespace Web.Controllers.Modulo_Usuarios
                 return RedirectToAction(nameof(Index));
             }
 
-            catch(Exception ex) 
+            catch(Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                ModelState.AddModelError("", MensajeAmigable(ex));
 
               var usuario = await _usuarioHttpServices.GetUsuarioByIdAsync(id);
 
@@ -179,8 +180,16 @@ namespace Web.Controllers.Modulo_Usuarios
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Enable(int id)
         {
-            await _usuarioHttpServices.EnableUsuarioAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _usuarioHttpServices.EnableUsuarioAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = MensajeAmigable(ex);
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // GET: UsuarioController/CambiarRol/5
@@ -199,7 +208,7 @@ namespace Web.Controllers.Modulo_Usuarios
             }
             catch (Exception ex)
             {
-                TempData["Error"] = ex.Message;
+                TempData["Error"] = MensajeAmigable(ex);
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -216,7 +225,7 @@ namespace Web.Controllers.Modulo_Usuarios
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                ModelState.AddModelError("", MensajeAmigable(ex));
                 return View(model);
             }
         }
@@ -232,7 +241,7 @@ namespace Web.Controllers.Modulo_Usuarios
             }
             catch (Exception ex)
             {
-                TempData["Error"] = ex.Message;
+                TempData["Error"] = MensajeAmigable(ex);
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -249,7 +258,7 @@ namespace Web.Controllers.Modulo_Usuarios
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                ModelState.AddModelError("", MensajeAmigable(ex));
                 return View(model);
             }
         }
@@ -303,5 +312,10 @@ namespace Web.Controllers.Modulo_Usuarios
                 return View(model);
             }
         }
+
+        private static string MensajeAmigable(Exception ex) =>
+            ex.Message.Contains("Forbidden")
+                ? "No tienes permisos para realizar esta acción."
+                : ex.Message;
     }
 }

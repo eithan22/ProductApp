@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProductApp.Domian.Common.Enums.EnumsCliente;
+using ProductApp.Domian.Common.Enums.EnumsOrden;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Contex;
@@ -66,6 +67,21 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Clientes
                 .AnyAsync(c => !c.EstaEliminado && c.Cedula == cedula);
+        }
+
+        public async Task<(int CantidadOrdenes, decimal TotalComprado, DateTime? FechaUltimaCompra)> ObtenerTotalComprasAsync(int clienteId)
+        {
+            var query = _context.Ordenes.Where(o => o.ClienteId == clienteId
+                                                  && !o.EstaEliminado
+                                                  && o.Estado != EstadoOrden.Cancelada);
+
+            var cantidadOrdenes = await query.CountAsync();
+            var totalComprado = await query.SumAsync(o => (decimal?)o.Total) ?? 0m;
+            var fechaUltimaCompra = await query.OrderByDescending(o => o.Fecha)
+                                                .Select(o => (DateTime?)o.Fecha)
+                                                .FirstOrDefaultAsync();
+
+            return (cantidadOrdenes, totalComprado, fechaUltimaCompra);
         }
     }
 }

@@ -22,6 +22,8 @@ namespace Web.Services.Interfaces.ServicesHttp
             Task<bool> DeleteClienteAsync(int id);
 
             Task<bool> EnableClienteAsync(int id);
+
+            Task<ClienteTotalComprasModel> GetTotalComprasAsync(int id);
         }
 
 

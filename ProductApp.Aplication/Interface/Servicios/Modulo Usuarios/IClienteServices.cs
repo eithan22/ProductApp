@@ -17,5 +17,7 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<List<ClienteResponseDto>>> BuscarAsync(string? nombre, string? telefono, string? correo, bool incluirInactivos = false);
 
+        Task<OperationResultD<ClienteTotalComprasDto>> ObtenerTotalComprasAsync(int clienteId);
+
     }
 }

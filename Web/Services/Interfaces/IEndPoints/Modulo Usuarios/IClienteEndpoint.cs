@@ -12,6 +12,7 @@
 
         string GetBuscar { get; }
 
-        
+        string TotalCompras { get; }
+
     }
 }
