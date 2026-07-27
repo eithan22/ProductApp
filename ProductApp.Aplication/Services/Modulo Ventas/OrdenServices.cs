@@ -73,6 +73,11 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<bool>.Failure("Orden no encontrada");
 
             var nuevoEstado = Enum.Parse<EstadoOrden>(dto.NuevoEstado, true);
+
+            var businessResult = await _validatorBusinessOrden.ValidarCambiarEstadoAsync(nuevoEstado);
+            if (!businessResult.IsSuccess)
+                return OperationResultD<bool>.Failure(businessResult.Message);
+
             orden.CambiarEstado(nuevoEstado);
             await _ordenRepository.UpdateAsync(orden);
 

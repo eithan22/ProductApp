@@ -10,8 +10,8 @@
 
     var transiciones = new Dictionary<string, string[]>
     {
-        ["Pendiente"] = new[] { "Procesada", "Pagada" },
-        ["Procesada"] = new[] { "Pagada" },
+        ["Pendiente"] = new[] { "Procesada" },
+        ["Procesada"] = Array.Empty<string>(),
         ["Pagada"] = new[] { "Entregada" },
         ["Entregada"] = Array.Empty<string>(),
         ["Cancelada"] = Array.Empty<string>()
@@ -49,14 +49,7 @@
         }
     </div>
 </div>
-@if (siguientesEstados.Contains("Pagada"))
-{
-    <p class="text-muted mb-4" style="font-size:.82rem;">Nota: "Pagada" normalmente se marca automáticamente al registrar un pago completo. Marcarla aquí no registra ningún pago.</p>
-}
-else
-{
-    <div class="mb-4"></div>
-}
+<div class="mb-4"></div>
 
 <div class="surface-card p-4 mb-4">
     <h6 class="fw-bold mb-3">Productos de la orden</h6>

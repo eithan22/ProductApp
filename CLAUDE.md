@@ -72,7 +72,7 @@ Entidades con **encapsulación estricta** — propiedades `private set`, constru
 
 `BaseEntity` provee: `Id`, `EstaEliminado` (soft delete), `CreadoEn`, `ModificadoEn`, `Eliminar()`, `ActualizarFechaModificacion()`.
 
-Las excepciones de dominio (`ValidacionDominioException`, `EstadoInvalidoException`, `PrecioInvalidoException`) se lanzan dentro de las entidades y se dejan burbujear hasta el controller, que las captura en el bloque `catch (Exception ex)`.
+Las excepciones de dominio (`ValidacionDominioException`, `EstadoInvalidoException`, `PrecioInvalidoException`, todas heredan de `DomainException`) se lanzan dentro de las entidades y burbujean sin captura local hasta `GlobalExceptionHandler` (`ProductApp/Filters/GlobalExceptionHandler.cs`, vía `IExceptionHandler`), registrado en `Program.cs` con `AddExceptionHandler<T>()` + `app.UseExceptionHandler()`. Este handler distingue: `DomainException` → 400 con el mensaje real; cualquier otra excepción → 500 con mensaje genérico (no filtra detalles internos). Los controllers **no** tienen bloques try/catch.
 
 ### Módulos
 
@@ -81,6 +81,8 @@ Las excepciones de dominio (`ValidacionDominioException`, `EstadoInvalidoExcepti
 | Usuarios | `Usuario`, `Cliente` |
 | Productos | `Categoria`, `Producto`, `Inventario` |
 | Ventas | `Orden`, `OrdenDetalle`, `Pago` |
+| Configuración | `ConfiguracionSistema` (singleton editable: nombre de empresa, moneda, duración de JWT, cantidad mínima de inventario por defecto) |
+| Reportes | Sin entidad propia — agrega consultas de solo lectura sobre Orden/Producto/Inventario (ventas por fecha, por producto, por vendedor, inventario actual, productos más vendidos, ingresos totales) |
 
 **Orden → Pago es 1:N** (pagos parciales permitidos). Al pagar completamente: `Orden` pasa a `Pagada`, el stock de todos los productos del pedido se descuenta en una sola transacción atómica dentro de `PagoService.RegistrarPagoAsync`.
 
@@ -94,14 +96,28 @@ Las excepciones de dominio (`ValidacionDominioException`, `EstadoInvalidoExcepti
 
 Los controllers nunca devuelven `OperationResult` directamente; siempre lo convierten a `ApiResponse*`.
 
+### Paginación
+
+Los listados de Producto, Categoria, Cliente, Usuario e Inventario usan `PagedResult<T>` (`ProductApp.Aplication/Common/PagedResult.cs`): `Items`, `PageNumber`, `PageSize`, `TotalCount`, `TotalPages` calculado. La capa Web consume esta respuesta paginada con controles Anterior/Siguiente.
+
+### Cambio de contraseña obligatorio
+
+`Usuario.DebeCambiarPassword` se activa al crear un usuario, resetear su contraseña, o marcarla como temporal (`MarcarPasswordComoTemporal` / `ConfirmarCambioPassword`), y se propaga como claim JWT. `RequiereCambioPasswordFilter` (`ProductApp/Filters/`) bloquea con 403 cualquier endpoint autenticado mientras ese claim sea `true`, salvo los marcados con `[PermitirConPasswordPendiente]`.
+
+### Logging y auditoría
+
+`AuthServices` registra intentos de login exitosos y fallidos. Las operaciones administrativas sensibles (cambio de rol, reseteo de contraseña, registro de pago, cancelación de orden, ajuste manual de inventario) generan logs de auditoría con `ILogger` que incluyen el id del usuario autenticado que ejecutó la acción.
+
 ### Inyección de dependencias (API)
 
 Todo el DI está en `ProductApp/Extensions/`:
-- `DependencyInjectionExtension.cs` → punto de entrada, llama a los tres módulos
+- `DependencyInjectionExtension.cs` → punto de entrada, llama a los cinco módulos
 - `InfraestructuraExtension.cs` → DbContext + JWT Bearer
 - `Modulo Usuarios/UsuarioDependenciesExtension.cs`
 - `Modulo Productos/ProductoDependenciesExtension.cs`
 - `Modulo Ventas/VentasDependenciesExtension.cs`
+- `Modulo Reportes/ReportesDependenciesExtension.cs`
+- `Modulo Configuracion/ConfiguracionDependenciesExtension.cs`
 
 `Program.cs` solo llama `builder.Services.AddProjectDependencies(builder.Configuration)`. Al agregar un nuevo servicio/repositorio/validator, registrarlo en la extension del módulo correspondiente, **no en Program.cs**.
 
@@ -115,7 +131,7 @@ Para agregar un nuevo módulo en Web se necesitan 4 piezas:
 3. **Models** (`Models/`) — ViewModels para las vistas
 4. **Controller** + **Views** — patrón MVC estándar
 
-Los 5 módulos (Usuarios, Categoría, Producto, Inventario, Orden) ya tienen controller + views en Web. Pago no tiene controller propio: sus acciones (registrar pago, ver pagos de una orden) están dentro de `OrdenController`.
+Los módulos Usuarios, Categoría, Producto, Inventario, Orden, Configuración y Reportes ya tienen controller + views en Web. Pago no tiene controller propio: sus acciones (registrar pago, ver pagos de una orden) están dentro de `OrdenController`.
 
 ### Repositorios
 
@@ -127,7 +143,9 @@ Los 5 módulos (Usuarios, Categoría, Producto, Inventario, Orden) ya tienen con
 
 La API requiere en `appsettings.json`:
 - `ConnectionStrings:DefaultConnection` — SQL Server con Integrated Security
-- `Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience` — para la autenticación JWT (tokens expiran en 60 min)
+- `Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience` — para la autenticación JWT
+
+La duración del JWT y la cantidad mínima de inventario por defecto se leen de `ConfiguracionSistema` en base de datos (editable desde la app), con 60 minutos / 5 unidades como valores de respaldo si no hay configuración cargada — ya no son fijos en `appsettings.json`.
 
 La Web requiere:
 - `ApiSettings:BaseUrl` — URL base de la API (e.g., `https://localhost:7001`)
