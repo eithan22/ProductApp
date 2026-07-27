@@ -2,6 +2,7 @@ using ProductApp.Aplication.Dtos.Modulo_Ventas.DetalleOrdenDto;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Ventas;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Common.Enums.EnumsOrden;
+using ProductApp.Domian.Common.Enums.EnumsProducto;
 using ProductApp.Domian.Interfaces;
 
 namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
@@ -37,6 +38,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
 
             if (producto.Inventario == null)
                 return OperationResult.Failure("Inventario no encontrado para este producto");
+
+            if (producto.Estado == EstadoProducto.Inactivo)
+                return OperationResult.Failure("No se puede agregar un producto desactivado a una orden");
 
             var detalleExistente = await _detalleOrdenRepository.ObtenerProductoEnOrdenAsync(dto.OrdenId, dto.ProductId);
             var cantidadTotal = detalleExistente != null ? detalleExistente.Cantidad + dto.Cantidad : dto.Cantidad;
