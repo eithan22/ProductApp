@@ -4,6 +4,7 @@ using ProductApp.Api.Seed;
 using ProductApp.Aplication.Result.ApiResponses;
 using ProductApp.Extensions;
 using ProductApp.Infraesctructura.Persistencia.Contex;
+using Serilog;
 
 namespace ProductApp
 {
@@ -12,6 +13,20 @@ namespace ProductApp
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Reemplaza el logging por consola por defecto: mismos niveles que Serilog:MinimumLevel
+            // en appsettings, pero ahora también persistidos en logs/ con rotación diaria.
+            builder.Host.UseSerilog((context, configuration) =>
+            {
+                configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .WriteTo.Console()
+                    .WriteTo.File(
+                        path: "logs/productapp-.log",
+                        rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 30,
+                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+            });
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             if (string.IsNullOrWhiteSpace(connectionString))
