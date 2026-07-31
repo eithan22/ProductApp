@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Usuarios;
@@ -18,7 +19,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         }
 
         [HttpPost("login")]
-
+        [EnableRateLimiting("login")] // aplica la política "login" (5 intentos por minuto) definida en Program.cs
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var result = await _authService.Login(dto);

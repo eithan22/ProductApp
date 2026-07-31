@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.RateLimiting;
 using ProductApp.Api.Filters;
 using ProductApp.Api.Seed;
+using ProductApp.Aplication.Result.ApiResponses;
 using ProductApp.Extensions;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 
@@ -62,6 +64,28 @@ namespace ProductApp
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();
 
+            // Limita los intentos de login para frenar fuerza bruta: máximo 5 intentos por minuto,
+            // sin cola de espera (el intento número 6 se rechaza al instante con 429, no espera turno).
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddFixedWindowLimiter("login", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 5;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueLimit = 0;
+                });
+
+                // Cuando se excede el límite, responde con el mismo formato ApiResponseT que usa el resto de la API.
+                options.OnRejected = async (context, cancellationToken) =>
+                {
+                    context.HttpContext.Response.ContentType = "application/json";
+                    await context.HttpContext.Response.WriteAsJsonAsync(
+                        ApiResponseT<object>.FailureResponse(
+                            "Demasiados intentos de inicio de sesión. Intenta nuevamente en un minuto."),
+                        cancellationToken);
+                };
+            });
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -81,6 +105,7 @@ namespace ProductApp
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseRateLimiter(); // aplica la política de rate limiting a las rutas que la declaren con [EnableRateLimiting]
             app.MapControllers();
             app.Run();
         }
