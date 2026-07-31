@@ -11,6 +11,18 @@ namespace ProductApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException(
+                    "Falta configurar ConnectionStrings:DefaultConnection. En desarrollo, usa " +
+                    "dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"...\". " +
+                    "En producción, configura la variable de entorno ConnectionStrings__DefaultConnection.");
+
+            if (string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Key"]))
+                throw new InvalidOperationException(
+                    "Falta configurar Jwt:Key. Ver dotnet user-secrets (desarrollo) o la " +
+                    "variable de entorno Jwt__Key (producción).");
+
             builder.Services.AddControllers(options =>
             {
                 options.Filters.Add<RequiereCambioPasswordFilter>();

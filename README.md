@@ -138,6 +138,25 @@ The seeded admin is created with a temporary password flag, so it must be change
 
 ---
 
+## 🌐 Variables de entorno para producción
+
+En un servidor real esta configuración nunca va en un archivo commiteado — se configura como variables de entorno, ya sea en el panel de configuración del proveedor de hosting (por ejemplo, Azure App Service → Configuration → Application settings) o directamente en el sistema operativo del servidor. ASP.NET Core las lee automáticamente reemplazando `:` por `__` (doble guion bajo):
+
+```
+ConnectionStrings__DefaultConnection
+Jwt__Key
+Jwt__Issuer
+Jwt__Audience
+Jwt__ExpireMinutes
+Seed__AdminUsername
+Seed__AdminEmail
+Seed__AdminPassword
+```
+
+Si falta `ConnectionStrings__DefaultConnection` o `Jwt__Key`, la aplicación falla al arrancar con un mensaje explicando qué variable configurar, en vez de fallar más adelante con un error críptico.
+
+---
+
 ## 📡 API Endpoints
 
 | Method | Endpoint | Description |
