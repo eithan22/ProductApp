@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Web.Extensions;
 using Web.Filters;
 
@@ -15,6 +16,7 @@ namespace Web
             builder.Services.AddControllersWithViews(options =>
             {
                 options.Filters.Add<HandleApiErrorsFilter>();
+                options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
             });
 
             var app = builder.Build();
