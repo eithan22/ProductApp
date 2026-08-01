@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using ProductApp.Api.Filters;
 using ProductApp.Api.Seed;
 using ProductApp.Aplication.Result.ApiResponses;
@@ -101,11 +102,19 @@ namespace ProductApp
                 };
             });
 
+            // Health check con chequeo real contra la base de datos (no solo "la app responde").
+            builder.Services.AddHealthChecks()
+                .AddDbContextCheck<AppDbContext>();
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                // Aplica migraciones pendientes al arrancar; si ya están al día, no hace nada.
+                await context.Database.MigrateAsync();
+
                 var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
                 await DbInitializer.SeedAsync(context, configuration);
             }
@@ -122,6 +131,10 @@ namespace ProductApp
             app.UseAuthorization();
             app.UseRateLimiter(); // aplica la política de rate limiting a las rutas que la declaren con [EnableRateLimiting]
             app.MapControllers();
+
+            // Sin [Authorize]: el balanceador de carga externo debe poder consultarlo sin token.
+            app.MapHealthChecks("/health");
+
             app.Run();
         }
     }
