@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Configuracion local con secretos reales (llave JWT, cadena de conexion)
 ProductApp/appsettings.json
+
+# Instrucciones locales para Claude Code, no debe estar en el repo
+CLAUDE.md
