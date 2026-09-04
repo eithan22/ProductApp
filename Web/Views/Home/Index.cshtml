@@ -9,12 +9,12 @@
         Model.VentasSemana.Select(v => v.Total));
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <p class="text-muted mb-0">
+<div class="page-header">
+    <p class="text-muted">
         Hola@(string.IsNullOrWhiteSpace(Model.Nombre) ? "" : $", {Model.Nombre}") — este es el resumen de hoy.
     </p>
 
-    <div class="d-flex gap-2 flex-wrap">
+    <div class="page-header-actions">
         <a asp-controller="Producto" asp-action="Create" class="btn-pa btn-pa-outline">
             @await Html.PartialAsync("_Icon", "add") Producto
         </a>
@@ -100,7 +100,7 @@
 
     <div class="@(Model.EsAdministrador ? "col-lg-5" : "col-12")">
         <div class="surface-card p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <span class="ledger-name">Órdenes recientes</span>
                 <a asp-controller="Orden" asp-action="Index" class="btn-pa btn-pa-outline">Ver todas</a>
             </div>
@@ -141,7 +141,7 @@
 </div>
 
 <div class="surface-card p-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <span class="ledger-name">Alertas de inventario</span>
         <a asp-controller="Inventario" asp-action="StockBajo" class="btn-pa btn-pa-outline">Ver inventario</a>
     </div>

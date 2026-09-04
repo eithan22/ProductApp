@@ -37,7 +37,12 @@
 
     @if (!string.IsNullOrEmpty(token))
     {
-        <aside class="app-sidebar">
+        <aside class="app-sidebar" id="app-sidebar">
+
+            <button class="sidebar-close" type="button"
+                    data-sidebar-cerrar aria-label="Cerrar menú de navegación">
+                @await Html.PartialAsync("_Icon", "x")
+            </button>
 
             <a class="brand" asp-controller="Home" asp-action="Index">
                 <span class="brand-mark" aria-hidden="true">
@@ -116,15 +121,23 @@
             </a>
         </aside>
 
+        <div class="sidebar-backdrop" data-sidebar-cerrar aria-hidden="true"></div>
+
         <div class="app-content">
 
             <header class="app-topbar">
+
+                <button class="topbar-menu" type="button"
+                        data-sidebar-abrir aria-controls="app-sidebar" aria-expanded="false"
+                        aria-label="Abrir menú de navegación">
+                    @await Html.PartialAsync("_Icon", "menu")
+                </button>
 
                 <div class="topbar-title">
                     <h1>@ViewData["Title"]</h1>
                 </div>
 
-                <form class="topbar-search" role="search" method="get"
+                <form class="topbar-search" id="topbar-search" role="search" method="get"
                       asp-controller="Producto" asp-action="Buscar">
                     <label class="visually-hidden" for="busqueda-global">Buscar productos</label>
                     @await Html.PartialAsync("_Icon", "search")
@@ -133,6 +146,12 @@
                 </form>
 
                 <div class="topbar-actions">
+
+                    <button class="topbar-search-toggle" type="button"
+                            data-busqueda-toggle aria-controls="topbar-search" aria-expanded="false"
+                            aria-label="Mostrar búsqueda de productos">
+                        @await Html.PartialAsync("_Icon", "search")
+                    </button>
 
                     <a class="topbar-bell" asp-controller="Inventario" asp-action="StockBajo"
                        title="Alertas de inventario" aria-label="Alertas de inventario">
@@ -167,6 +186,7 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
 

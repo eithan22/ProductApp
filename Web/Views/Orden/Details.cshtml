@@ -22,8 +22,8 @@
     var puedeRegistrarPago = (Model.Estado == "Pendiente" || Model.Estado == "Procesada") && saldoPendiente > 0;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <p class="text-muted mb-0">@Model.NombreCliente &middot; @Model.Fecha.ToString("dd/MM/yyyy")</p>
+<div class="page-header">
+    <p class="text-muted">@Model.NombreCliente &middot; @Model.Fecha.ToString("dd/MM/yyyy")</p>
     <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
 </div>
 
@@ -68,6 +68,7 @@
     }
     else
     {
+        <div class="tabla-scroll" tabindex="0" role="region" aria-label="Productos de la orden">
         <table class="table align-middle mb-0">
             <thead>
                 <tr class="text-muted" style="font-size:.8rem;">
@@ -104,11 +105,12 @@
                 }
             </tbody>
         </table>
+        </div>
     }
 </div>
 
 <div class="surface-card p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <h6 class="fw-bold mb-0">Pagos</h6>
         <span class="mono" style="font-weight:700; color:@(saldoPendiente > 0 ? "var(--color-danger)" : "var(--color-primary)")">
             Saldo pendiente: @Html.Moneda(saldoPendiente)
@@ -121,6 +123,7 @@
     }
     else
     {
+        <div class="tabla-scroll" tabindex="0" role="region" aria-label="Pagos de la orden">
         <table class="table align-middle">
             <thead>
                 <tr class="text-muted" style="font-size:.8rem;">
@@ -142,6 +145,7 @@
                 }
             </tbody>
         </table>
+        </div>
     }
 
     @if (puedeRegistrarPago)

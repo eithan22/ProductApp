@@ -6,8 +6,8 @@
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <p class="text-muted mb-0">Organiza tu catálogo en categorías. El color de cada una es su identificador visual en todo el sistema.</p>
+<div class="page-header">
+    <p class="text-muted">Organiza tu catálogo en categorías. El color de cada una es su identificador visual en todo el sistema.</p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">
         @await Html.PartialAsync("_Icon", "add") Nueva categoría
     </a>

@@ -5,8 +5,8 @@
     var estadoFiltro = ViewBag.EstadoFiltro as string;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <p class="text-muted mb-0">Historial de órdenes de venta.</p>
+<div class="page-header">
+    <p class="text-muted">Historial de órdenes de venta.</p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "add") Nueva orden</a>
 </div>
 

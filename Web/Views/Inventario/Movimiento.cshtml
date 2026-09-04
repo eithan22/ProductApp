@@ -5,8 +5,8 @@
     var bajo = Model.StockActual <= Model.StockMinimo;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <p class="text-muted mb-0">@Model.Producto</p>
+<div class="page-header">
+    <p class="text-muted">@Model.Producto</p>
     <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
 </div>
 
