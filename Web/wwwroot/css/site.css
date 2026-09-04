@@ -16,7 +16,7 @@
   --color-danger: #8C3B2E;
   --color-danger-soft: #F3E4E1;
 
-  --color-warn: #93630F;
+  --color-warn: #7F5609;
   --color-warn-soft: #F6ECD9;
 
   --radius-md: 10px;
@@ -74,25 +74,53 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 20px 50px rgba(0,0,0,.3);
 }
 
-/* ---------- Shell: sidebar + topbar ---------- */
+/* ---------- Shell: sidebar ---------- */
 
 .app-sidebar {
   width: 240px;
   height: 100vh;
   background: var(--color-ink);
   position: fixed;
+  top: 0;
+  left: 0;
   color: #C9CCD1;
   display: flex;
   flex-direction: column;
-  padding: 20px 0;
+  padding: 20px 0 16px;
+  overflow-y: auto;
+  z-index: 40;
 }
 
 .app-sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 20px 22px;
+  text-decoration: none;
+  border-left: 3px solid transparent; /* alinea con los ítems de nav */
+}
+
+.app-sidebar .brand-mark {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-sidebar .brand-mark svg { width: 19px; height: 19px; }
+
+.app-sidebar .brand-name {
   font-family: var(--font-display);
   font-weight: 800;
   color: #fff;
-  padding: 0 22px 20px;
-  font-size: 1.15rem;
+  font-size: 1.02rem;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app-sidebar nav {
@@ -101,12 +129,22 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1;
 }
 
+.app-sidebar .nav-group {
+  margin: 18px 0 4px;
+  padding: 0 22px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: #8B939C;               /* 5.7:1 sobre --color-ink, cumple AA */
+}
+
 .app-sidebar a {
   color: #A9AEB5;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 22px;
+  padding: 9px 22px;
   text-decoration: none;
   font-size: .92rem;
   border-left: 3px solid transparent;
@@ -128,20 +166,125 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: auto;
 }
 
+/* ---------- Shell: contenido + topbar ---------- */
+
 .app-content {
   margin-left: 240px;
   padding: 28px 32px 48px;
 }
 
 .app-topbar {
-  margin-bottom: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  /* se sale del padding de .app-content para llegar a los bordes */
+  margin: -28px -32px 24px;
+  padding: 13px 32px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .app-topbar h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 800;
   margin: 0;
+  white-space: nowrap;
 }
+
+.topbar-title { flex: none; min-width: 0; }
+
+.topbar-search {
+  flex: 1 1 auto;
+  max-width: 400px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-muted);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.topbar-search:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(20,80,63,.16);
+}
+.topbar-search .icon { flex: none; }
+.topbar-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: .88rem;
+  color: var(--color-ink);
+}
+.topbar-search input::placeholder { color: var(--color-muted); }
+/* el anillo de foco lo pinta el contenedor, no el input */
+.topbar-search input:focus,
+.topbar-search input:focus-visible { outline: none; }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.topbar-bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: color .12s ease, border-color .12s ease;
+}
+.topbar-bell:hover { color: var(--color-ink); border-color: var(--color-ink); }
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .12s ease;
+}
+.user-chip:hover { border-color: var(--color-ink); }
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.user-meta { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.user-name { font-size: .82rem; font-weight: 700; color: var(--color-ink); white-space: nowrap; }
+.user-rol  { font-size: .7rem;  color: var(--color-muted); white-space: nowrap; }
 
 /* ---------- Componentes ---------- */
 
@@ -234,7 +377,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 .form-control:focus, .form-select:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  box-shadow: 0 0 0 3px rgba(20,80,63,.18);
+  outline: none;
 }
 
 label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink); }
@@ -358,3 +502,350 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .estado-pagada { background: var(--color-primary-soft); color: var(--color-primary); }
 .estado-entregada { background: var(--color-accent2-soft); color: var(--color-accent2); }
 .estado-cancelada { background: var(--color-danger-soft); color: var(--color-danger); }
+
+/* ============================================================
+   Foco visible — hoy el sistema no tenía ninguno
+   ============================================================ */
+
+/* :where() tiene especificidad 0: no pisa nada de lo existente */
+:where(a, button, [role="button"], summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Sobre superficies oscuras o de color: anillo blanco + halo verde oscuro */
+.btn-pa-primary:focus-visible,
+.auth-container :where(a, button):focus-visible {
+  outline-color: #FFFFFF;
+  box-shadow: 0 0 0 4px var(--color-primary-dark);
+}
+
+/* En el sidebar el anillo va por dentro para no sobresalir del panel */
+.app-sidebar a:focus-visible,
+.app-sidebar .brand:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: -4px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.06);
+}
+
+/* ============================================================
+   Alertas de sistema (paleta propia, no la de Bootstrap)
+   ============================================================ */
+
+/* Contenedor: solo se renderiza si hay al menos una alerta */
+.pa-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pa-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 0;
+  border: 1px solid;
+  border-radius: var(--radius-sm);
+  font-size: .88rem;
+  font-weight: 500;
+}
+.pa-alert .icon { flex: none; margin-top: 1px; }
+.pa-alert .btn-close { margin-left: auto; flex: none; font-size: .7rem; opacity: .5; }
+.pa-alert .btn-close:hover { opacity: 1; }
+
+.pa-alert-danger { background: var(--color-danger-soft);  border-color: rgba(140,59,46,.28); color: var(--color-danger); }
+.pa-alert-warn   { background: var(--color-warn-soft);    border-color: rgba(127,86,9,.28);  color: var(--color-warn); }
+.pa-alert-ok     { background: var(--color-primary-soft); border-color: rgba(20,80,63,.22);  color: var(--color-primary); }
+
+/* ============================================================
+   Franja de indicadores — una sola superficie con divisores.
+   Reemplaza el patrón de cajas con sombra (Inicio e Inventario).
+   ============================================================ */
+
+.stat-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  /* sin box-shadow: es una sola pieza, no tarjetas apiladas */
+}
+
+.stat-cell {
+  padding: 16px 20px;
+  border-left: 1px solid var(--color-border);
+  min-width: 0;
+}
+.stat-cell:first-child { border-left: none; }
+
+.stat-cell .label {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.stat-cell .value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-top: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-cell .hint { font-size: .76rem; color: var(--color-muted); margin-top: 2px; }
+
+.stat-cell .value.is-warn   { color: var(--color-warn); }
+.stat-cell .value.is-danger { color: var(--color-danger); }
+
+/* ============================================================
+   Estado vacío
+   ============================================================ */
+
+.empty-state { text-align: center; padding: 48px 24px; }
+
+.empty-state .empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.empty-state .empty-icon .icon { width: 24px; height: 24px; }
+
+.empty-state .empty-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+}
+.empty-state .empty-text {
+  color: var(--color-muted);
+  font-size: .88rem;
+  margin: 5px auto 16px;
+  max-width: 44ch;
+}
+
+/* ============================================================
+   Errores de validación en formularios.
+   Las clases input-validation-error / field-validation-error /
+   validation-summary-* las agrega MVC solo: no hay que tocar las vistas.
+   ============================================================ */
+
+.form-control.input-validation-error,
+.form-select.input-validation-error {
+  border-color: var(--color-danger);
+  background: #FFFCFB;
+}
+.form-control.input-validation-error:focus,
+.form-select.input-validation-error:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(140,59,46,.16);
+}
+
+.field-validation-error {
+  display: block;
+  color: var(--color-danger);
+  font-size: .8rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Sin errores, el resumen no debe ocupar ni pintar nada
+   (el login mostraba una caja roja vacía) */
+.validation-summary-valid { display: none; }
+
+.validation-summary-errors {
+  background: var(--color-danger-soft);
+  border: 1px solid rgba(140,59,46,.28);
+  color: var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: .88rem;
+}
+.validation-summary-errors ul { margin: 0; padding-left: 18px; }
+.validation-summary-errors ul li { margin-top: 2px; }
+
+/* ============================================================
+   Alineación de utilidades de Bootstrap con la paleta
+   ============================================================ */
+
+.text-muted { color: var(--color-muted) !important; }
+
+/* ============================================================
+   Login a pantalla dividida
+   ============================================================ */
+
+/* Desarma la caja centrada del layout SOLO en esta pantalla.
+   El layout no se toca: la pantalla se detecta por su contenido. */
+.auth-container:has(.login-split) {
+  display: block;
+  height: 100vh;
+}
+
+.auth-box:has(.login-split) {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Los avisos de TempData flotan sobre el panel del formulario */
+.auth-box:has(.login-split) .pa-alerts {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 5;
+  max-width: 400px;
+  margin: 0;
+}
+
+.login-split {
+  display: flex;
+  height: 100%;
+}
+
+/* ---------- Panel izquierdo: visual ---------- */
+
+.login-visual {
+  flex: 0 0 58%;
+  background: var(--color-primary-dark);
+  color: #fff;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.login-brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-brand-mark {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--color-primary);
+  border: 1px solid rgba(255,255,255,.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-brand-mark svg { width: 23px; height: 23px; }
+
+.login-brand-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -.01em;
+}
+
+.login-art-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+.login-art { width: 100%; max-width: 340px; height: auto; }
+.login-art-accent { fill: var(--color-primary); }
+
+.login-copy { flex: none; }
+
+.login-headline {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -.02em;
+  color: #fff;
+  margin: 0 0 12px;
+  max-width: 22ch;
+}
+
+.login-subline {
+  margin: 0;
+  font-size: .92rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,.62);   /* 5.8:1 sobre --color-primary-dark */
+  max-width: 42ch;
+}
+
+/* ---------- Panel derecho: formulario ---------- */
+
+.login-form-panel {
+  flex: 1;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  overflow-y: auto;
+}
+
+.login-form { width: 100%; max-width: 380px; }
+
+.login-form h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.login-form .login-sub {
+  color: var(--color-muted);
+  font-size: .92rem;
+  margin: 0 0 28px;
+}
+
+.login-form .form-label { margin-bottom: 6px; }
+
+.login-form .form-control {
+  padding: 13px 14px;
+  border-radius: 8px;
+  font-size: .95rem;
+}
+
+.login-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 13px 16px;
+  border-radius: 8px;
+  font-size: .95rem;
+}
+
+/* ---------- Mobile: se cae el panel visual ---------- */
+
+@media (max-width: 768px) {
+  .login-visual { display: none; }
+
+  .login-form-panel { flex: 1 1 100%; padding: 32px 24px; }
+
+  .auth-box:has(.login-split) .pa-alerts {
+    top: 12px;
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+}

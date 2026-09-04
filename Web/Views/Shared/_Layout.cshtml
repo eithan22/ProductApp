@@ -1,10 +1,21 @@
-﻿@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http
 
 @{
     var token = Context.Session.GetString("TOKEN");
     var rol = Context.Session.GetString("ROL");
+    var nombre = Context.Session.GetString("NOMBRE") ?? "Usuario";
     var empresa = Context.Session.GetString("EMPRESA") ?? "ProductApp";
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var esAdmin = rol == "Administrador";
+
+    var iniciales = string.Concat(
+        nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+              .Take(2)
+              .Select(p => char.ToUpperInvariant(p[0])));
+    if (string.IsNullOrEmpty(iniciales)) { iniciales = "U"; }
+
+    string Activo(string c) => controller == c ? "active" : "";
+    string? Actual(string c) => controller == c ? "page" : null;
 }
 
 <!DOCTYPE html>
@@ -24,80 +35,122 @@
 
 <body>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show m-3">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["Aviso"] != null)
-    {
-        <div class="alert alert-warning alert-dismissible fade show m-3">
-            @TempData["Aviso"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["Mensaje"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show m-3">
-            @TempData["Mensaje"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
     @if (!string.IsNullOrEmpty(token))
     {
-        <div class="app-sidebar">
-            <div class="brand">@empresa</div>
+        <aside class="app-sidebar">
 
-            <nav>
-                <a asp-controller="Home" asp-action="Index" class="@(controller == "Home" ? "active" : "")">
+            <a class="brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" />
+                        <path d="m3 8 9 5 9-5M12 13v8" />
+                    </svg>
+                </span>
+                <span class="brand-name">@empresa</span>
+            </a>
+
+            <nav aria-label="Navegación principal">
+
+                <a asp-controller="Home" asp-action="Index"
+                   class="@Activo("Home")" aria-current="@Actual("Home")">
                     @await Html.PartialAsync("_Icon", "home") Inicio
                 </a>
-                <a asp-controller="Cliente" asp-action="Index" class="@(controller == "Cliente" ? "active" : "")">
-                    @await Html.PartialAsync("_Icon", "users") Clientes
-                </a>
-                <a asp-controller="Categoria" asp-action="Index" class="@(controller == "Categoria" ? "active" : "")">
-                    @await Html.PartialAsync("_Icon", "tag") Categorías
-                </a>
-                <a asp-controller="Producto" asp-action="Index" class="@(controller == "Producto" ? "active" : "")">
+
+                <p class="nav-group">Catálogo</p>
+
+                <a asp-controller="Producto" asp-action="Index"
+                   class="@Activo("Producto")" aria-current="@Actual("Producto")">
                     @await Html.PartialAsync("_Icon", "box") Productos
                 </a>
-                <a asp-controller="Inventario" asp-action="Index" class="@(controller == "Inventario" ? "active" : "")">
+                <a asp-controller="Categoria" asp-action="Index"
+                   class="@Activo("Categoria")" aria-current="@Actual("Categoria")">
+                    @await Html.PartialAsync("_Icon", "tag") Categorías
+                </a>
+                <a asp-controller="Inventario" asp-action="Index"
+                   class="@Activo("Inventario")" aria-current="@Actual("Inventario")">
                     @await Html.PartialAsync("_Icon", "layers") Inventario
                 </a>
-                <a asp-controller="Orden" asp-action="Index" class="@(controller == "Orden" ? "active" : "")">
+
+                <p class="nav-group">Ventas</p>
+
+                <a asp-controller="Orden" asp-action="Index"
+                   class="@Activo("Orden")" aria-current="@Actual("Orden")">
                     @await Html.PartialAsync("_Icon", "receipt") Órdenes
                 </a>
-                <a asp-controller="Reporte" asp-action="Index" class="@(controller == "Reporte" ? "active" : "")">
-                    @await Html.PartialAsync("_Icon", "chart") Reportes
+                <a asp-controller="Cliente" asp-action="Index"
+                   class="@Activo("Cliente")" aria-current="@Actual("Cliente")">
+                    @await Html.PartialAsync("_Icon", "users") Clientes
                 </a>
-                @if (rol == "Administrador")
+
+                @if (!esAdmin)
                 {
-                    <a asp-controller="Usuario" asp-action="Index" class="@(controller == "Usuario" ? "active" : "")">
-                        @await Html.PartialAsync("_Icon", "users") Usuarios
-                    </a>
-                    <a asp-controller="Configuracion" asp-action="Index" class="@(controller == "Configuracion" ? "active" : "")">
-                        @await Html.PartialAsync("_Icon", "settings") Configuración
+                    <a asp-controller="Reporte" asp-action="Index"
+                       class="@Activo("Reporte")" aria-current="@Actual("Reporte")">
+                        @await Html.PartialAsync("_Icon", "chart") Reportes
                     </a>
                 }
-                <a asp-controller="Usuario" asp-action="MiPerfil">
-                    @await Html.PartialAsync("_Icon", "users") Mi Perfil
-                </a>
+
+                @if (esAdmin)
+                {
+                    <p class="nav-group">Administración</p>
+
+                    <a asp-controller="Usuario" asp-action="Index"
+                       class="@Activo("Usuario")" aria-current="@Actual("Usuario")">
+                        @await Html.PartialAsync("_Icon", "users") Usuarios
+                    </a>
+                    <a asp-controller="Configuracion" asp-action="Index"
+                       class="@Activo("Configuracion")" aria-current="@Actual("Configuracion")">
+                        @await Html.PartialAsync("_Icon", "settings") Configuración
+                    </a>
+                    <a asp-controller="Reporte" asp-action="Index"
+                       class="@Activo("Reporte")" aria-current="@Actual("Reporte")">
+                        @await Html.PartialAsync("_Icon", "chart") Reportes
+                    </a>
+                }
+
             </nav>
 
             <a asp-controller="Auth" asp-action="Logout" class="logout">
                 @await Html.PartialAsync("_Icon", "logout") Cerrar sesión
             </a>
-        </div>
+        </aside>
 
         <div class="app-content">
-            <div class="app-topbar">
-                <h1>@ViewData["Title"]</h1>
-            </div>
+
+            <header class="app-topbar">
+
+                <div class="topbar-title">
+                    <h1>@ViewData["Title"]</h1>
+                </div>
+
+                <form class="topbar-search" role="search" method="get"
+                      asp-controller="Producto" asp-action="Buscar">
+                    <label class="visually-hidden" for="busqueda-global">Buscar productos</label>
+                    @await Html.PartialAsync("_Icon", "search")
+                    <input id="busqueda-global" type="search" name="nombre"
+                           placeholder="Buscar productos..." autocomplete="off" />
+                </form>
+
+                <div class="topbar-actions">
+
+                    <a class="topbar-bell" asp-controller="Inventario" asp-action="StockBajo"
+                       title="Alertas de inventario" aria-label="Alertas de inventario">
+                        @await Html.PartialAsync("_Icon", "bell")
+                    </a>
+
+                    <a class="user-chip" asp-controller="Usuario" asp-action="MiPerfil">
+                        <span class="user-avatar" aria-hidden="true">@iniciales</span>
+                        <span class="user-meta">
+                            <span class="user-name">@nombre</span>
+                            <span class="user-rol">@rol</span>
+                        </span>
+                    </a>
+
+                </div>
+            </header>
+
+            @await Html.PartialAsync("_Alerts")
 
             @RenderBody()
         </div>
@@ -106,6 +159,7 @@
     {
         <div class="auth-container">
             <div class="auth-box">
+                @await Html.PartialAsync("_Alerts")
                 @RenderBody()
             </div>
         </div>

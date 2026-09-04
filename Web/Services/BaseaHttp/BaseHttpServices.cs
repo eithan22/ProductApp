@@ -1,4 +1,5 @@
 ﻿using ProductApp.Aplication.Result.ApiResponses;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using Web.Services.Interfaces.IBase;
@@ -51,7 +52,7 @@ namespace Web.Services.Base
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new Exception($"Respuesta vacía. Status: {response.StatusCode}");
+                throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
             }
 
             // ✅ 1. Intentar leer el mensaje de la API SIEMPRE
@@ -63,7 +64,7 @@ namespace Web.Services.Base
             // ✅ 2. Si HTTP falla → mostrar mensaje limpio
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                throw new ApiHttpException(response.StatusCode, string.IsNullOrWhiteSpace(apiResponse.Message)
                     ? $"Error HTTP {response.StatusCode}"
                     : apiResponse.Message);
             }
@@ -91,7 +92,7 @@ namespace Web.Services.Base
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new Exception($"Respuesta vacía. Status: {response.StatusCode}");
+                throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
             }
 
             // ✅ 1. Intentar leer el mensaje de la API SIEMPRE
@@ -103,7 +104,7 @@ namespace Web.Services.Base
             // ✅ 2. Si HTTP falla → mostrar mensaje limpio
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                throw new ApiHttpException(response.StatusCode, string.IsNullOrWhiteSpace(apiResponse.Message)
                     ? $"Error HTTP {response.StatusCode}"
                     : apiResponse.Message);
             }
@@ -138,7 +139,7 @@ namespace Web.Services.Base
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new Exception($"Respuesta vacía. Status: {response.StatusCode}");
+                throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
             }
 
             // ✅ 1. Intentar leer el mensaje de la API SIEMPRE
@@ -150,7 +151,7 @@ namespace Web.Services.Base
             // ✅ 2. Si HTTP falla → mostrar mensaje limpio
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                throw new ApiHttpException(response.StatusCode, string.IsNullOrWhiteSpace(apiResponse.Message)
                     ? $"Error HTTP {response.StatusCode}"
                     : apiResponse.Message);
             }
@@ -182,7 +183,7 @@ namespace Web.Services.Base
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new Exception($"Respuesta vacía. Status: {response.StatusCode}");
+                throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
             }
 
             var apiResponse = JsonSerializer.Deserialize<ApiResponseT<TResponse>>(content, _jsonOptions);
@@ -192,7 +193,7 @@ namespace Web.Services.Base
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                throw new ApiHttpException(response.StatusCode, string.IsNullOrWhiteSpace(apiResponse.Message)
                     ? $"Error HTTP {response.StatusCode}"
                     : apiResponse.Message);
             }
@@ -218,7 +219,7 @@ namespace Web.Services.Base
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                throw new Exception($"Respuesta vacía. Status: {response.StatusCode}");
+                throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
             }
 
             // ✅ 1. Deserializar SIEMPRE
@@ -230,7 +231,7 @@ namespace Web.Services.Base
             // ✅ 2. Validar HTTP con mensaje limpio
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                throw new ApiHttpException(response.StatusCode, string.IsNullOrWhiteSpace(apiResponse.Message)
                     ? $"Error HTTP {response.StatusCode}"
                     : apiResponse.Message);
             }

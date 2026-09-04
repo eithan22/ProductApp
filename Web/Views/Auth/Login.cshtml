@@ -1,67 +1,91 @@
-﻿@model Web.Models.Modelo_Usuarios.UsuarioModels.AuthModel.LoginModel
+@model Web.Models.Modelo_Usuarios.UsuarioModels.AuthModel.LoginModel
 
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Iniciar sesión";
+    var empresa = Context.Session.GetString("EMPRESA") ?? "ProductApp";
 }
 
-<div class="text-center mb-4">
-    <h2 class="fw-bold">Bienvenido</h2>
-    <p class="text-muted">Accede a tu cuenta</p>
+<div class="login-split">
+
+    <section class="login-visual">
+
+        <div class="login-brand">
+            <span class="login-brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" />
+                    <path d="m3 8 9 5 9-5M12 13v8" />
+                </svg>
+            </span>
+            <span class="login-brand-name">@empresa</span>
+        </div>
+
+        <div class="login-art-wrap">
+            <svg class="login-art" viewBox="0 0 320 240" fill="none" aria-hidden="true">
+
+                <g transform="rotate(-8 113 111)">
+                    <rect x="38" y="52" width="150" height="118" rx="14"
+                          stroke="rgba(255,255,255,.20)" stroke-width="2" />
+                    <path d="M38 88h150" stroke="rgba(255,255,255,.20)" stroke-width="2" />
+                </g>
+
+                <g transform="rotate(7 200 134)">
+                    <rect x="125" y="75" width="150" height="118" rx="14"
+                          stroke="rgba(255,255,255,.45)" stroke-width="2" />
+                    <path d="M125 111h150" stroke="rgba(255,255,255,.30)" stroke-width="2" />
+                    <path d="M186 75v36" stroke="rgba(255,255,255,.30)" stroke-width="2" />
+                </g>
+
+                <circle class="login-art-accent" cx="252" cy="58" r="23"
+                        stroke="rgba(255,255,255,.55)" stroke-width="2" />
+                <path d="m242 58 7 7 13-15" stroke="#fff" stroke-width="2.6"
+                      stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+
+        <div class="login-copy">
+            <p class="login-headline">Cada producto, cada pedido, en un solo lugar.</p>
+            <p class="login-subline">
+                Catálogo, inventario y ventas — un mismo sistema para todo el negocio.
+            </p>
+        </div>
+
+    </section>
+
+    <section class="login-form-panel">
+        <div class="login-form">
+
+            <h1>Iniciar sesión</h1>
+            <p class="login-sub">Accedé con tu cuenta para continuar.</p>
+
+            <form asp-action="Login" method="post">
+
+                <div asp-validation-summary="ModelOnly"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label">Usuario</label>
+                    <input asp-for="Username" class="form-control"
+                           autocomplete="username" autofocus placeholder="Ej: admin" />
+                    <span asp-validation-for="Username"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Password" class="form-label">Contraseña</label>
+                    <input asp-for="Password" type="password" class="form-control"
+                           autocomplete="current-password" placeholder="••••••••" />
+                    <span asp-validation-for="Password"></span>
+                </div>
+
+                <button type="submit" class="btn-pa btn-pa-primary login-submit">
+                    Iniciar Sesión
+                </button>
+
+            </form>
+
+        </div>
+    </section>
+
 </div>
-
-<form asp-action="Login" method="post">
-
-    @Html.AntiForgeryToken()
-
-    <!-- ERRORES GENERALES -->
-    <div asp-validation-summary="ModelOnly"
-         class="alert alert-danger">
-    </div>
-
-    <!-- USUARIO -->
-    <div class="mb-3">
-
-        <label asp-for="Username"
-               class="form-label">
-        </label>
-
-        <input asp-for="Username"
-               class="form-control"
-               placeholder="Ej: admin" />
-
-        <span asp-validation-for="Username"
-              class="text-danger">
-        </span>
-
-    </div>
-
-    <!-- PASSWORD -->
-    <div class="mb-3">
-
-        <label asp-for="Password"
-               class="form-label">
-        </label>
-
-        <input asp-for="Password"
-               type="password"
-               class="form-control"
-               placeholder="••••••••" />
-
-        <span asp-validation-for="Password"
-              class="text-danger">
-        </span>
-
-    </div>
-
-    <!-- BOTON -->
-    <div class="d-grid mb-3">
-        <button type="submit"
-                class="btn-pa btn-pa-primary justify-content-center">
-            Iniciar Sesión
-        </button>
-    </div>
-
-</form>
 
 @section Scripts {
     @{

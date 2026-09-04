@@ -1,88 +1,212 @@
-﻿@{
+@model Web.Models.HomeDashboardModel
+
+@{
     ViewData["Title"] = "Inicio";
-    var empresa = Context.Session.GetString("EMPRESA") ?? "ProductApp";
-    var nombre = Context.Session.GetString("NOMBRE");
-    var rol = Context.Session.GetString("ROL");
+
+    var labelsSemana = System.Text.Json.JsonSerializer.Serialize(
+        Model.VentasSemana.Select(v => v.Fecha.ToString("ddd dd")));
+    var dataSemana = System.Text.Json.JsonSerializer.Serialize(
+        Model.VentasSemana.Select(v => v.Total));
 }
 
-<div class="container">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <p class="text-muted mb-0">
+        Hola@(string.IsNullOrWhiteSpace(Model.Nombre) ? "" : $", {Model.Nombre}") — este es el resumen de hoy.
+    </p>
 
-    <!-- 🔥 HERO / BIENVENIDA -->
-    <div class="card card-custom p-4 mb-4 text-center">
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-controller="Producto" asp-action="Create" class="btn-pa btn-pa-outline">
+            @await Html.PartialAsync("_Icon", "add") Producto
+        </a>
+        <a asp-controller="Orden" asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Orden
+        </a>
+        <a asp-controller="Cliente" asp-action="Create" class="btn-pa btn-pa-outline">
+            @await Html.PartialAsync("_Icon", "add") Cliente
+        </a>
+    </div>
+</div>
 
-        <h1 class="fw-bold">Bienvenido a @empresa</h1>
+@if (Model.HuboErrores)
+{
+    <div class="pa-alerts">
+        <div class="alert fade show pa-alert pa-alert-warn" role="alert">
+            @await Html.PartialAsync("_Icon", "alert")
+            <span class="flex-grow-1">
+                Algunos datos no se pudieron cargar y se muestran como &laquo;&mdash;&raquo;. Recargá la página para reintentar.
+            </span>
+        </div>
+    </div>
+}
 
-        @if (!string.IsNullOrEmpty(nombre))
-        {
-            <p class="mt-2 mb-0">¡Hola, <strong>@nombre</strong>! <span class="text-muted">(@rol)</span></p>
-        }
+<div class="stat-strip mb-4">
 
-        <p class="text-muted mt-2">
-            Sistema de gestión moderno para administrar tus Ventas de forma eficiente.
-        </p>
+    @if (Model.EsAdministrador)
+    {
+        <div class="stat-cell">
+            <div class="label">Ingresos hoy</div>
+            <div class="value">@(Model.IngresosHoy.HasValue ? Html.Moneda(Model.IngresosHoy.Value) : "—")</div>
+            <div class="hint">Pagos registrados hoy</div>
+        </div>
+    }
 
+    <div class="stat-cell">
+        <div class="label">Órdenes pendientes</div>
+        <div class="value @(Model.OrdenesPendientes > 0 ? "is-warn" : "")">
+            @(Model.OrdenesPendientes?.ToString() ?? "—")
+        </div>
+        <div class="hint">Esperan confirmación</div>
     </div>
 
-    <!-- 🔥 CARDS PRINCIPALES -->
-    <div class="row">
-
-        <!-- CLIENTES -->
-        <div class="col-md-4 mb-4">
-            <div class="card card-custom p-4 text-center">
-
-                <i class="bi bi-people fs-1 text-primary"></i>
-
-                <h5 class="mt-3">Clientes</h5>
-
-                <p class="text-muted">
-                    Gestiona, consulta y administra tus clientes.
-                </p>
-
-                <a asp-controller="Cliente" asp-action="Index" class="btn btn-primary btn-sm">
-                    Ir a Clientes
-                </a>
-
-            </div>
+    <div class="stat-cell">
+        <div class="label">Stock bajo</div>
+        <div class="value @(Model.ProductosStockBajo > 0 ? "is-danger" : "")">
+            @(Model.ProductosStockBajo?.ToString() ?? "—")
         </div>
+        <div class="hint">Productos bajo el mínimo</div>
+    </div>
 
-        <!-- FUTURO MODULO -->
-        <div class="col-md-4 mb-4">
-            <div class="card card-custom p-4 text-center">
-
-                <i class="bi bi-bar-chart fs-1 text-success"></i>
-
-                <h5 class="mt-3">Reportes</h5>
-
-                <p class="text-muted">
-                    Visualiza estadísticas y datos importantes.
-                </p>
-
-                <a asp-controller="Reporte" asp-action="Index" class="btn btn-success btn-sm">
-                    Ir a Reportes
-                </a>
-
-            </div>
-        </div>
-
-        <!-- CONFIG -->
-        <div class="col-md-4 mb-4">
-            <div class="card card-custom p-4 text-center">
-
-                <i class="bi bi-gear fs-1 text-dark"></i>
-
-                <h5 class="mt-3">Configuración</h5>
-
-                <p class="text-muted">
-                    Ajusta opciones del sistema.
-                </p>
-
-                <a asp-controller="Configuracion" asp-action="Index" class="btn btn-outline-secondary btn-sm">
-                    Ir a Configuración
-                </a>
-
-            </div>
-        </div>
-
+    <div class="stat-cell">
+        <div class="label">Clientes activos</div>
+        <div class="value">@(Model.ClientesActivos?.ToString() ?? "—")</div>
+        <div class="hint">Registrados y habilitados</div>
     </div>
 
 </div>
+
+<div class="row g-3 mb-4">
+
+    @if (Model.EsAdministrador)
+    {
+        <div class="col-lg-7">
+            <div class="surface-card p-3 h-100">
+                <div class="ledger-name mb-3">Ventas de los últimos 7 días</div>
+
+                @if (Model.VentasSemana.Any(v => v.Total > 0))
+                {
+                    <canvas id="chartSemana" height="150"></canvas>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">@await Html.PartialAsync("_Icon", "chart")</div>
+                        <p class="empty-title">Todavía no hay ventas esta semana</p>
+                        <p class="empty-text">Cuando registres pagos, el resumen semanal aparece acá.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="@(Model.EsAdministrador ? "col-lg-5" : "col-12")">
+        <div class="surface-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="ledger-name">Órdenes recientes</span>
+                <a asp-controller="Orden" asp-action="Index" class="btn-pa btn-pa-outline">Ver todas</a>
+            </div>
+
+            @if (!Model.OrdenesRecientes.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">@await Html.PartialAsync("_Icon", "receipt")</div>
+                    <p class="empty-title">Sin órdenes todavía</p>
+                    <p class="empty-text">Creá la primera orden para empezar a vender.</p>
+                    <a asp-controller="Orden" asp-action="Create" class="btn-pa btn-pa-primary">
+                        @await Html.PartialAsync("_Icon", "add") Nueva orden
+                    </a>
+                </div>
+            }
+            else
+            {
+                @foreach (var o in Model.OrdenesRecientes)
+                {
+                    <a class="ledger-row text-decoration-none text-reset"
+                       asp-controller="Orden" asp-action="Details" asp-route-id="@o.Id">
+
+                        <div class="ledger-body">
+                            <div class="ledger-name">Orden #@o.Id &middot; @o.NombreCliente</div>
+                            <div class="ledger-desc">@o.Fecha.ToString("dd/MM/yyyy")</div>
+                        </div>
+
+                        <div class="ledger-meta">
+                            <span class="mono" style="font-weight:700;">@Html.Moneda(o.Total)</span>
+                            <span class="estado-pill estado-@o.Estado.ToLower()">@o.Estado</span>
+                        </div>
+                    </a>
+                }
+            }
+        </div>
+    </div>
+
+</div>
+
+<div class="surface-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="ledger-name">Alertas de inventario</span>
+        <a asp-controller="Inventario" asp-action="StockBajo" class="btn-pa btn-pa-outline">Ver inventario</a>
+    </div>
+
+    @if (!Model.AlertasStock.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">@await Html.PartialAsync("_Icon", "check")</div>
+            <p class="empty-title">Todo el stock está en orden</p>
+            <p class="empty-text">Ningún producto está por debajo de su mínimo.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var i in Model.AlertasStock)
+        {
+            <div class="ledger-row">
+                <div class="ledger-body">
+                    <div class="ledger-name">@i.Producto</div>
+                    <div class="ledger-desc mono">
+                        @i.StockActual en stock &middot; mínimo @i.StockMinimo
+                    </div>
+                </div>
+                <div class="ledger-meta">
+                    <span class="estado-pill estado-cancelada">Stock bajo</span>
+                    <a asp-controller="Inventario" asp-action="Movimiento"
+                       asp-route-productoId="@i.ProductoId" class="btn-pa btn-pa-warn">
+                        @await Html.PartialAsync("_Icon", "layers") Reponer
+                    </a>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    @if (Model.EsAdministrador)
+    {
+        <script>
+            const semanaLabels = @Html.Raw(labelsSemana);
+            const semanaData = @Html.Raw(dataSemana);
+            const lienzoSemana = document.getElementById('chartSemana');
+
+            if (lienzoSemana && semanaLabels.length > 0) {
+                new Chart(lienzoSemana, {
+                    type: 'bar',
+                    data: {
+                        labels: semanaLabels,
+                        datasets: [{
+                            label: 'Total vendido',
+                            data: semanaData,
+                            backgroundColor: '#14503F',
+                            borderRadius: 4,
+                            maxBarThickness: 38
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#E3E5E8' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        </script>
+    }
+}

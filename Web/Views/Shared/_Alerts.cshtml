@@ -1,0 +1,29 @@
+@{
+    var definiciones = new (string Key, string Css, string Icono)[]
+    {
+        ("Error",   "pa-alert-danger", "alert"),
+        ("Aviso",   "pa-alert-warn",   "alert"),
+        ("Mensaje", "pa-alert-ok",     "check")
+    };
+
+    // Se lee cada clave una sola vez y se descartan las vacías,
+    // así el contenedor no se renderiza si no hay nada que mostrar.
+    var alertas = definiciones
+        .Select(d => new { d.Css, d.Icono, Valor = TempData[d.Key] })
+        .Where(a => a.Valor != null)
+        .ToList();
+}
+
+@if (alertas.Count > 0)
+{
+    <div class="pa-alerts">
+        @foreach (var a in alertas)
+        {
+            <div class="alert fade show pa-alert @a.Css" role="alert">
+                @await Html.PartialAsync("_Icon", a.Icono)
+                <span class="flex-grow-1">@a.Valor</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
+    </div>
+}

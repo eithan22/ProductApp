@@ -1,2 +1,6 @@
-﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+﻿@* jquery.validate y unobtrusive son plugins de jQuery: sin esta línea no hacen nada.
+   Bootstrap 5 no incluye jQuery, y el layout no la carga a propósito
+   (solo 10 vistas usan validación, no tiene sentido pagarla en las 25). *@
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

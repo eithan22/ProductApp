@@ -367,3 +367,6 @@ ProductApp/appsettings.json
 
 # Instrucciones locales para Claude Code, no debe estar en el repo
 CLAUDE.md
+
+# Documentacion de planificacion local, no debe estar en el repo
+docs/
