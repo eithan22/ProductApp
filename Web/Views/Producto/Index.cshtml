@@ -45,6 +45,17 @@
         var margen = item.Precio > 0 ? Math.Round((item.Precio - item.Costo) / item.Precio * 100, 1) : 0;
 
         <div class="surface-card producto-card @(activo ? "activo" : "inactivo")">
+            <div class="producto-thumb">
+                @if (!string.IsNullOrWhiteSpace(item.ImagenUrl))
+                {
+                    <img src="@item.ImagenUrl" alt="@item.Nombre" loading="lazy" />
+                }
+                else
+                {
+                    @await Html.PartialAsync("_Icon", "image")
+                }
+            </div>
+
             <span class="category-chip">@(item.Categoria ?? "Sin categoría")</span>
 
             <div class="producto-nombre">@item.Nombre</div>

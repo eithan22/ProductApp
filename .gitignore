@@ -370,3 +370,6 @@ CLAUDE.md
 
 # Documentacion de planificacion local, no debe estar en el repo
 docs/
+
+# Datos locales del emulador Azurite (Azure Storage para desarrollo)
+.azurite/

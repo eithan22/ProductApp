@@ -11,5 +11,6 @@ namespace Web.Services.EndPoints.Modulo_Productos
         public string Disable => "Producto/DisableProducto/";
         public string Enable => "Producto/EnableProducto/";
         public string Buscar => "Producto/BuscarProductos";
+        public string SubirImagen => "Producto/SubirImagen/";
     }
 }

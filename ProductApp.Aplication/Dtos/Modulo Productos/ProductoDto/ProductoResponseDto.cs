@@ -17,7 +17,9 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
 
         public string Estado { get; set; } = "";
 
-        public string? Categoria{ get; set; } // lo pongo que null porque en el reponse de create no se mostrara la categoria en si , pero si en el getallProductos 
+        public string? Categoria{ get; set; } // lo pongo que null porque en el reponse de create no se mostrara la categoria en si , pero si en el getallProductos
+
+        public string? ImagenUrl { get; set; }
 
 
     }

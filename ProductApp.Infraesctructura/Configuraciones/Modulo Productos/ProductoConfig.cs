@@ -21,6 +21,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
             builder.Property(e => e.Costo)
                 .HasColumnType("decimal(18,2)");
 
+            builder.Property(e => e.ImagenUrl)
+                .HasMaxLength(500);
+
             builder.Property(e => e.Estado)
                 .HasConversion<string>()
                 .IsRequired();

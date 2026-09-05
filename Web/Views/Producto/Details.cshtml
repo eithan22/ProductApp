@@ -7,6 +7,17 @@
 }
 
 <div class="surface-card p-4" style="max-width:640px;">
+    <div class="producto-imagen">
+        @if (!string.IsNullOrWhiteSpace(Model.ImagenUrl))
+        {
+            <img src="@Model.ImagenUrl" alt="@Model.Nombre" />
+        }
+        else
+        {
+            @await Html.PartialAsync("_Icon", "image")
+        }
+    </div>
+
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
         <div>
             <span class="category-chip">@(Model.Categoria ?? "Sin categoría")</span>

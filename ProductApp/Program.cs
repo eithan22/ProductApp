@@ -41,6 +41,13 @@ namespace ProductApp
                     "Falta configurar Jwt:Key. Ver dotnet user-secrets (desarrollo) o la " +
                     "variable de entorno Jwt__Key (producción).");
 
+            if (string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("AzureStorage")))
+                throw new InvalidOperationException(
+                    "Falta configurar ConnectionStrings:AzureStorage (almacenamiento de imágenes de producto). " +
+                    "En desarrollo, usa dotnet user-secrets set \"ConnectionStrings:AzureStorage\" \"UseDevelopmentStorage=true\" " +
+                    "con Azurite corriendo. En producción, configura la variable de entorno " +
+                    "ConnectionStrings__AzureStorage con la cadena de conexión de la cuenta de Azure Storage.");
+
             builder.Services.AddControllers(options =>
             {
                 options.Filters.Add<RequiereCambioPasswordFilter>();

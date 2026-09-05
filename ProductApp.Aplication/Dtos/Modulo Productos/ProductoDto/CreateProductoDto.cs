@@ -17,6 +17,8 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
 
         public int  CategoriaId { get; set; }
 
+        public string? ImagenUrl { get; set; }
+
 
         
     }

@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Editar producto";
     var categorias = ViewBag.Categorias as List<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>;
+    var imagenUrl = ViewBag.ImagenUrl as string;
 }
 
 <div class="surface-card p-4" style="max-width:640px;">
@@ -11,8 +12,9 @@
         <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
     }
 
-    <form asp-action="Edit">
+    <form asp-action="Edit" enctype="multipart/form-data">
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" name="imagenActual" value="@imagenUrl" />
 
         <div class="row">
             <div class="col-md-6 mb-3">
@@ -52,6 +54,29 @@
                 <label asp-for="Descripcion" class="form-label d-block">Descripción</label>
                 <input asp-for="Descripcion" class="form-control" />
                 <span asp-validation-for="Descripcion" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12 mb-4">
+                <label for="imagen" class="form-label d-block">Imagen</label>
+
+                <div class="d-flex align-items-start gap-3 flex-wrap">
+                    <div class="imagen-preview">
+                        @if (!string.IsNullOrWhiteSpace(imagenUrl))
+                        {
+                            <img src="@imagenUrl" alt="Imagen actual de @Model.Nombre" />
+                        }
+                        else
+                        {
+                            @await Html.PartialAsync("_Icon", "image")
+                        }
+                    </div>
+
+                    <div class="flex-grow-1" style="min-width:220px;">
+                        <input type="file" id="imagen" name="imagen" class="form-control" accept=".jpg,.jpeg,.png,.webp" data-max-mb="5" />
+                        <span class="text-muted small">JPG, PNG o WEBP · hasta 5 MB. Si no elegís nada, se conserva la imagen actual.</span>
+                        <span class="text-danger small d-block" data-imagen-error></span>
+                    </div>
+                </div>
             </div>
         </div>
 

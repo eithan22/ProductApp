@@ -54,6 +54,35 @@
         }
     }
 
+    var camposImagen = document.querySelectorAll('input[type="file"][data-max-mb]');
+
+    Array.prototype.forEach.call(camposImagen, function (campo) {
+        var error = campo.parentNode.querySelector('[data-imagen-error]');
+        var maximoMb = parseFloat(campo.getAttribute('data-max-mb'));
+
+        var validar = function () {
+            var archivo = campo.files && campo.files[0];
+            var mensaje = '';
+
+            if (archivo && archivo.size > maximoMb * 1024 * 1024) {
+                mensaje = 'La imagen supera el máximo de ' + maximoMb + ' MB.';
+            } else if (archivo && !/\.(jpe?g|png|webp)$/i.test(archivo.name)) {
+                mensaje = 'Formato no admitido. Usá JPG, PNG o WEBP.';
+            }
+
+            if (error) { error.textContent = mensaje; }
+            return mensaje === '';
+        };
+
+        campo.addEventListener('change', validar);
+
+        if (campo.form) {
+            campo.form.addEventListener('submit', function (evento) {
+                if (!validar()) { evento.preventDefault(); }
+            });
+        }
+    });
+
     var botonBusqueda = document.querySelector('[data-busqueda-toggle]');
     var campoBusqueda = document.getElementById('busqueda-global');
 

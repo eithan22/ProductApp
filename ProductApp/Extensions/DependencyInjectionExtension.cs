@@ -12,7 +12,7 @@ namespace ProductApp.Extensions
         {
             services.AddInfraestructura(configuration);
             services.AddModuloUsuarios();
-            services.AddModuloProductos();
+            services.AddModuloProductos(configuration);
             services.AddModuloVentas();
             services.AddModuloReportes();
             services.AddModuloConfiguracion();

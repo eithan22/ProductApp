@@ -9,5 +9,6 @@ namespace Web.Services.Interfaces.IEndPoints.Modulo_Productos
         string Disable { get; }
         string Enable { get; }
         string Buscar { get; }
+        string SubirImagen { get; }
     }
 }

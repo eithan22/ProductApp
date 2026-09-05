@@ -12,7 +12,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
     {
         public Producto MapToCreateProducto(CreateProductoDto dto)
         {
-            return new Producto(
+            var producto = new Producto(
                 dto.Nombre,
                 dto.Descripcion,
                 dto.Precio,
@@ -20,7 +20,12 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 dto.CategoriaId
 
                 );
-                
+
+            if (!string.IsNullOrWhiteSpace(dto.ImagenUrl))
+                producto.AsignarImagen(dto.ImagenUrl);
+
+            return producto;
+
         }
 
         public ProductoResponseDto MapToProductoResponse(Producto producto)
@@ -35,6 +40,7 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 Costo = producto.Costo,
                 Estado = producto.Estado.ToString(),
                 Categoria = producto.Categoria?.Nombre,
+                ImagenUrl = producto.ImagenUrl,
 
 
             };
@@ -50,8 +56,13 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
             producto.CambiarYvalidarDescripcion(dto.Descripcion);
             producto.CambiarYvalidarNombre(dto.Nombre);
             producto.CambiarYvalidarCategoria(dto.CategoriaId);
-            
-            
+
+            // Si el dto no trae imagen se conserva la que ya tenía: el update por JSON nunca
+            // borra un archivo ya subido al storage.
+            if (!string.IsNullOrWhiteSpace(dto.ImagenUrl))
+                producto.AsignarImagen(dto.ImagenUrl);
+
+
         }
     }
 }

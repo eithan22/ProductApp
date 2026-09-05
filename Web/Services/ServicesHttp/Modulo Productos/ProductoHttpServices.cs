@@ -53,6 +53,12 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             return await _baseHttpServices.GetAsync<List<ProductoModel>>($"{_productoEndpoint.Buscar}?nombre={nombre}&categoria={categoria}");
         }
 
+        public async Task<ProductoModel> SubirImagenAsync(int productoId, Stream contenido, string nombreArchivo, string contentType)
+        {
+            return await _baseHttpServices.PostFileAsync<ProductoModel>(
+                $"{_productoEndpoint.SubirImagen}{productoId}", contenido, nombreArchivo, contentType);
+        }
+
         public async Task<ProductoModel> UpdateProductoAsync(UpdateProductoModel model)
         {
             var dto = ProductoMapperM.MapUpdateProductoDto(model);

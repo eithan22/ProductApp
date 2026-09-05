@@ -12,6 +12,8 @@ namespace Web.Services.Interfaces.IBase
 
         Task<TResponse> PatchAsync<TRequest, TResponse>(string url, TRequest data);
 
+        Task<TResponse> PostFileAsync<TResponse>(string url, Stream contenido, string nombreArchivo, string contentType);
+
         Task<bool>DeleteAsync(string url);
 
 

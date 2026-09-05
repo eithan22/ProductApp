@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using FluentValidation;
 using ProductApp.Aplication.BusinessValidator.Modulo_Productos;
 using ProductApp.Aplication.Dtos.CategoriaDto;
@@ -12,14 +13,25 @@ using ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator;
 using ProductApp.Domian.Interfaces;
+using ProductApp.Infraesctructura.Persistencia.Almacenamiento;
 using ProductApp.Infraesctructura.Persistencia.Repository;
 
 namespace ProductApp.Extensions.Modulo_Productos
 {
     public static class ProductoDependenciesExtension
     {
-        public static IServiceCollection AddModuloProductos(this IServiceCollection services)
+        private const string ContenedorImagenesPorDefecto = "productos-imagenes";
+
+        public static IServiceCollection AddModuloProductos(this IServiceCollection services, IConfiguration configuration)
         {
+            // Almacenamiento de imágenes (Azure Blob Storage / Azurite en desarrollo)
+            var storageConnectionString = configuration.GetConnectionString("AzureStorage")!;
+            var contenedorImagenes = configuration["AzureStorage:ContenedorImagenes"] ?? ContenedorImagenesPorDefecto;
+
+            services.AddSingleton(_ => new BlobServiceClient(storageConnectionString));
+            services.AddSingleton<IAlmacenamientoImagenes>(sp =>
+                new AlmacenamientoImagenesBlob(sp.GetRequiredService<BlobServiceClient>(), contenedorImagenes));
+
             // Repositorios
             services.AddScoped<ICategoriaRepository, CategoriaRepository>();
             services.AddScoped<IProductoRepository, ProductoRepository>();
@@ -47,6 +59,7 @@ namespace ProductApp.Extensions.Modulo_Productos
             // Validadores DTO — Productos
             services.AddScoped<IValidator<CreateProductoDto>, CreateProductoValidator>();
             services.AddScoped<IValidator<UpdateProductoDto>, UpdateProductoValidator>();
+            services.AddScoped<IValidator<SubirImagenProductoDto>, SubirImagenProductoValidator>();
 
             // Validadores DTO — Inventario
             services.AddScoped<IValidator<MovimientoStockDto>, MovimientoStockValidator>();

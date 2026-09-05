@@ -11,7 +11,7 @@
         <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
     }
 
-    <form asp-action="Create">
+    <form asp-action="Create" enctype="multipart/form-data">
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label asp-for="Nombre" class="form-label d-block">Nombre</label>
@@ -50,6 +50,13 @@
                 <label asp-for="Descripcion" class="form-label d-block">Descripción</label>
                 <input asp-for="Descripcion" class="form-control" placeholder="Descripción del producto" />
                 <span asp-validation-for="Descripcion" class="text-danger small"></span>
+            </div>
+
+            <div class="col-12 mb-4">
+                <label for="imagen" class="form-label d-block">Imagen <span class="text-muted">(opcional)</span></label>
+                <input type="file" id="imagen" name="imagen" class="form-control" accept=".jpg,.jpeg,.png,.webp" data-max-mb="5" />
+                <span class="text-muted small">JPG, PNG o WEBP · hasta 5 MB.</span>
+                <span class="text-danger small d-block" data-imagen-error></span>
             </div>
         </div>
 

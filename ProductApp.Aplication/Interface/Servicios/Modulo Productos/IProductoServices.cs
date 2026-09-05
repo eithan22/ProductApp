@@ -17,6 +17,8 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
 
         Task<OperationResultD<List<ProductoResponseDto>>> BuscarProductosPorNombreOCategoria(string? nombre, string? categoria, bool incluirInactivos = false);
+
+        Task<OperationResultD<ProductoResponseDto>> SubirImagenAsync(SubirImagenProductoDto dto);
       
 
         

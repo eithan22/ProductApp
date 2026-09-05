@@ -13,6 +13,7 @@ namespace ProductApp.Domian.Entitis
         public decimal Costo { get; private set; }
         public EstadoProducto Estado { get; private set; } = EstadoProducto.Activo;
         public int CategoriaId { get; private set; }
+        public string? ImagenUrl { get; private set; }
 
         public Inventario Inventario { get; private set; } = null!;
         public Categoria Categoria { get; private set; } = null!;
@@ -72,6 +73,21 @@ namespace ProductApp.Domian.Entitis
                 throw new ValidacionDominioException("CategoriaId", "El id de la categoría debe ser mayor a cero.");
 
             CategoriaId = categoriaId;
+            ActualizarFechaModificacion();
+        }
+
+        public void AsignarImagen(string imagenUrl)
+        {
+            if (string.IsNullOrWhiteSpace(imagenUrl))
+                throw new ValidacionDominioException("ImagenUrl", "La referencia de la imagen no puede estar vacía.");
+
+            ImagenUrl = imagenUrl;
+            ActualizarFechaModificacion();
+        }
+
+        public void QuitarImagen()
+        {
+            ImagenUrl = null;
             ActualizarFechaModificacion();
         }
 

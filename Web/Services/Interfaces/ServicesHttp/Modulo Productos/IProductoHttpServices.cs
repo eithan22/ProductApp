@@ -12,5 +12,6 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Productos
         Task<bool> DisableProductoAsync(int id);
         Task<bool> EnableProductoAsync(int id);
         Task<List<ProductoModel>> BuscarProductosAsync(string? nombre, string? categoria);
+        Task<ProductoModel> SubirImagenAsync(int productoId, Stream contenido, string nombreArchivo, string contentType);
     }
 }

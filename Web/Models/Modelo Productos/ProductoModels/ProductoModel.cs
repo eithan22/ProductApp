@@ -9,5 +9,6 @@ namespace Web.Models.Modelo_Productos.ProductoModels
         public decimal Costo { get; set; }
         public string Estado { get; set; } = "";
         public string? Categoria { get; set; }
+        public string? ImagenUrl { get; set; }
     }
 }

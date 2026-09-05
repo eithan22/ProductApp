@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Logging;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.CategoriaDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
@@ -22,16 +23,22 @@ namespace ProductApp.Aplication.Services
         private readonly IMapperProducto _mapperProductoMapper;
         private readonly IValidator<CreateProductoDto> _validatorCreateProductoDto;
         private readonly IValidator<UpdateProductoDto> _validatorUpdateProductoDto;
+        private readonly IValidator<SubirImagenProductoDto> _validatorSubirImagenProductoDto;
         private readonly IValidatorBusinessProducto _validatorBusinessProducto;
+        private readonly IAlmacenamientoImagenes _almacenamientoImagenes;
+        private readonly ILogger<ProductoServices> _logger;
 
         public ProductoServices
             (IProductoRepository productorepository,
             IMapperProducto mapperProductoMapper,
             IValidator<CreateProductoDto> validatorCreateProductoDto,
             IValidator<UpdateProductoDto> validatorUpdateProductoDto,
+            IValidator<SubirImagenProductoDto> validatorSubirImagenProductoDto,
             IValidatorBusinessProducto validatorBusinessProducto,
             IInventarioRepository inventarioRepository,
-            IConfiguracionSistemaRepository configuracionSistemaRepository
+            IConfiguracionSistemaRepository configuracionSistemaRepository,
+            IAlmacenamientoImagenes almacenamientoImagenes,
+            ILogger<ProductoServices> logger
             )
         {
             _productorepository = productorepository;
@@ -41,6 +48,9 @@ namespace ProductApp.Aplication.Services
             _validatorBusinessProducto = validatorBusinessProducto;
             _inventarioRepository = inventarioRepository;
             _configuracionSistemaRepository = configuracionSistemaRepository;
+            _validatorSubirImagenProductoDto = validatorSubirImagenProductoDto;
+            _almacenamientoImagenes = almacenamientoImagenes;
+            _logger = logger;
 
         }
         /*
@@ -306,6 +316,56 @@ namespace ProductApp.Aplication.Services
             var ProductoResponse = producto.Select(p => _mapperProductoMapper.MapToProductoResponse(p)).ToList();
 
             return OperationResultD<List<ProductoResponseDto>>.Success(ProductoResponse, "Productos encontrados Correctamente");
+        }
+
+
+
+
+        //subir o reemplazar la imagen de un producto ya existente
+        public async Task<OperationResultD<ProductoResponseDto>> SubirImagenAsync(SubirImagenProductoDto dto)
+        {
+            var dtoValidator = await _validatorSubirImagenProductoDto.ValidateAsync(dto);
+
+            if (!dtoValidator.IsValid)
+            {
+                var errors = string.Join("; ", dtoValidator.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<ProductoResponseDto>.Failure($"Error de validación: {errors}");
+            }
+
+            var producto = await _productorepository.GetProductoConCategoriaByIdAsync(dto.ProductoId);
+
+            if (producto == null)
+            {
+                return OperationResultD<ProductoResponseDto>.Failure("Producto no encontrado");
+            }
+
+            var imagenAnterior = producto.ImagenUrl;
+
+            var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, dto.NombreArchivo, dto.ContentType);
+
+            producto.AsignarImagen(nuevaUrl);
+
+            await _productorepository.UpdateAsync(producto);
+
+            // El blob viejo se borra recién después de persistir la nueva url: si la subida o el
+            // guardado fallan, el producto conserva una imagen que sigue existiendo en el storage.
+            if (!string.IsNullOrWhiteSpace(imagenAnterior) && imagenAnterior != nuevaUrl)
+            {
+                try
+                {
+                    await _almacenamientoImagenes.EliminarAsync(imagenAnterior);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "No se pudo eliminar la imagen anterior {ImagenAnterior} del producto {ProductoId}",
+                        imagenAnterior, producto.Id);
+                }
+            }
+
+            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(producto);
+
+            return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Imagen del producto actualizada correctamente");
         }
     }
 }

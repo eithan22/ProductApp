@@ -208,6 +208,50 @@ namespace Web.Services.Base
             return apiResponse.Data!;
         }
 
+        // 🔹 POST archivo (multipart/form-data)
+        public async Task<TResponse> PostFileAsync<TResponse>(string url, Stream contenido, string nombreArchivo, string contentType)
+        {
+            var client = CreateClient();
+
+            using var formulario = new MultipartFormDataContent();
+            var archivo = new StreamContent(contenido);
+
+            if (!string.IsNullOrWhiteSpace(contentType))
+                archivo.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+
+            formulario.Add(archivo, "archivo", nombreArchivo);
+
+            var response = await client.PostAsync(url, formulario);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
+            }
+
+            var apiResponse = JsonSerializer.Deserialize<ApiResponseT<TResponse>>(content, _jsonOptions);
+
+            if (apiResponse == null)
+                throw new Exception("Error al deserializar la respuesta");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApiHttpException(response.StatusCode, string.IsNullOrWhiteSpace(apiResponse.Message)
+                    ? $"Error HTTP {response.StatusCode}"
+                    : apiResponse.Message);
+            }
+
+            if (!apiResponse.Success)
+            {
+                throw new Exception(string.IsNullOrWhiteSpace(apiResponse.Message)
+                    ? "Error en la API sin mensaje"
+                    : apiResponse.Message);
+            }
+
+            return apiResponse.Data!;
+        }
+
         // 🔹 DELETE
         public async Task<bool> DeleteAsync(string url)
         {

@@ -100,6 +100,35 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
 
         [Authorize]
+        [HttpPost("SubirImagen/{id}")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
+
+        public async Task<IActionResult> SubirImagen(int id, [FromForm] IFormFile archivo)
+        {
+            if (archivo is null || archivo.Length == 0)
+                return BadRequest(ApiResponseT<Object>.FailureResponse("Debe adjuntar un archivo de imagen."));
+
+            await using var contenido = archivo.OpenReadStream();
+
+            var dto = new SubirImagenProductoDto
+            {
+                ProductoId = id,
+                Contenido = contenido,
+                NombreArchivo = archivo.FileName,
+                ContentType = archivo.ContentType,
+                TamanoBytes = archivo.Length
+            };
+
+            var result = await _productoServices.SubirImagenAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<ProductoResponseDto>.SuccessResponse(result.Data, result.Message));
+        }
+
+
+        [Authorize]
         [HttpGet("BuscarProductos")]
 
         public async Task<IActionResult> BuscarProducto(string? nombre, string? categoria, [FromQuery] bool incluirInactivos = false)
