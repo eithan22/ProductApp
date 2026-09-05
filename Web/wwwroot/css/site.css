@@ -8,6 +8,9 @@
   --color-ink: #16191D;
   --color-muted: #676E76;
   --color-border: #E3E5E8;
+  /* borde marcado: solo para controles de entrada (inputs, botón outline),
+     donde el borde suave de las tarjetas deja el control sin límite claro */
+  --color-border-strong: #D3D2CC;
 
   --color-primary: #14503F;
   --color-primary-dark: #0E3B2E;
@@ -312,13 +315,68 @@ h1, h2, h3, h4, h5, h6 {
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px 16px;
   margin-bottom: 24px;
 }
-.page-header > p { margin-bottom: 0; }
+.page-header > p {
+  margin-bottom: 0;
+  font-size: .885rem;
+  max-width: 72ch;
+}
 .page-header-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---------- Formularios de alta/edición (Producto, etc.) ---------- */
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.crumb a { color: var(--color-muted); text-decoration: none; }
+.crumb a:hover { color: var(--color-ink); }
+.crumb .icon { width: 14px; height: 14px; }
+
+.form-wrap { max-width: 760px; }
+.fsec { margin-bottom: 30px; }
+.fsec .stitle {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 14px;
+}
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.ffull { grid-column: 1 / -1; }
+.fgrid label, .ffull label { font-size: .83rem; font-weight: 700; color: var(--color-ink); display: block; margin-bottom: 7px; }
+
+.prefix { position: relative; }
+.prefix span {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  pointer-events: none;
+}
+.prefix .form-control { padding-left: 44px; }
+
+.factions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 6px;
+}
 
 /* Tabla que no se puede reflowar: desplazamiento horizontal contenido.
    Lleva tabindex en el markup para que sea alcanzable por teclado. */
@@ -332,11 +390,17 @@ h1, h2, h3, h4, h5, h6 {
 .btn-pa {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-family: var(--font-body);
   font-weight: 600;
-  font-size: .9rem;
-  padding: 9px 16px;
+  font-size: .865rem;
+  /* altura fija en vez de padding vertical: todos los botones de una fila
+     quedan alineados aunque uno lleve icono y otro no */
+  min-height: 40px;
+  padding: 0 15px;
+  /* sin padding vertical, el texto no debe partirse en dos líneas */
+  white-space: nowrap;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
@@ -358,7 +422,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-pa-outline {
   background: var(--color-surface);
-  border-color: var(--color-border);
+  border-color: var(--color-border-strong);
   color: var(--color-ink);
 }
 .btn-pa-outline:hover { border-color: var(--color-ink); }
@@ -386,7 +450,19 @@ h1, h2, h3, h4, h5, h6 {
   transition: all .12s ease;
 }
 .icon-btn:hover { color: var(--color-ink); border-color: var(--color-ink); }
-.icon-btn.danger:hover { color: var(--color-danger); border-color: var(--color-danger); }
+
+/* la acción destructiva se lee como tal en reposo, no solo al pasar el mouse:
+   en una fila de iconos grises no había forma de distinguirla antes de tocarla */
+.icon-btn.danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+.icon-btn.danger:hover {
+  color: #fff;
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+}
 
 .mono { font-family: var(--font-mono); }
 
@@ -405,7 +481,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .form-control, .form-select {
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   padding: 10px 12px;
   font-family: var(--font-body);
 }
@@ -466,18 +542,112 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
 .ledger-actions { display: flex; gap: 6px; }
 
-/* ---------- Catálogo de productos ---------- */
+/* ---------- Catálogo de productos (grilla de fotos, sin tarjeta) ---------- */
 
-.producto-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-
-.producto-card {
-  padding: 20px;
-  border-left: 4px solid var(--color-border);
-  transition: transform .12s ease, box-shadow .12s ease;
+.producto-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 26px;
 }
-.producto-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(20,22,26,.08); }
-.producto-card.activo { border-left-color: var(--color-primary); }
-.producto-card.inactivo { border-left-color: var(--color-muted); opacity: .7; }
+.producto-filtros-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  color: var(--color-muted);
+  flex: 1 1 auto;
+  max-width: 360px;
+  margin: 0;
+}
+.producto-filtro-input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: .86rem;
+  color: var(--color-ink);
+  width: 100%;
+}
+.producto-filtro-select { margin: 0; }
+.producto-filtro-select .form-select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 9px 32px 9px 14px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+}
+.seg {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-left: auto;
+}
+.seg a {
+  padding: 9px 16px;
+  font-size: .83rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.seg a.on { background: var(--color-primary-soft); color: var(--color-primary); }
+
+.producto-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  column-gap: 26px;
+  row-gap: 34px;
+}
+.producto-catalog-item {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+}
+.producto-catalog-item:hover .producto-catalog-name { color: var(--color-primary-dark); }
+/* Fondo bien distinto del lienzo (--color-bg) para que la miniatura se note
+   como una superficie propia y no se confunda con la página. */
+.producto-catalog-shot {
+  aspect-ratio: 1 / .86;
+  border-radius: 6px;
+  background: #ECEAE4;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.producto-catalog-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.producto-catalog-shot .icon { color: var(--color-muted); opacity: .4; width: 40px; height: 40px; }
+.producto-catalog-shot.off { opacity: .5; }
+.producto-catalog-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: .63rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 999px;
+  z-index: 2;
+}
+.producto-catalog-badge.agotado { background: var(--color-danger); }
+.producto-catalog-badge.inactivo { background: var(--color-muted); }
+
+.producto-catalog-info { padding-top: 13px; border-bottom: 1px solid var(--color-border); padding-bottom: 13px; }
+.producto-catalog-name { display: block; color: var(--color-primary); font-weight: 700; font-size: .98rem; }
+.producto-catalog-sub { color: var(--color-muted); font-size: .78rem; margin-top: 2px; }
+.producto-catalog-price { font-size: .98rem; color: var(--color-ink); margin-top: 7px; }
 
 .category-chip {
   display: inline-block;
@@ -485,14 +655,14 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
   letter-spacing: .04em;
   text-transform: uppercase;
   font-weight: 700;
-  color: var(--color-primary);
-  background: var(--color-primary-soft);
+  color: var(--color-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   padding: 3px 10px;
   border-radius: 999px;
   margin-bottom: 10px;
 }
 
-.producto-thumb,
 .producto-imagen,
 .imagen-preview {
   display: flex;
@@ -503,7 +673,6 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
   border: 1px solid var(--color-border);
 }
 
-.producto-thumb img,
 .producto-imagen img,
 .imagen-preview img {
   width: 100%;
@@ -512,16 +681,8 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
   display: block;
 }
 
-.producto-thumb .icon,
 .producto-imagen .icon,
 .imagen-preview .icon { color: var(--color-muted); opacity: .45; }
-
-.producto-thumb {
-  aspect-ratio: 16 / 9;
-  border-radius: var(--radius-sm);
-  margin-bottom: 12px;
-}
-.producto-thumb .icon { width: 26px; height: 26px; }
 
 .producto-imagen {
   aspect-ratio: 16 / 9;
@@ -538,11 +699,7 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 }
 .imagen-preview .icon { width: 26px; height: 26px; }
 
-.producto-nombre { font-weight: 700; font-size: 1.02rem; margin-bottom: 2px; }
-.producto-desc { color: var(--color-muted); font-size: .83rem; margin-bottom: 14px; min-height: 2.1em; }
-.producto-precio { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--color-ink); }
-.producto-sub { font-family: var(--font-mono); font-size: .75rem; color: var(--color-muted); margin-bottom: 14px; }
-.producto-footer { display: flex; justify-content: space-between; align-items: center; }
+.producto-precio { font-family: var(--font-mono); font-size: 1.32rem; font-weight: 700; color: var(--color-ink); }
 
 /* ---------- Inventario ---------- */
 
@@ -764,6 +921,17 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
    ============================================================ */
 
 .text-muted { color: var(--color-muted) !important; }
+
+/* casillas y radios: Bootstrap los pinta de azul al marcarlos */
+.form-check-input { border-color: var(--color-border-strong); }
+.form-check-input:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.form-check-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(20,80,63,.18);
+}
 
 /* ============================================================
    Login a pantalla dividida
@@ -1067,6 +1235,10 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
 @media (max-width: 767.98px) {
 
+  /* ---------- Formularios: dos columnas a una ---------- */
+
+  .fgrid { grid-template-columns: 1fr; }
+
   /* ---------- Topbar: la búsqueda pasa a una segunda línea ---------- */
 
   .app-topbar { flex-wrap: wrap; row-gap: 10px; }
@@ -1117,7 +1289,10 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
   .ledger-id { width: auto; text-align: left; }
   .ledger-actions { gap: 8px; }
 
-  .icon-btn { width: 40px; height: 40px; }
+  /* mínimo táctil: 44px en todo lo que se toca con el dedo */
+  .icon-btn { width: 44px; height: 44px; }
+  .btn-pa { min-height: 44px; }
+  .form-control, .form-select { min-height: 44px; }
 
   /* ---------- Inventario ---------- */
 
@@ -1143,8 +1318,8 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
   /* ---------- Catálogo ---------- */
 
-  .producto-card { padding: 16px; }
-  .producto-footer { flex-wrap: wrap; gap: 10px; }
+  .producto-catalog-grid { column-gap: 18px; row-gap: 24px; }
+  .seg { margin-left: 0; }
 }
 
 @media (max-width: 575.98px) {
@@ -1159,7 +1334,9 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
   .app-topbar h1 { font-size: 1.05rem; }
 
-  .producto-grid { grid-template-columns: 1fr; gap: 12px; }
+  .producto-catalog-grid { grid-template-columns: repeat(2, 1fr); column-gap: 12px; row-gap: 20px; }
+  .producto-filtros { flex-direction: column; align-items: stretch; }
+  .producto-filtros-search { max-width: none; }
 
   /* la fecha de actualización y el botón ya no entran a la par */
   .inv-row { grid-template-columns: 1fr; }

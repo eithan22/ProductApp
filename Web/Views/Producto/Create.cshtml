@@ -5,64 +5,91 @@
     var categorias = ViewBag.Categorias as List<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>;
 }
 
-<div class="surface-card p-4" style="max-width:640px;">
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
-    }
+<div class="crumb">
+    <a asp-action="Index">Productos</a>
+    <span>›</span>
+    <span>Nuevo producto</span>
+</div>
 
+<div class="page-header">
+    <div>
+        <h1>Nuevo producto</h1>
+        <p class="text-muted">Completá los datos y guardá para agregarlo al catálogo.</p>
+    </div>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
+}
+
+<div class="form-wrap">
     <form asp-action="Create" enctype="multipart/form-data">
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label asp-for="Nombre" class="form-label d-block">Nombre</label>
-                <input asp-for="Nombre" class="form-control" placeholder="Ej: Laptop 15''" />
-                <span asp-validation-for="Nombre" class="text-danger small"></span>
-            </div>
+        <div class="fsec">
+            <div class="stitle">Información general</div>
+            <div class="fgrid">
+                <div class="ffull">
+                    <label asp-for="Nombre">Nombre del producto</label>
+                    <input asp-for="Nombre" class="form-control" placeholder="ej. Taladro Percutor 1/2&quot; 750W" />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
 
-            <div class="col-md-6 mb-3">
-                <label asp-for="CategoriaId" class="form-label d-block">Categoría</label>
-                <select asp-for="CategoriaId" class="form-select">
-                    <option value="">-- Selecciona una categoría --</option>
-                    @if (categorias != null)
-                    {
-                        @foreach (var c in categorias)
+                <div class="ffull">
+                    <label asp-for="Descripcion">Descripción</label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Detalle breve para el catálogo y las órdenes…"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                </div>
+
+                <div>
+                    <label asp-for="CategoriaId">Categoría</label>
+                    <select asp-for="CategoriaId" class="form-select">
+                        <option value="">-- Selecciona una categoría --</option>
+                        @if (categorias != null)
                         {
-                            <option value="@c.Id">@c.Nombre</option>
+                            @foreach (var c in categorias)
+                            {
+                                <option value="@c.Id">@c.Nombre</option>
+                            }
                         }
-                    }
-                </select>
-                <span asp-validation-for="CategoriaId" class="text-danger small"></span>
-            </div>
+                    </select>
+                    <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+                </div>
 
-            <div class="col-md-6 mb-3">
-                <label asp-for="Precio" class="form-label d-block">Precio</label>
-                <input asp-for="Precio" class="form-control" placeholder="0.00" />
-                <span asp-validation-for="Precio" class="text-danger small"></span>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label asp-for="Costo" class="form-label d-block">Costo</label>
-                <input asp-for="Costo" class="form-control" placeholder="0.00" />
-                <span asp-validation-for="Costo" class="text-danger small"></span>
-            </div>
-
-            <div class="col-12 mb-4">
-                <label asp-for="Descripcion" class="form-label d-block">Descripción</label>
-                <input asp-for="Descripcion" class="form-control" placeholder="Descripción del producto" />
-                <span asp-validation-for="Descripcion" class="text-danger small"></span>
-            </div>
-
-            <div class="col-12 mb-4">
-                <label for="imagen" class="form-label d-block">Imagen <span class="text-muted">(opcional)</span></label>
-                <input type="file" id="imagen" name="imagen" class="form-control" accept=".jpg,.jpeg,.png,.webp" data-max-mb="5" />
-                <span class="text-muted small">JPG, PNG o WEBP · hasta 5 MB.</span>
-                <span class="text-danger small d-block" data-imagen-error></span>
+                <div>
+                    <label for="imagen">Imagen <span class="text-muted">(opcional)</span></label>
+                    <input type="file" id="imagen" name="imagen" class="form-control" accept=".jpg,.jpeg,.png,.webp" data-max-mb="5" />
+                    <div class="hint" style="font-size:.76rem;color:var(--color-muted);margin-top:5px;">JPG, PNG o WEBP · hasta 5 MB.</div>
+                    <span class="text-danger small d-block" data-imagen-error></span>
+                </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-between">
+        <div class="fsec">
+            <div class="stitle">Precio</div>
+            <div class="fgrid">
+                <div>
+                    <label asp-for="Precio">Precio de venta</label>
+                    <div class="prefix">
+                        <span>$</span>
+                        <input asp-for="Precio" class="form-control mono" placeholder="0.00" />
+                    </div>
+                    <span asp-validation-for="Precio" class="text-danger small"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Costo">Costo</label>
+                    <div class="prefix">
+                        <span>$</span>
+                        <input asp-for="Costo" class="form-control mono" placeholder="0.00" />
+                    </div>
+                    <span asp-validation-for="Costo" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="factions">
             <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
-            <button type="submit" class="btn-pa btn-pa-primary">Guardar producto</button>
+            <button type="submit" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "check") Guardar producto</button>
         </div>
     </form>
 </div>

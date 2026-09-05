@@ -24,12 +24,17 @@ namespace Web.Controllers.Modulo_Productos
         {
             var result = await _productoHttpServices.GetProductosAsync(incluirInactivos, pageNumber);
             ViewBag.IncluirInactivos = incluirInactivos;
+            await CargarCategorias();
             return View(result);
         }
 
         [HttpGet]
         public async Task<ActionResult> Buscar(string? nombre, string? categoria)
         {
+            ViewBag.NombreBuscado = nombre;
+            ViewBag.CategoriaSeleccionada = categoria;
+            await CargarCategorias();
+
             try
             {
                 var result = await _productoHttpServices.BuscarProductosAsync(nombre, categoria);

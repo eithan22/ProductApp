@@ -41,7 +41,8 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 Estado = producto.Estado.ToString(),
                 Categoria = producto.Categoria?.Nombre,
                 ImagenUrl = producto.ImagenUrl,
-
+                StockActual = producto.Inventario?.CantidadActual,
+                StockMinimo = producto.Inventario?.CantidadMinima,
 
             };
 

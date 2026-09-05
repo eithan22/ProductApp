@@ -103,8 +103,10 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [HttpPost("SubirImagen/{id}")]
         [RequestSizeLimit(6 * 1024 * 1024)]
 
-        public async Task<IActionResult> SubirImagen(int id, [FromForm] IFormFile archivo)
+        public async Task<IActionResult> SubirImagen(int id, [FromForm] SubirImagenProductoRequest request)
         {
+            var archivo = request?.Archivo;
+
             if (archivo is null || archivo.Length == 0)
                 return BadRequest(ApiResponseT<Object>.FailureResponse("Debe adjuntar un archivo de imagen."));
 
@@ -144,8 +146,12 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
     }
 
-
-
+    // Swashbuckle no puede documentar un IFormFile recibido como parámetro suelto de acción
+    // (rompe /swagger con 500): hay que envolverlo en una clase para [FromForm].
+    public class SubirImagenProductoRequest
+    {
+        public IFormFile Archivo { get; set; } = null!;
+    }
 
 }
 

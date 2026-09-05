@@ -10,5 +10,7 @@ namespace Web.Models.Modelo_Productos.ProductoModels
         public string Estado { get; set; } = "";
         public string? Categoria { get; set; }
         public string? ImagenUrl { get; set; }
+        public int? StockActual { get; set; }
+        public int? StockMinimo { get; set; }
     }
 }

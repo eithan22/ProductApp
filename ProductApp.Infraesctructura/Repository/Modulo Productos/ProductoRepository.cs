@@ -20,6 +20,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             var query = _context.Productos
             .Include(p => p.Categoria)
+            .Include(p => p.Inventario)
             .Where(p => !p.EstaEliminado)
             .AsQueryable();
 
@@ -58,6 +59,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             var query = _context.Productos
                 .Include(p => p.Categoria)
+                .Include(p => p.Inventario)
                 .Where(p => !p.EstaEliminado)
                 .AsQueryable();
 

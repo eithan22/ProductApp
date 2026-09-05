@@ -3,49 +3,75 @@
 @{
     ViewData["Title"] = "Productos";
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+    var categorias = ViewBag.Categorias as List<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>;
+    var categoriaSeleccionada = ViewBag.CategoriaSeleccionada as string;
+    var nombreBuscado = ViewBag.NombreBuscado as string;
+    var categoriasActivas = Model.Items.Select(i => i.Categoria).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().Count();
 }
 
 <div class="page-header">
-    <p class="text-muted">Catálogo de productos con su precio, costo y margen.</p>
+    <p class="text-muted">Catálogo activo · @Model.TotalCount productos en @categoriasActivas categorías.</p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">
         @await Html.PartialAsync("_Icon", "add") Nuevo producto
     </a>
 </div>
 
-<div class="surface-card p-3 mb-4">
-    <form asp-action="Buscar" method="get" class="row g-2">
-        <div class="col-md-5">
-            <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre..." />
-        </div>
-        <div class="col-md-5">
-            <input type="text" name="categoria" class="form-control" placeholder="Buscar por categoría..." />
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "search") Buscar</button>
-        </div>
+<div class="producto-filtros">
+    <form asp-action="Buscar" method="get" class="producto-filtros-search">
+        @await Html.PartialAsync("_Icon", "search")
+        <input type="text" name="nombre" value="@nombreBuscado" class="producto-filtro-input" placeholder="Buscar por nombre o descripción…" />
     </form>
-</div>
 
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="incluirInactivos" name="incluirInactivos" value="true" onchange="this.form.submit()" @(incluirInactivos ? "checked" : "") />
-        <label class="form-check-label" for="incluirInactivos">Mostrar inactivos</label>
+    <form asp-action="Buscar" method="get" class="producto-filtro-select">
+        <select name="categoria" class="form-select" onchange="this.form.submit()">
+            <option value="">Categoría: Todas</option>
+            @if (categorias != null)
+            {
+                @foreach (var c in categorias)
+                {
+                    <option value="@c.Nombre" selected="@(c.Nombre == categoriaSeleccionada)">@c.Nombre</option>
+                }
+            }
+        </select>
+    </form>
+
+    <div class="seg">
+        <a asp-action="Index" asp-route-incluirInactivos="false" class="@(incluirInactivos ? "" : "on")">Activos</a>
+        <a asp-action="Index" asp-route-incluirInactivos="true" class="@(incluirInactivos ? "on" : "")">Todos</a>
     </div>
-</form>
+</div>
 
 @if (!Model.Items.Any())
 {
-    <div class="surface-card text-center text-muted py-5">No hay productos para mostrar.</div>
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "box")</div>
+        <p class="empty-title">No hay productos para mostrar</p>
+        <p class="empty-text">Probá con otro nombre o categoría, o creá el primer producto del catálogo.</p>
+        <a asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Crear producto
+        </a>
+    </div>
 }
-
-<div class="producto-grid">
+else
+{
+<div class="producto-catalog-grid">
     @foreach (var item in Model.Items)
     {
         var activo = item.Estado == "Activo";
-        var margen = item.Precio > 0 ? Math.Round((item.Precio - item.Costo) / item.Precio * 100, 1) : 0;
+        var stockActual = item.StockActual ?? 0;
+        var agotado = activo && stockActual <= 0;
 
-        <div class="surface-card producto-card @(activo ? "activo" : "inactivo")">
-            <div class="producto-thumb">
+        <a asp-action="Details" asp-route-id="@item.Id" class="producto-catalog-item">
+            <div class="producto-catalog-shot @(agotado || !activo ? "off" : "")">
+                @if (agotado)
+                {
+                    <span class="producto-catalog-badge agotado">Agotado</span>
+                }
+                else if (!activo)
+                {
+                    <span class="producto-catalog-badge inactivo">Inactivo</span>
+                }
+
                 @if (!string.IsNullOrWhiteSpace(item.ImagenUrl))
                 {
                     <img src="@item.ImagenUrl" alt="@item.Nombre" loading="lazy" />
@@ -56,37 +82,14 @@
                 }
             </div>
 
-            <span class="category-chip">@(item.Categoria ?? "Sin categoría")</span>
-
-            <div class="producto-nombre">@item.Nombre</div>
-            <div class="producto-desc">@item.Descripcion</div>
-
-            <div class="producto-precio">@Html.Moneda(item.Precio)</div>
-            <div class="producto-sub">Costo @Html.Moneda(item.Costo) · margen @margen%</div>
-
-            <div class="producto-footer">
-                <span class="status-pill @(activo ? "on" : "off")"><span class="dot"></span> @item.Estado</span>
-
-                <div class="ledger-actions">
-                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
-
-                    @if (activo)
-                    {
-                        <form asp-action="Disable" asp-route-id="@item.Id" method="post" class="d-inline">
-                            <button type="submit" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</button>
-                        </form>
-                    }
-                    else
-                    {
-                        <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
-                            <button type="submit" class="icon-btn" title="Activar">@await Html.PartialAsync("_Icon", "check")</button>
-                        </form>
-                    }
-                </div>
+            <div class="producto-catalog-info">
+                <span class="producto-catalog-name">@item.Nombre</span>
+                <div class="producto-catalog-sub">@(item.Categoria ?? "Sin categoría") · Stock @stockActual</div>
+                <div class="producto-catalog-price mono">@Html.Moneda(item.Precio)</div>
             </div>
-        </div>
+        </a>
     }
 </div>
+}
 
 @await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages })
