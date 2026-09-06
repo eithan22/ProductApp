@@ -1,4 +1,6 @@
 @using Microsoft.AspNetCore.Http
+@using Web.Models.Modelo_Notificaciones
+@inject Web.Services.Interfaces.ServicesHttp.Modulo_Notificaciones.INotificacionHttpServices NotificacionHttp
 
 @{
     var token = Context.Session.GetString("TOKEN");
@@ -16,6 +18,20 @@
 
     string Activo(string c) => controller == c ? "active" : "";
     string? Actual(string c) => controller == c ? "page" : null;
+
+    var notificaciones = new NotificacionResumenModel();
+    if (!string.IsNullOrEmpty(token))
+    {
+        try
+        {
+            notificaciones = await NotificacionHttp.ObtenerResumenAsync();
+        }
+        catch
+        {
+            // La campana es un complemento, no una funcionalidad crítica:
+            // si la API no responde, se muestra vacía en vez de romper todo el shell.
+        }
+    }
 }
 
 <!DOCTYPE html>
@@ -30,7 +46,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 
 <body>
@@ -153,10 +169,19 @@
                         @await Html.PartialAsync("_Icon", "search")
                     </button>
 
-                    <a class="topbar-bell" asp-controller="Inventario" asp-action="StockBajo"
-                       title="Alertas de inventario" aria-label="Alertas de inventario">
-                        @await Html.PartialAsync("_Icon", "bell")
-                    </a>
+                    <div class="notif-wrap">
+                        <button class="topbar-bell" type="button" data-notif-toggle
+                                aria-haspopup="true" aria-expanded="false" aria-controls="notif-panel"
+                                aria-label="Notificaciones">
+                            @await Html.PartialAsync("_Icon", "bell")
+                            @if (notificaciones.NoLeidas > 0)
+                            {
+                                <span class="notif-badge">@(notificaciones.NoLeidas > 9 ? "9+" : notificaciones.NoLeidas.ToString())</span>
+                            }
+                        </button>
+
+                        @await Html.PartialAsync("_NotificacionesDropdown", notificaciones)
+                    </div>
 
                     <a class="user-chip" asp-controller="Usuario" asp-action="MiPerfil">
                         <span class="user-avatar" aria-hidden="true">@iniciales</span>

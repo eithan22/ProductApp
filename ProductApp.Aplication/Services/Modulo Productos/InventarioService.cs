@@ -6,6 +6,8 @@ using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulos_Productos;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Producto;
 using ProductApp.Aplication.Result.OperationResult;
+using ProductApp.Domian.Common.Enums.EnumsNotificacion;
+using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 
 namespace ProductApp.Aplication.Services
@@ -17,6 +19,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<MovimientoStockDto> _movimientoStockValidator;
         private readonly IValidator<AjustarStockDto> _ajustarStockValidator;
         private readonly IValidatorBusinessInventario _validatorBusinessInventario;
+        private readonly INotificacionServices _notificacionServices;
         private readonly ILogger<InventarioService> _logger;
 
         public InventarioService(
@@ -25,6 +28,7 @@ namespace ProductApp.Aplication.Services
             IValidator<MovimientoStockDto> movimientoStockValidator,
             IValidator<AjustarStockDto> ajustarStockValidator,
             IValidatorBusinessInventario validatorBusinessInventario,
+            INotificacionServices notificacionServices,
             ILogger<InventarioService> logger)
         {
             _inventarioRepository = inventarioRepository;
@@ -32,7 +36,18 @@ namespace ProductApp.Aplication.Services
             _movimientoStockValidator = movimientoStockValidator;
             _ajustarStockValidator = ajustarStockValidator;
             _validatorBusinessInventario = validatorBusinessInventario;
+            _notificacionServices = notificacionServices;
             _logger = logger;
+        }
+
+        private async Task NotificarSiCruzoAStockBajoAsync(bool estabaBajo, Inventario inventario)
+        {
+            if (!estabaBajo && inventario.EsStockBajo())
+            {
+                await _notificacionServices.NotificarAdministradoresAsync(
+                    TipoNotificacion.StockBajo,
+                    $"Stock bajo: \"{inventario.Producto.Nombre}\" quedó en {inventario.CantidadActual} unidades (mínimo {inventario.CantidadMinima}).");
+            }
         }
 
         public async Task<OperationResultD<InventarioResponseDto>> ObtenerInventarioAsync(int productoId)
@@ -60,8 +75,12 @@ namespace ProductApp.Aplication.Services
             if (!businessResult.IsSuccess)
                 return OperationResultD<InventarioResponseDto>.Failure(businessResult.Message);
 
+            var estabaBajo = inventario.EsStockBajo();
+
             inventario.RegistrarEntradaStock(dto.Cantidad);
             await _inventarioRepository.UpdateAsync(inventario);
+
+            await NotificarSiCruzoAStockBajoAsync(estabaBajo, inventario);
 
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock agregado exitosamente.");
@@ -82,8 +101,12 @@ namespace ProductApp.Aplication.Services
             if (!businessResult.IsSuccess)
                 return OperationResultD<InventarioResponseDto>.Failure(businessResult.Message);
 
+            var estabaBajo = inventario.EsStockBajo();
+
             inventario.RegistrarSalidaStock(dto.Cantidad);
             await _inventarioRepository.UpdateAsync(inventario);
+
+            await NotificarSiCruzoAStockBajoAsync(estabaBajo, inventario);
 
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock descontado exitosamente.");
@@ -104,12 +127,16 @@ namespace ProductApp.Aplication.Services
             if (!businessResult.IsSuccess)
                 return OperationResultD<InventarioResponseDto>.Failure(businessResult.Message);
 
+            var estabaBajo = inventario.EsStockBajo();
+
             inventario.AjustarStock(dto.NuevoStock);
 
             if (dto.NuevoStockMinimo.HasValue)
                 inventario.AjustarStockMinimo(dto.NuevoStockMinimo.Value);
 
             await _inventarioRepository.UpdateAsync(inventario);
+
+            await NotificarSiCruzoAStockBajoAsync(estabaBajo, inventario);
 
             _logger.LogInformation("Ajuste manual de inventario para el producto {ProductoId}: nuevo stock {NuevoStock}, por el usuario {UsuarioSolicitanteId}", dto.ProductoId, dto.NuevoStock, usuarioSolicitanteId);
 

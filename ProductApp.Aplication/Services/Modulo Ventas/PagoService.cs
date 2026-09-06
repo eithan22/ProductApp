@@ -5,6 +5,7 @@ using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Ventas;
 using ProductApp.Aplication.Result.OperationResult;
+using ProductApp.Domian.Common.Enums.EnumsNotificacion;
 using ProductApp.Domian.Common.Enums.EnumsOrden;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
@@ -20,6 +21,7 @@ namespace ProductApp.Aplication.Services
         private readonly IMapperPago _mapperPago;
         private readonly IValidator<CreatePagoDto> _createPagoValidator;
         private readonly IValidatorBusinessPago _validatorBusinessPago;
+        private readonly INotificacionServices _notificacionServices;
         private readonly ILogger<PagoService> _logger;
 
         public PagoService(
@@ -30,6 +32,7 @@ namespace ProductApp.Aplication.Services
             IMapperPago mapperPago,
             IValidator<CreatePagoDto> createPagoValidator,
             IValidatorBusinessPago validatorBusinessPago,
+            INotificacionServices notificacionServices,
             ILogger<PagoService> logger)
         {
             _pagoRepository = pagoRepository;
@@ -39,6 +42,7 @@ namespace ProductApp.Aplication.Services
             _mapperPago = mapperPago;
             _createPagoValidator = createPagoValidator;
             _validatorBusinessPago = validatorBusinessPago;
+            _notificacionServices = notificacionServices;
             _logger = logger;
         }
 
@@ -96,8 +100,17 @@ namespace ProductApp.Aplication.Services
 
                 foreach (var (inventario, cantidad) in inventariosADescontar)
                 {
+                    var estabaBajo = inventario.EsStockBajo();
+
                     inventario.RegistrarSalidaStock(cantidad);
                     await _inventarioRepository.UpdateAsync(inventario);
+
+                    if (!estabaBajo && inventario.EsStockBajo())
+                    {
+                        await _notificacionServices.NotificarAdministradoresAsync(
+                            TipoNotificacion.StockBajo,
+                            $"Stock bajo: \"{inventario.Producto.Nombre}\" quedó en {inventario.CantidadActual} unidades (mínimo {inventario.CantidadMinima}).");
+                    }
                 }
             }
 
@@ -106,6 +119,13 @@ namespace ProductApp.Aplication.Services
                 : $"Pago parcial registrado exitosamente. Saldo pendiente: {nuevoSaldo}";
 
             _logger.LogInformation("Pago registrado para la orden {OrdenId}: monto {Monto}, pago completo: {PagoCompleto}, por el usuario {UsuarioSolicitanteId}", dto.OrdenId, dto.Monto, pagoCompleto, usuarioSolicitanteId);
+
+            await _notificacionServices.NotificarUsuarioAsync(
+                orden.UsuarioId,
+                TipoNotificacion.PagoRegistrado,
+                pagoCompleto
+                    ? $"La orden #{orden.Id} fue pagada completamente."
+                    : $"Se registró un pago de {dto.Monto} para la orden #{orden.Id}. Saldo pendiente: {nuevoSaldo}.");
 
             var response = _mapperPago.MapToPagoResponseDto(pago, nuevoSaldo);
             return OperationResultD<PagoResponseDto>.Success(response, mensaje);

@@ -93,4 +93,27 @@
             if (abierta) { campoBusqueda.focus(); }
         });
     }
+
+    var botonNotif = document.querySelector('[data-notif-toggle]');
+
+    if (botonNotif) {
+        var cerrarNotif = function () {
+            cuerpo.classList.remove('notif-abierta');
+            botonNotif.setAttribute('aria-expanded', 'false');
+        };
+
+        botonNotif.addEventListener('click', function (evento) {
+            evento.stopPropagation();
+            var abierta = cuerpo.classList.toggle('notif-abierta');
+            botonNotif.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function (evento) {
+            if (!evento.target.closest('.notif-wrap')) { cerrarNotif(); }
+        });
+
+        document.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape') { cerrarNotif(); }
+        });
+    }
 })();

@@ -1,4 +1,5 @@
 using ProductApp.Extensions.Modulo_Configuracion;
+using ProductApp.Extensions.Modulo_Notificaciones;
 using ProductApp.Extensions.Modulo_Productos;
 using ProductApp.Extensions.Modulo_Reportes;
 using ProductApp.Extensions.Modulo_Usuarios;
@@ -11,6 +12,7 @@ namespace ProductApp.Extensions
         public static IServiceCollection AddProjectDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddInfraestructura(configuration);
+            services.AddModuloNotificaciones();
             services.AddModuloUsuarios();
             services.AddModuloProductos(configuration);
             services.AddModuloVentas();

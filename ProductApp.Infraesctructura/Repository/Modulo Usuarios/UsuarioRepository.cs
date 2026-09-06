@@ -43,5 +43,13 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
 
             return (items, totalCount);
         }
+
+        public async Task<List<int>> ObtenerIdsAdministradoresActivosAsync()
+        {
+            return await _context.Usuarios
+                .Where(u => !u.EstaEliminado && u.EstadoUsuario == EstadoUsuario.Activo && u.RolUsuario == RolUsuario.Administrador)
+                .Select(u => u.Id)
+                .ToListAsync();
+        }
     }
 }

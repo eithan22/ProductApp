@@ -1,4 +1,5 @@
 using Web.Extensions.Modulo_Configuracion;
+using Web.Extensions.Modulo_Notificaciones;
 using Web.Extensions.Modulo_Productos;
 using Web.Extensions.Modulo_Reportes;
 using Web.Extensions.Modulo_Usuarios;
@@ -11,6 +12,7 @@ namespace Web.Extensions
         public static IServiceCollection AddWebDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddInfraestructura(configuration);
+            services.AddModuloNotificaciones();
             services.AddModuloUsuarios();
             services.AddModuloProductos();
             services.AddModuloVentas();

@@ -6,6 +6,7 @@ using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Ventas;
 using ProductApp.Aplication.Result.OperationResult;
+using ProductApp.Domian.Common.Enums.EnumsNotificacion;
 using ProductApp.Domian.Common.Enums.EnumsOrden;
 using ProductApp.Domian.Interfaces;
 
@@ -20,6 +21,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<CreateOrdenDto> _createOrdenValidator;
         private readonly IValidator<CambiarEstadoOrdenDto> _cambiarEstadoValidator;
         private readonly IValidatorBusinessOrden _validatorBusinessOrden;
+        private readonly INotificacionServices _notificacionServices;
         private readonly ILogger<OrdenServices> _logger;
 
         public OrdenServices(
@@ -30,6 +32,7 @@ namespace ProductApp.Aplication.Services
             IValidator<CreateOrdenDto> createOrdenValidator,
             IValidator<CambiarEstadoOrdenDto> cambiarEstadoValidator,
             IValidatorBusinessOrden validatorBusinessOrden,
+            INotificacionServices notificacionServices,
             ILogger<OrdenServices> logger)
         {
             _ordenRepository = ordenRepository;
@@ -39,6 +42,7 @@ namespace ProductApp.Aplication.Services
             _createOrdenValidator = createOrdenValidator;
             _cambiarEstadoValidator = cambiarEstadoValidator;
             _validatorBusinessOrden = validatorBusinessOrden;
+            _notificacionServices = notificacionServices;
             _logger = logger;
         }
 
@@ -81,6 +85,11 @@ namespace ProductApp.Aplication.Services
             orden.CambiarEstado(nuevoEstado);
             await _ordenRepository.UpdateAsync(orden);
 
+            await _notificacionServices.NotificarUsuarioAsync(
+                orden.UsuarioId,
+                TipoNotificacion.CambioEstadoOrden,
+                $"Tu orden #{orden.Id} pasó a estado {nuevoEstado}.");
+
             return OperationResultD<bool>.Success(true, "Estado de la orden actualizado exitosamente");
         }
 
@@ -94,6 +103,11 @@ namespace ProductApp.Aplication.Services
             await _ordenRepository.UpdateAsync(orden);
 
             _logger.LogInformation("Orden {OrdenId} cancelada por el usuario {UsuarioSolicitanteId}", id, usuarioSolicitanteId);
+
+            await _notificacionServices.NotificarUsuarioAsync(
+                orden.UsuarioId,
+                TipoNotificacion.CambioEstadoOrden,
+                $"Tu orden #{orden.Id} pasó a estado {orden.Estado}.");
 
             return OperationResultD<bool>.Success(true, "Orden cancelada exitosamente");
         }
@@ -112,6 +126,11 @@ namespace ProductApp.Aplication.Services
             await _ordenRepository.UpdateAsync(orden);
 
             _logger.LogInformation("Orden {OrdenId} confirmada por el usuario {UsuarioSolicitanteId}", id, usuarioSolicitanteId);
+
+            await _notificacionServices.NotificarUsuarioAsync(
+                orden.UsuarioId,
+                TipoNotificacion.CambioEstadoOrden,
+                $"Tu orden #{orden.Id} pasó a estado {orden.Estado}.");
 
             return OperationResultD<bool>.Success(true, "Orden confirmada exitosamente");
         }

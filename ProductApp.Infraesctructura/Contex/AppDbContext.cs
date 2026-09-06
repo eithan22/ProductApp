@@ -29,6 +29,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Contex
 
         public DbSet<ConfiguracionSistema> ConfiguracionSistema { get; set; }
 
+        public DbSet<Notificacion> Notificaciones { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

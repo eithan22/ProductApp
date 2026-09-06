@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProductApp.Aplication.BusinessValidator.Modulo_Ventas;
+using ProductApp.Aplication.Mappers.Modulo_Notificaciones;
 using ProductApp.Aplication.Mappers.Modulo_Reportes;
 using ProductApp.Aplication.Mappers.Modulo_Ventas;
 using ProductApp.Aplication.Services;
@@ -25,6 +26,12 @@ namespace ProductApp.Tests.Integration
             return new AppDbContext(options);
         }
 
+        public static NotificacionService CrearNotificacionService(AppDbContext context)
+            => new(
+                new NotificacionRepository(context),
+                new UsuarioRepository(context),
+                new NotificacionMapper());
+
         public static OrdenServices CrearOrdenServices(AppDbContext context)
             => new(
                 new OrdenRepository(context),
@@ -34,6 +41,7 @@ namespace ProductApp.Tests.Integration
                 new CreateOrdenValidator(),
                 new CambiarEstadoOrdenValidator(),
                 new ValidatorBusinessOrden(new ClienteRepository(context)),
+                CrearNotificacionService(context),
                 NullLogger<OrdenServices>.Instance);
 
         public static DetalleOrdenService CrearDetalleOrdenService(AppDbContext context)
@@ -58,6 +66,7 @@ namespace ProductApp.Tests.Integration
                 new PagoMapper(),
                 new CreatePagoValidator(),
                 new ValidatorBusinessPago(),
+                CrearNotificacionService(context),
                 NullLogger<PagoService>.Instance);
 
         public static ReporteService CrearReporteService(AppDbContext context)

@@ -1,0 +1,62 @@
+@model Web.Models.Modelo_Notificaciones.NotificacionResumenModel
+
+@{
+    string IconoPara(string tipo) => tipo switch
+    {
+        "CambioEstadoOrden" => "receipt",
+        "StockBajo" => "alert",
+        "PagoRegistrado" => "card",
+        _ => "bell"
+    };
+}
+
+<div class="notif-panel" id="notif-panel" role="menu">
+    <div class="notif-panel-head">
+        <span>Notificaciones</span>
+        @if (Model.NoLeidas > 0)
+        {
+            <form asp-controller="Notificacion" asp-action="MarcarTodasLeidas" method="post">
+                <button type="submit" class="notif-marcar-todas">Marcar todas como leídas</button>
+            </form>
+        }
+    </div>
+
+    @if (!Model.Recientes.Any())
+    {
+        <div class="notif-empty">
+            @await Html.PartialAsync("_Icon", "inbox")
+            <p>No tenés notificaciones todavía.</p>
+        </div>
+    }
+    else
+    {
+        <div class="notif-list">
+            @foreach (var n in Model.Recientes)
+            {
+                if (n.Leida)
+                {
+                    <div class="notif-item leida">
+                        <span class="notif-item-icon">@await Html.PartialAsync("_Icon", IconoPara(n.Tipo))</span>
+                        <span class="notif-item-body">
+                            <span class="notif-item-msg">@n.Mensaje</span>
+                            <span class="notif-item-fecha">@n.CreadoEn.ToString("dd/MM/yyyy HH:mm")</span>
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <form asp-controller="Notificacion" asp-action="MarcarLeida" asp-route-id="@n.Id" method="post">
+                        <button type="submit" class="notif-item">
+                            <span class="notif-item-icon">@await Html.PartialAsync("_Icon", IconoPara(n.Tipo))</span>
+                            <span class="notif-item-body">
+                                <span class="notif-item-msg">@n.Mensaje</span>
+                                <span class="notif-item-fecha">@n.CreadoEn.ToString("dd/MM/yyyy HH:mm")</span>
+                            </span>
+                            <span class="notif-dot" aria-hidden="true"></span>
+                        </button>
+                    </form>
+                }
+            }
+        </div>
+    }
+</div>
