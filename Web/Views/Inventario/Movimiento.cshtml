@@ -1,77 +1,135 @@
 @model Web.Models.Modelo_Productos.InventarioModels.InventarioModel
 
 @{
-    ViewData["Title"] = "Gestionar stock";
+    ViewData["Title"] = "Ajustar stock";
+    var agotado = Model.StockActual <= 0;
     var bajo = Model.StockActual <= Model.StockMinimo;
+    var nivel = agotado || bajo ? "is-danger" : "";
 }
 
+<div class="crumb">
+    <a asp-action="Index">Inventario</a>
+    @await Html.PartialAsync("_Icon", "chevron-right")
+    <span>Ajustar stock</span>
+</div>
+
 <div class="page-header">
-    <p class="text-muted">@Model.Producto</p>
+    <div>
+        <h1>Ajustar stock</h1>
+        <p class="text-muted">Registrá una entrada, una salida o corregí las existencias a un valor exacto.</p>
+    </div>
     <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
 </div>
 
 @if (!ViewData.ModelState.IsValid)
 {
-    <div class="alert alert-danger">@Html.ValidationSummary(false, "", new { @class = "mb-0" })</div>
+    <div class="form-wrap">
+        @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+    </div>
 }
 
-<div class="surface-card p-4 mb-4 d-flex gap-5 flex-wrap align-items-center">
-    <div>
-        <div class="text-muted" style="font-size:.8rem;">Stock actual</div>
-        <div class="mono" style="font-size:1.8rem; font-weight:700; color:@(bajo ? "var(--color-danger)" : "var(--color-primary)")">@Model.StockActual</div>
-    </div>
-    <div>
-        <div class="text-muted" style="font-size:.8rem;">Stock mínimo</div>
-        <div class="mono" style="font-size:1.2rem; font-weight:700;">@Model.StockMinimo</div>
-    </div>
-    <div>
-        <div class="text-muted" style="font-size:.8rem;">Última actualización</div>
-        <div>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</div>
-    </div>
-    @if (bajo)
-    {
-        <span class="status-pill off"><span class="dot"></span> Stock bajo</span>
-    }
-</div>
+<div class="form-wrap" style="max-width:560px;">
+    <div class="surface-card p-4">
 
-<div class="row g-3">
-    <div class="col-md-4">
-        <div class="surface-card p-3">
-            <h6 class="fw-bold mb-3">Agregar stock</h6>
-            <form asp-action="AgregarStock" method="post">
-                <input type="hidden" name="productoId" value="@Model.ProductoId" />
-                <input type="number" name="cantidad" min="1" class="form-control mb-2" placeholder="Cantidad" required />
-                <button type="submit" class="btn-pa btn-pa-primary w-100 justify-content-center">
-                    @await Html.PartialAsync("_Icon", "add") Agregar
-                </button>
-            </form>
+        <div class="panel-info">
+            <div>
+                <div style="font-weight:700; font-size:.94rem;">@Model.Producto</div>
+                <div class="text-muted" style="font-size:.78rem; margin-top:1px;">
+                    Actualizado @Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+            <div class="text-end">
+                <div class="l">Actual</div>
+                <div class="v @nivel">@Model.StockActual uds</div>
+                <div class="text-muted mono" style="font-size:.74rem;">mínimo @Model.StockMinimo</div>
+            </div>
         </div>
-    </div>
 
-    <div class="col-md-4">
-        <div class="surface-card p-3">
-            <h6 class="fw-bold mb-3">Descontar stock</h6>
-            <form asp-action="DescontarStock" method="post">
-                <input type="hidden" name="productoId" value="@Model.ProductoId" />
-                <input type="number" name="cantidad" min="1" class="form-control mb-2" placeholder="Cantidad" required />
-                <button type="submit" class="btn-pa btn-pa-danger w-100 justify-content-center">
-                    @await Html.PartialAsync("_Icon", "minus") Descontar
-                </button>
-            </form>
-        </div>
-    </div>
+        @if (bajo)
+        {
+            <div class="pa-alerts">
+                <div class="pa-alert pa-alert-warn" role="status">
+                    @await Html.PartialAsync("_Icon", "alert")
+                    <span class="flex-grow-1">
+                        @(agotado
+                            ? "Este producto está agotado: no se puede vender hasta que entren unidades."
+                            : "Este producto está en o por debajo de su mínimo. Registrá una entrada para reponerlo.")
+                    </span>
+                </div>
+            </div>
+        }
 
-    <div class="col-md-4">
-        <div class="surface-card p-3">
-            <h6 class="fw-bold mb-3">Ajustar a valor exacto</h6>
-            <form asp-action="AjustarStock" method="post">
-                <input type="hidden" name="productoId" value="@Model.ProductoId" />
-                <input type="number" name="nuevoStock" min="0" class="form-control mb-2" placeholder="Nuevo stock" required />
-                <input type="number" name="nuevoStockMinimo" min="0" class="form-control mb-2" placeholder="Nuevo stock mínimo (opcional)" />
-                <button type="submit" class="btn-pa btn-pa-warn w-100 justify-content-center">
-                    @await Html.PartialAsync("_Icon", "target") Ajustar
-                </button>
-            </form>
+        <div class="modo-switch">
+            <div role="group" aria-label="Tipo de movimiento">
+                <input class="modo-radio" type="radio" name="modo" id="modo-entrada" checked />
+                <input class="modo-radio" type="radio" name="modo" id="modo-salida" />
+                <input class="modo-radio" type="radio" name="modo" id="modo-correccion" />
+
+                <div class="modo-tabs">
+                    <label for="modo-entrada">Entrada</label>
+                    <label for="modo-salida">Salida</label>
+                    <label for="modo-correccion">Corrección</label>
+                </div>
+            </div>
+
+            <div class="modo-panel" id="panel-entrada">
+                <form asp-action="AgregarStock" method="post">
+                    <input type="hidden" name="productoId" value="@Model.ProductoId" />
+                    <div class="ffull mb-3">
+                        <label for="cantidad-entrada">Unidades que entran</label>
+                        <input type="number" id="cantidad-entrada" name="cantidad" min="1"
+                               class="form-control mono" placeholder="0" required />
+                        <div class="text-muted" style="font-size:.76rem; margin-top:5px;">
+                            Se suman a las @Model.StockActual unidades actuales.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-pa btn-pa-primary w-100 justify-content-center">
+                        @await Html.PartialAsync("_Icon", "add") Registrar entrada
+                    </button>
+                </form>
+            </div>
+
+            <div class="modo-panel" id="panel-salida">
+                <form asp-action="DescontarStock" method="post">
+                    <input type="hidden" name="productoId" value="@Model.ProductoId" />
+                    <div class="ffull mb-3">
+                        <label for="cantidad-salida">Unidades que salen</label>
+                        <input type="number" id="cantidad-salida" name="cantidad" min="1" max="@Model.StockActual"
+                               class="form-control mono" placeholder="0" required />
+                        <div class="text-muted" style="font-size:.76rem; margin-top:5px;">
+                            Para mermas o devoluciones a proveedor. Las ventas descuentan solas al cobrar la orden.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-pa btn-pa-danger w-100 justify-content-center">
+                        @await Html.PartialAsync("_Icon", "minus") Registrar salida
+                    </button>
+                </form>
+            </div>
+
+            <div class="modo-panel" id="panel-correccion">
+                <form asp-action="AjustarStock" method="post">
+                    <input type="hidden" name="productoId" value="@Model.ProductoId" />
+                    <div class="fgrid mb-3">
+                        <div>
+                            <label for="nuevoStock">Existencias reales</label>
+                            <input type="number" id="nuevoStock" name="nuevoStock" min="0"
+                                   class="form-control mono" value="@Model.StockActual" required />
+                        </div>
+                        <div>
+                            <label for="nuevoStockMinimo">Nuevo mínimo <span class="text-muted">(opcional)</span></label>
+                            <input type="number" id="nuevoStockMinimo" name="nuevoStockMinimo" min="0"
+                                   class="form-control mono" placeholder="@Model.StockMinimo" />
+                        </div>
+                    </div>
+                    <div class="text-muted" style="font-size:.76rem; margin-bottom:14px;">
+                        Reemplaza el conteo actual por el que cargues acá. Usalo después de un inventario físico.
+                    </div>
+                    <button type="submit" class="btn-pa btn-pa-warn w-100 justify-content-center">
+                        @await Html.PartialAsync("_Icon", "target") Corregir existencias
+                    </button>
+                </form>
+            </div>
         </div>
+
     </div>
 </div>

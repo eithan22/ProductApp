@@ -5,49 +5,101 @@
     ViewData["Title"] = "Nuevo usuario";
 }
 
-<div class="surface-card p-4" style="max-width:640px;">
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
-    }
+<div class="crumb">
+    <a asp-action="Index">Usuarios</a>
+    @await Html.PartialAsync("_Icon", "chevron-right")
+    <span>Nuevo usuario</span>
+</div>
 
+<div class="page-header">
+    <div>
+        <h1>Nuevo usuario</h1>
+        <p class="text-muted">
+            La contraseña que cargues acá es temporal: la persona tendrá que cambiarla la primera vez que entre.
+        </p>
+    </div>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="form-wrap">
+        <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
+    </div>
+}
+
+<div class="form-wrap">
     <form asp-action="Create">
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label asp-for="Nombre" class="form-label d-block"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger small"></span>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label asp-for="Email" class="form-label d-block"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger small"></span>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label asp-for="UserName" class="form-label d-block"></label>
-                <input asp-for="UserName" class="form-control" />
-                <span asp-validation-for="UserName" class="text-danger small"></span>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label asp-for="FechaNacimiento" class="form-label d-block"></label>
-                <input asp-for="FechaNacimiento" type="date" class="form-control" />
-                <span asp-validation-for="FechaNacimiento" class="text-danger small"></span>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label asp-for="RolUsuario" class="form-label d-block"></label>
-                <select asp-for="RolUsuario" asp-items="Html.GetEnumSelectList<RolUsuario>()" class="form-select"></select>
-                <span asp-validation-for="RolUsuario" class="text-danger small"></span>
-            </div>
-            <div class="col-12 mb-4">
-                <label asp-for="Password" class="form-label d-block"></label>
-                <input asp-for="Password" type="password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger small"></span>
+
+        <div class="fsec">
+            <div class="stitle">Datos personales</div>
+            <div class="fgrid">
+                <div>
+                    <label asp-for="Nombre">Nombre completo</label>
+                    <input asp-for="Nombre" class="form-control" placeholder="ej. Melissa Payano" />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
+                <div>
+                    <label asp-for="Email">Correo electrónico</label>
+                    <input asp-for="Email" class="form-control" placeholder="melissa.payano@empresa.com" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div>
+                    <label asp-for="FechaNacimiento">Fecha de nacimiento</label>
+                    <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                    <span asp-validation-for="FechaNacimiento" class="text-danger small"></span>
+                </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-between">
+        <div class="fsec">
+            <div class="stitle">Acceso</div>
+            <div class="fgrid">
+                <div>
+                    <label asp-for="UserName">Nombre de usuario</label>
+                    <input asp-for="UserName" class="form-control mono" placeholder="mpayano" />
+                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                </div>
+                <div>
+                    <label asp-for="Password">Contraseña temporal</label>
+                    <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="fsec">
+            <div class="stitle">Rol</div>
+            <div class="role-opts">
+                <label class="role-opt">
+                    <input asp-for="RolUsuario" type="radio" value="@RolUsuario.Vendedor" />
+                    <div class="t">Vendedor</div>
+                    <div class="d">Gestiona órdenes, pagos y clientes.</div>
+                </label>
+                <label class="role-opt">
+                    <input asp-for="RolUsuario" type="radio" value="@RolUsuario.Administrador" />
+                    <div class="t">Administrador</div>
+                    <div class="d">Acceso total, incluidos usuarios, reportes y configuración.</div>
+                </label>
+            </div>
+            <span asp-validation-for="RolUsuario" class="text-danger small"></span>
+        </div>
+
+        <div class="fsec">
+            <div class="pa-alerts">
+                <div class="pa-alert pa-alert-warn" role="note">
+                    @await Html.PartialAsync("_Icon", "alert")
+                    <span class="flex-grow-1">
+                        <strong>Contraseña temporal.</strong>
+                        Mientras no la cambie, el sistema le bloquea todo lo demás: al iniciar sesión
+                        va directo a la pantalla de cambio de contraseña.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="factions">
             <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
-            <button type="submit" class="btn-pa btn-pa-primary">Guardar</button>
+            <button type="submit" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "check") Crear usuario</button>
         </div>
     </form>
 </div>

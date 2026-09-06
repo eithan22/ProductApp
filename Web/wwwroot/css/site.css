@@ -24,11 +24,19 @@
 
   --radius-md: 10px;
   --radius-sm: 7px;
-  --shadow-card: 0 1px 2px rgba(20,22,26,.05), 0 1px 10px rgba(20,22,26,.05);
+  /* las tarjetas se apoyan solo en el borde fino: la sombra las hacía flotar
+     sobre el lienzo y competía con la franja de indicadores, que nunca la tuvo */
+  --shadow-card: none;
 
   --font-display: 'Manrope', system-ui, sans-serif;
   --font-body: 'Manrope', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Iconos que pinta el CSS (no el partial _Icon) porque acompañan a texto
+     que genera MVC solo: los mensajes de validación. Van como máscara para
+     que hereden currentColor igual que los SVG del sistema. */
+  --icon-alert-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 8v5M12 16h.01'/%3E%3C/svg%3E");
+  --icon-alert-triangle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4M12 17h.01'/%3E%3Cpath d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'/%3E%3C/svg%3E");
 }
 
 /* Paleta de acento por categoría (determinística, ver CategoriaColorHelper) */
@@ -485,10 +493,13 @@ h1, h2, h3, h4, h5, h6 {
   padding: 10px 12px;
   font-family: var(--font-body);
 }
+/* el anillo de foco de los campos es un outline real, no una sombra:
+   así sobrevive al modo de alto contraste del sistema operativo */
 .form-control:focus, .form-select:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(20,80,63,.18);
-  outline: none;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  box-shadow: none;
 }
 
 label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink); }
@@ -707,7 +718,7 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .stat-mini .label { font-size: .76rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
 .stat-mini .value { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; }
 
-.inv-row { display: grid; grid-template-columns: 2fr 1fr 120px; align-items: center; gap: 16px; padding: 14px 4px; border-bottom: 1px solid var(--color-border); }
+.inv-row { display: grid; grid-template-columns: 2fr 1fr 140px; align-items: center; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--color-border); }
 .inv-row:last-child { border-bottom: none; }
 .inv-bar { height: 6px; border-radius: 999px; background: var(--color-border); overflow: hidden; margin-top: 6px; }
 .inv-bar-fill { height: 100%; border-radius: 999px; transition: width .2s ease; }
@@ -741,6 +752,476 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .estado-cancelada { background: var(--color-danger-soft); color: var(--color-danger); }
 
 /* ============================================================
+   Piezas compartidas de listado y ficha
+   ============================================================ */
+
+/* Título de sección dentro de una tarjeta. Mismo tono que .fsec .stitle
+   pero disponible fuera de un formulario. */
+.ctitle {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0 0 16px;
+}
+.ctitle:has(+ .cdesc) { margin-bottom: 4px; }
+.cdesc { font-size: .82rem; color: var(--color-muted); margin: 0 0 18px; }
+
+/* Barra de filtros de un listado: buscador + selects + segmento.
+   Vive sobre el lienzo, no dentro de una tarjeta: los filtros no son
+   contenido, son controles de la página. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.toolbar form { margin: 0; }
+.toolbar-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* si el segmento es el único control, no tiene contra qué alinearse a la
+   derecha: se queda donde empieza el contenido */
+.toolbar > .seg:only-child { margin-left: 0; }
+
+.toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  flex: 1 1 200px;
+  max-width: 320px;
+}
+.toolbar-search:focus-within {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+.toolbar-search .icon { flex: none; }
+.toolbar-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: .86rem;
+  color: var(--color-ink);
+}
+.toolbar-search input::placeholder { color: var(--color-muted); }
+/* el anillo lo pinta el contenedor, no el input */
+.toolbar-search input:focus,
+.toolbar-search input:focus-visible { outline: none; }
+
+.toolbar .form-control,
+.toolbar .form-select {
+  height: 40px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: .86rem;
+  border-color: var(--color-border);
+}
+.toolbar .form-select { padding-right: 32px; font-weight: 600; }
+
+/* Tarjeta que contiene un listado a sangre: las filas llegan a los bordes de
+   la tarjeta y el separador cruza todo el ancho, en vez de flotar adentro. */
+.list-card > .ledger-row { padding-left: 20px; padding-right: 20px; }
+
+/* Encabezado de columnas de un listado en grilla */
+.list-head {
+  padding: 12px 20px;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Columna de metadato con etiqueta arriba y valor abajo */
+.meta-col { text-align: right; }
+.meta-col .l {
+  font-size: .68rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.meta-col .v { font-family: var(--font-mono); font-size: .86rem; margin-top: 2px; }
+
+/* Avatar de iniciales en filas de listado */
+.avatar-lista {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  align-self: center;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: .78rem;
+}
+
+/* Cuadro de color de una categoría: reemplaza la barrita de 6px por una
+   superficie con el icono adentro, que aguanta mejor el peso de la fila. */
+.cat-ico {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  align-self: center;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-soft);
+  background: color-mix(in srgb, var(--cat-color, var(--color-primary)) 13%, #FFFFFF);
+  color: var(--cat-color, var(--color-primary));
+}
+.cat-ico .icon { width: 21px; height: 21px; }
+
+.role-pill {
+  display: inline-flex;
+  font-size: .76rem;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+.role-pill.vendedor { background: var(--color-warn-soft); color: var(--color-warn); }
+
+/* Elegir rol es elegir entre dos permisos, no entre dos palabras: cada
+   opción lleva la descripción de lo que habilita. Son radios de verdad
+   dentro de la etiqueta, así que el teclado y los lectores los ven. */
+.role-opts { display: flex; flex-wrap: wrap; gap: 10px; }
+.role-opt {
+  position: relative;
+  flex: 1 1 220px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.role-opt input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.role-opt .t { font-weight: 700; font-size: .9rem; }
+.role-opt .d { font-size: .76rem; color: var(--color-muted); margin-top: 3px; }
+.role-opt:hover { border-color: var(--color-ink); }
+.role-opt:has(input:checked) { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.role-opt:has(input:checked) .t { color: var(--color-primary-dark); }
+.role-opt:has(input:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* Usuarios: la fila es una grilla porque las columnas (rol, estado) se leen
+   comparando de arriba a abajo, no de izquierda a derecha. */
+.usuario-head { display: grid; grid-template-columns: 2fr 1fr .9fr 1fr auto; gap: 14px; }
+.usuario-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr .9fr 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.usuario-row:last-child { border-bottom: none; }
+.usuario-ident { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.usuario-nombre { font-weight: 700; font-size: .94rem; }
+.usuario-mail { color: var(--color-muted); font-size: .8rem; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; }
+.usuario-acciones { display: flex; gap: 6px; justify-content: flex-end; }
+
+/* Fila apagada: registro inactivo o cancelado. El color nunca es el único
+   indicador — siempre va acompañado de su píldora de estado. */
+.fila-apagada { opacity: .6; }
+
+/* ============================================================
+   Órdenes: listado agrupado por día
+   ============================================================ */
+
+.day-group { margin-bottom: 24px; }
+.day-group:last-child { margin-bottom: 0; }
+
+.day-label {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-bottom: 10px;
+}
+.day-label .d {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.day-label .n { font-size: .74rem; color: var(--color-muted); }
+
+.orden-row {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding: 14px 20px 14px 0;
+  border-bottom: 1px solid var(--color-border);
+  color: inherit;
+  text-decoration: none;
+}
+.orden-row:last-child { border-bottom: none; }
+.orden-row:hover { background: rgba(20,80,63,.03); }
+.orden-row:hover .orden-cliente { color: var(--color-primary-dark); }
+
+/* Canto de color: repite el estado en el borde de la fila para que se pueda
+   barrer la lista de un vistazo sin leer cada píldora. */
+.orden-edge { width: 4px; flex: none; }
+
+.orden-thumb {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  align-self: center;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.orden-thumb .icon { width: 20px; height: 20px; }
+
+.e-pendiente .orden-edge, .orden-edge.e-pendiente { background: var(--color-warn); }
+.e-procesada .orden-edge, .orden-edge.e-procesada { background: var(--color-info); }
+.e-pagada    .orden-edge, .orden-edge.e-pagada    { background: var(--color-primary); }
+.e-entregada .orden-edge, .orden-edge.e-entregada { background: var(--color-accent2); }
+.e-cancelada .orden-edge, .orden-edge.e-cancelada { background: var(--color-danger); }
+
+.orden-thumb.e-pendiente { background: var(--color-warn-soft);    color: var(--color-warn); }
+.orden-thumb.e-procesada { background: var(--color-info-soft);    color: var(--color-info); }
+.orden-thumb.e-pagada    { background: var(--color-primary-soft); color: var(--color-primary); }
+.orden-thumb.e-entregada { background: var(--color-accent2-soft); color: var(--color-accent2); }
+.orden-thumb.e-cancelada { background: var(--color-danger-soft);  color: var(--color-danger); }
+
+.orden-id {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  color: var(--color-muted);
+  width: 52px;
+  flex: none;
+  align-self: center;
+}
+.orden-body { flex: 1; min-width: 0; align-self: center; }
+.orden-cliente { font-weight: 700; font-size: .94rem; }
+.orden-sub { color: var(--color-muted); font-size: .8rem; margin-top: 1px; }
+.orden-row .estado-pill { align-self: center; flex: none; }
+.orden-total {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+  width: 130px;
+  flex: none;
+  align-self: center;
+}
+.orden-chevron { color: var(--color-muted); flex: none; align-self: center; }
+
+/* ============================================================
+   Órdenes: ficha
+   ============================================================ */
+
+/* align-items:flex-start + margin-top fijo en el conector: así el conector
+   queda a la altura del centro del círculo pase lo que pase con la etiqueta
+   (que en pantallas angostas se parte en dos líneas). */
+.estado-stepper { display: flex; align-items: flex-start; }
+
+.step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: none; width: 84px; }
+.step-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 800;
+}
+.step-dot .icon { width: 15px; height: 15px; vertical-align: 0; }
+.step-lbl { font-size: .76rem; font-weight: 700; color: var(--color-muted); text-align: center; }
+
+.step.done .step-dot { border-color: var(--color-primary); background: var(--color-primary); color: #fff; }
+.step.now  .step-dot { border-color: var(--color-info);    background: var(--color-info);    color: #fff; }
+.step.done .step-lbl,
+.step.now  .step-lbl { color: var(--color-ink); }
+
+.step-link { flex: 1; height: 2px; background: var(--color-border); margin: 14px 4px 0; }
+.step-link.done { background: var(--color-primary); }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.info-grid .l {
+  font-size: .72rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.info-grid .v { font-size: .92rem; font-weight: 600; margin-top: 3px; }
+
+.tot-row { display: flex; justify-content: space-between; gap: 16px; padding-top: 14px; font-size: .9rem; }
+.tot-row.grand {
+  border-top: 1px solid var(--color-border);
+  margin-top: 10px;
+  padding-top: 14px;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+/* Panel de cobro: el saldo es el dato que se mira primero, así que es lo
+   más grande de la columna. */
+.pay-total { font-family: var(--font-mono); font-size: 1.9rem; font-weight: 800; margin-bottom: 4px; }
+.pay-total.is-warn { color: var(--color-warn); }
+.pay-total.is-ok { color: var(--color-primary); }
+.pay-sub { font-size: .82rem; color: var(--color-muted); margin-bottom: 14px; }
+.pay-bar { height: 8px; border-radius: 999px; background: var(--color-border); overflow: hidden; margin-bottom: 18px; }
+.pay-bar-fill { height: 100%; background: var(--color-primary); border-radius: 999px; }
+
+.pay-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: .86rem;
+}
+.pay-row:last-of-type { border-bottom: none; }
+.pay-row .m { font-weight: 700; }
+.pay-row .d { color: var(--color-muted); font-size: .76rem; margin-top: 1px; }
+.pay-row .amt { font-family: var(--font-mono); font-weight: 700; white-space: nowrap; }
+
+/* Orden saldada: confirmación en verde con lo que pasó como consecuencia
+   (estado y stock), no solo un "listo". */
+.pay-done {
+  display: flex;
+  gap: 10px;
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-top: 16px;
+}
+.pay-done .icon { flex: none; color: var(--color-primary); margin-top: 1px; }
+.pay-done .t { font-size: .86rem; font-weight: 700; color: var(--color-primary-dark); }
+.pay-done .d { font-size: .78rem; color: var(--color-primary-dark); opacity: .85; margin-top: 2px; }
+
+/* ============================================================
+   Inventario: encabezado de columnas y panel de ajuste
+   ============================================================ */
+
+.inv-head { display: grid; grid-template-columns: 2fr 1fr 140px; gap: 16px; }
+.inv-qty { font-family: var(--font-mono); font-size: .95rem; font-weight: 700; }
+.inv-qty .sub { font-size: .72rem; color: var(--color-muted); font-weight: 500; }
+.inv-qty.is-warn { color: var(--color-warn); }
+.inv-qty.is-danger { color: var(--color-danger); }
+
+/* Resumen del registro sobre el que se va a operar */
+.panel-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+.panel-info .l { font-size: .68rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .04em; }
+.panel-info .v { font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem; margin-top: 2px; }
+.panel-info .v.is-warn { color: var(--color-warn); }
+.panel-info .v.is-danger { color: var(--color-danger); }
+
+/* Conmutador de tipo de movimiento. Son radios de verdad ocultos a la vista
+   pero no al teclado: se navega con Tab + flechas como cualquier grupo de
+   radios, y no hace falta JavaScript para cambiar de panel. */
+.modo-switch { position: relative; }
+
+.modo-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modo-tabs {
+  display: flex;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.modo-tabs label {
+  flex: 1;
+  text-align: center;
+  padding: 11px 10px;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.modo-panel { display: none; }
+
+.modo-switch:has(#modo-entrada:checked)    label[for="modo-entrada"],
+.modo-switch:has(#modo-salida:checked)     label[for="modo-salida"],
+.modo-switch:has(#modo-correccion:checked) label[for="modo-correccion"] {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.modo-switch:has(#modo-entrada:focus-visible)    label[for="modo-entrada"],
+.modo-switch:has(#modo-salida:focus-visible)     label[for="modo-salida"],
+.modo-switch:has(#modo-correccion:focus-visible) label[for="modo-correccion"] {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-radius: 5px;
+}
+
+.modo-switch:has(#modo-entrada:checked)    #panel-entrada,
+.modo-switch:has(#modo-salida:checked)     #panel-salida,
+.modo-switch:has(#modo-correccion:checked) #panel-correccion { display: block; }
+
+/* ============================================================
+   Reportes: accesos a cada informe
+   ============================================================ */
+
+.report-tile {
+  display: block;
+  height: 100%;
+  padding: 18px 20px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color .12s ease;
+}
+.report-tile:hover { border-color: var(--color-ink); }
+.report-tile:hover .report-tile-name { color: var(--color-primary-dark); }
+.report-tile .icon { color: var(--color-primary); }
+.report-tile-name { font-weight: 700; font-size: .95rem; margin-top: 10px; }
+.report-tile-desc { color: var(--color-muted); font-size: .83rem; margin-top: 2px; }
+
+/* ============================================================
    Foco visible — hoy el sistema no tenía ninguno
    ============================================================ */
 
@@ -751,18 +1232,20 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
   border-radius: var(--radius-sm);
 }
 
-/* Sobre superficies oscuras o de color: anillo blanco + halo verde oscuro */
+/* Sobre superficies de color el anillo va por dentro, en blanco, con un halo
+   intermedio oscuro: un anillo verde sobre el botón verde no se distinguiría */
 .btn-pa-primary:focus-visible,
 .auth-container :where(a, button):focus-visible {
-  outline-color: #FFFFFF;
-  box-shadow: 0 0 0 4px var(--color-primary-dark);
+  outline: 2px solid #FFFFFF;
+  outline-offset: -4px;
+  box-shadow: 0 0 0 3px var(--color-primary-dark), 0 0 0 5px var(--color-primary);
 }
 
 /* En el sidebar el anillo va por dentro para no sobresalir del panel */
 .app-sidebar a:focus-visible,
 .app-sidebar .brand:focus-visible {
   outline: 2px solid #FFFFFF;
-  outline-offset: -4px;
+  outline-offset: -2px;
   border-radius: 4px;
   background: rgba(255,255,255,.06);
 }
@@ -847,33 +1330,46 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
    Estado vacío
    ============================================================ */
 
-.empty-state { text-align: center; padding: 48px 24px; }
+.empty-state {
+  text-align: center;
+  padding: 72px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
 .empty-state .empty-icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 14px;
-  border-radius: var(--radius-md);
+  width: 64px;
+  height: 64px;
+  margin: 0 0 22px;
+  border-radius: 16px;
   background: var(--color-primary-soft);
   color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.empty-state .empty-icon .icon { width: 24px; height: 24px; }
+.empty-state .empty-icon .icon { width: 28px; height: 28px; }
 
 .empty-state .empty-title {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1rem;
-  margin: 0;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin: 0 0 8px;
 }
 .empty-state .empty-text {
   color: var(--color-muted);
-  font-size: .88rem;
-  margin: 5px auto 16px;
+  font-size: .9rem;
+  line-height: 1.5;
+  margin: 0 0 22px;
   max-width: 44ch;
 }
+/* sin acción sugerida, el texto no debe dejar un hueco abajo */
+.empty-state > :last-child { margin-bottom: 0; }
+
+/* dentro de una tarjeta que ya trae su propio contenido (Inicio) el vacío
+   es una zona más, no la pantalla entera: ahí no necesita tanto aire */
+.surface-card > .empty-state:not(:only-child) { padding: 36px 24px; }
 
 /* ============================================================
    Errores de validación en formularios.
@@ -884,43 +1380,90 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .form-control.input-validation-error,
 .form-select.input-validation-error {
   border-color: var(--color-danger);
-  background: #FFFCFB;
+  background: var(--color-danger-soft);
 }
 .form-control.input-validation-error:focus,
 .form-select.input-validation-error:focus {
   border-color: var(--color-danger);
-  box-shadow: 0 0 0 3px rgba(140,59,46,.16);
+  outline-color: var(--color-danger);
+  box-shadow: none;
+}
+
+/* La etiqueta del campo también se tiñe: el color del borde solo no alcanza
+   para señalar cuál de dos campos vecinos es el que falló. */
+.fgrid > div:has(.input-validation-error) > label,
+.ffull:has(.input-validation-error) > label,
+.mb-3:has(.input-validation-error) > label {
+  color: var(--color-danger);
 }
 
 .field-validation-error {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: var(--color-danger);
   font-size: .8rem;
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: 6px;
+}
+/* icono decorativo: el mensaje ya viaja como texto, no se anuncia dos veces */
+.field-validation-error::before {
+  content: "";
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: var(--icon-alert-circle) center / contain no-repeat;
+  mask: var(--icon-alert-circle) center / contain no-repeat;
 }
 
 /* Sin errores, el resumen no debe ocupar ni pintar nada
    (el login mostraba una caja roja vacía) */
 .validation-summary-valid { display: none; }
 
+/* El resumen ES la alerta: cuando una vista lo envuelve en un .alert-danger
+   de Bootstrap, se desarma la caja externa para no pintar dos marcos rojos. */
+.alert-danger:has(.validation-summary-errors) {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
 .validation-summary-errors {
+  display: flex;
+  gap: 10px;
   background: var(--color-danger-soft);
   border: 1px solid rgba(140,59,46,.28);
   color: var(--color-danger);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  margin-bottom: 18px;
-  font-size: .88rem;
+  padding: 13px 15px;
+  margin-bottom: 22px;
+  font-size: .87rem;
+  font-weight: 500;
+}
+.validation-summary-errors::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  background: currentColor;
+  -webkit-mask: var(--icon-alert-triangle) center / contain no-repeat;
+  mask: var(--icon-alert-triangle) center / contain no-repeat;
 }
 .validation-summary-errors ul { margin: 0; padding-left: 18px; }
 .validation-summary-errors ul li { margin-top: 2px; }
+.validation-summary-errors ul li:first-child { margin-top: 0; }
 
 /* ============================================================
    Alineación de utilidades de Bootstrap con la paleta
    ============================================================ */
 
 .text-muted { color: var(--color-muted) !important; }
+/* el rojo de Bootstrap es más saturado que el óxido del sistema; sin esto
+   los mensajes de validación no combinan con la caja que los contiene */
+.text-danger { color: var(--color-danger) !important; }
 
 /* casillas y radios: Bootstrap los pinta de azul al marcarlos */
 .form-check-input { border-color: var(--color-border-strong); }
@@ -1296,8 +1839,40 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
   /* ---------- Inventario ---------- */
 
-  .inv-row { grid-template-columns: 1fr auto; gap: 8px 12px; }
+  .inv-row { grid-template-columns: 1fr auto; gap: 8px 12px; padding: 14px 16px; }
   .inv-row > *:first-child { grid-column: 1 / -1; }
+
+  /* el encabezado de columnas deja de describir la grilla en cuanto la
+     grilla se reacomoda: se cae en vez de mentir */
+  .inv-head, .usuario-head { display: none; }
+
+  /* ---------- Órdenes ---------- */
+
+  .orden-row { flex-wrap: wrap; row-gap: 10px; padding-right: 16px; }
+  .orden-body { flex: 1 1 200px; }
+  .orden-id { width: auto; }
+  .orden-total { width: auto; margin-left: auto; }
+  .orden-chevron { display: none; }
+
+  /* ---------- Usuarios ---------- */
+
+  /* identidad arriba, los tres datos juntos en una línea y las acciones
+     abajo: la grilla de escritorio no cabe, pero el orden de lectura sí */
+  .usuario-row {
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 14px 16px;
+  }
+  .usuario-row > *:first-child { grid-column: 1 / -1; }
+  .usuario-row .usuario-acciones { grid-column: 1 / -1; justify-content: flex-start; }
+
+  /* ---------- Ficha de orden ---------- */
+
+  .step { width: 70px; }
+  .step-lbl { font-size: .68rem; }
+  .step-link { margin-left: 2px; margin-right: 2px; }
 
   /* ---------- Franja de indicadores ---------- */
 
@@ -1340,6 +1915,12 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
   /* la fecha de actualización y el botón ya no entran a la par */
   .inv-row { grid-template-columns: 1fr; }
+
+  .info-grid { grid-template-columns: 1fr; }
+  .toolbar-search { max-width: none; flex-basis: 100%; }
+  .pay-total { font-size: 1.6rem; }
+  .step { width: 58px; }
+  .step-lbl { font-size: .62rem; line-height: 1.25; }
 
   .stat-cell { padding: 12px 14px; }
   .stat-cell .value { font-size: 1.05rem; }

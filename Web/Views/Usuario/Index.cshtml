@@ -3,64 +3,97 @@
 @{
     ViewData["Title"] = "Usuarios";
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+
+    string Iniciales(string nombre)
+    {
+        var partes = (nombre ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var letras = string.Concat(partes.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+        return string.IsNullOrEmpty(letras) ? "?" : letras;
+    }
 }
 
 <div class="page-header">
-    <p class="text-muted">Usuarios del sistema.</p>
+    <p class="text-muted">
+        @Model.TotalCount @(Model.TotalCount == 1 ? "usuario del sistema" : "usuarios del sistema").
+    </p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "add") Nuevo usuario</a>
 </div>
 
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="incluirInactivos" name="incluirInactivos" value="true" onchange="this.form.submit()" @(incluirInactivos ? "checked" : "") />
-        <label class="form-check-label" for="incluirInactivos">Mostrar inactivos</label>
+<div class="toolbar">
+    <div class="seg">
+        <a asp-action="Index" asp-route-incluirInactivos="false" class="@(incluirInactivos ? "" : "on")">Activos</a>
+        <a asp-action="Index" asp-route-incluirInactivos="true" class="@(incluirInactivos ? "on" : "")">Todos</a>
     </div>
-</form>
+</div>
 
-<div class="surface-card p-2">
-    @if (!Model.Items.Any())
-    {
-        <div class="text-center text-muted py-5">No hay usuarios registrados.</div>
-    }
+@if (!Model.Items.Any())
+{
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "users")</div>
+        <p class="empty-title">No hay usuarios que mostrar</p>
+        <p class="empty-text">Cada persona que use el sistema necesita su propio usuario para que las órdenes y los pagos queden a su nombre.</p>
+        <a asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Nuevo usuario
+        </a>
+    </div>
+}
+else
+{
+    <div class="surface-card">
+        <div class="list-head usuario-head">
+            <div>Usuario</div>
+            <div>Rol</div>
+            <div>Acceso</div>
+            <div>Estado</div>
+            <div class="visually-hidden">Acciones</div>
+        </div>
 
-    @foreach (var item in Model.Items)
-    {
-        var activo = item.EstadoUsuario == "Activo";
+        @foreach (var item in Model.Items)
+        {
+            var activo = item.EstadoUsuario == "Activo";
+            var esVendedor = item.RolUsuario == "Vendedor";
 
-        <div class="ledger-row">
-            <div class="ledger-body">
-                <div class="ledger-name">@item.Nombre</div>
-                <div class="ledger-desc">@item.Email · @item.UserName</div>
-            </div>
+            <div class="usuario-row @(activo ? "" : "fila-apagada")">
+                <div class="usuario-ident">
+                    <div class="avatar-lista" aria-hidden="true">@Iniciales(item.Nombre)</div>
+                    <div style="min-width:0;">
+                        <div class="usuario-nombre">@item.Nombre</div>
+                        <div class="usuario-mail">
+                            @item.Email@(item.Edad.HasValue ? $" · {item.Edad} años" : "")
+                        </div>
+                    </div>
+                </div>
 
-            <div class="ledger-meta">
-                <span class="text-muted" style="font-size:.8rem;">@item.RolUsuario</span>
-                <span class="mono text-muted" style="font-size:.8rem;">@item.Edad años</span>
+                <div><span class="role-pill @(esVendedor ? "vendedor" : "")">@item.RolUsuario</span></div>
 
-                <span class="status-pill @(activo ? "on" : "off")">
-                    <span class="dot"></span> @item.EstadoUsuario
-                </span>
+                <div class="mono text-muted" style="font-size:.83rem;">@item.UserName</div>
 
-                <div class="ledger-actions">
-                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
-                    <a asp-action="CambiarRol" asp-route-id="@item.Id" class="icon-btn" title="Cambiar rol">@await Html.PartialAsync("_Icon", "target")</a>
-                    <a asp-action="ResetearPassword" asp-route-id="@item.Id" class="icon-btn" title="Resetear contraseña">@await Html.PartialAsync("_Icon", "reset")</a>
+                <div>
+                    <span class="status-pill @(activo ? "on" : "off")">
+                        <span class="dot"></span> @item.EstadoUsuario
+                    </span>
+                </div>
+
+                <div class="usuario-acciones">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver @item.Nombre">@await Html.PartialAsync("_Icon", "view")</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar @item.Nombre">@await Html.PartialAsync("_Icon", "edit")</a>
+                    <a asp-action="CambiarRol" asp-route-id="@item.Id" class="icon-btn" title="Cambiar rol de @item.Nombre">@await Html.PartialAsync("_Icon", "target")</a>
+                    <a asp-action="ResetearPassword" asp-route-id="@item.Id" class="icon-btn" title="Resetear contraseña de @item.Nombre">@await Html.PartialAsync("_Icon", "reset")</a>
 
                     @if (activo)
                     {
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
                     }
                     else
                     {
                         <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
-                            <button type="submit" class="icon-btn" title="Activar">@await Html.PartialAsync("_Icon", "check")</button>
+                            <button type="submit" class="icon-btn" title="Activar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>
                         </form>
                     }
                 </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
 
 @await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages })

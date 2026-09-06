@@ -3,81 +3,112 @@
 @{
     ViewData["Title"] = "Clientes";
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+
+    string Iniciales(string nombre)
+    {
+        var partes = (nombre ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var letras = string.Concat(partes.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+        return string.IsNullOrEmpty(letras) ? "?" : letras;
+    }
 }
 
 <div class="page-header">
-    <p class="text-muted">Directorio de clientes registrados.</p>
+    <p class="text-muted">
+        @Model.TotalCount @(Model.TotalCount == 1 ? "cliente registrado" : "clientes registrados").
+    </p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">
         @await Html.PartialAsync("_Icon", "add") Nuevo cliente
     </a>
 </div>
 
-<div class="surface-card p-3 mb-4">
-    <form asp-action="Buscar" method="get" class="row g-2">
-        <div class="col-md-3">
-            <input type="text" name="nombre" class="form-control" placeholder="Nombre..." />
-        </div>
-        <div class="col-md-3">
-            <input type="text" name="telefono" class="form-control" placeholder="Teléfono..." />
-        </div>
-        <div class="col-md-3">
-            <input type="text" name="correo" class="form-control" placeholder="Correo..." />
-        </div>
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "search") Buscar</button>
-            <a asp-action="Index" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
-        </div>
-    </form>
-</div>
+@* Un solo formulario: los tres campos se combinan en una misma búsqueda,
+   como ya lo hacía la versión anterior. *@
+<form asp-action="Buscar" method="get" class="toolbar">
+    <div class="toolbar-search">
+        @await Html.PartialAsync("_Icon", "search")
+        <label class="visually-hidden" for="buscar-nombre">Buscar por nombre</label>
+        <input id="buscar-nombre" type="search" name="nombre" placeholder="Buscar por nombre…" autocomplete="off" />
+    </div>
 
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="incluirInactivos" name="incluirInactivos" value="true" onchange="this.form.submit()" @(incluirInactivos ? "checked" : "") />
-        <label class="form-check-label" for="incluirInactivos">Mostrar inactivos</label>
+    <label class="visually-hidden" for="buscar-correo">Buscar por correo</label>
+    <input id="buscar-correo" type="search" name="correo" class="form-control" style="width:200px;" placeholder="Correo…" autocomplete="off" />
+
+    <label class="visually-hidden" for="buscar-telefono">Buscar por teléfono</label>
+    <input id="buscar-telefono" type="search" name="telefono" class="form-control mono" style="width:160px;" placeholder="Teléfono…" autocomplete="off" />
+
+    <div class="toolbar-group">
+        <button type="submit" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "search") Buscar</button>
+        <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+    </div>
+
+    <div class="seg">
+        <a asp-action="Index" asp-route-incluirInactivos="false" class="@(incluirInactivos ? "" : "on")">Activos</a>
+        <a asp-action="Index" asp-route-incluirInactivos="true" class="@(incluirInactivos ? "on" : "")">Todos</a>
     </div>
 </form>
 
-<div class="surface-card p-2">
-    @if (!Model.Items.Any())
-    {
-        <div class="text-center text-muted py-5">No hay clientes registrados.</div>
-    }
+@if (!Model.Items.Any())
+{
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "users")</div>
+        <p class="empty-title">No hay clientes que mostrar</p>
+        <p class="empty-text">Probá con otro término de búsqueda, o registrá un cliente para poder asociarle órdenes.</p>
+        <a asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Nuevo cliente
+        </a>
+    </div>
+}
+else
+{
+    <div class="surface-card list-card">
+        @foreach (var item in Model.Items)
+        {
+            var activo = item.Estado == "Activo";
 
-    @foreach (var item in Model.Items)
-    {
-        var activo = item.Estado == "Activo";
+            <div class="ledger-row @(activo ? "" : "fila-apagada")">
+                <div class="ledger-tag" style="background:@(activo ? "var(--color-primary)" : "var(--color-muted)")"></div>
 
-        <div class="ledger-row">
-            <div class="ledger-body">
-                <div class="ledger-name">@item.Nombre</div>
-                <div class="ledger-desc">@item.Email · @item.Telefono</div>
-            </div>
+                <div class="avatar-lista" aria-hidden="true">@Iniciales(item.Nombre)</div>
 
-            <div class="ledger-meta">
-                <span class="mono text-muted" style="font-size:.8rem;">@item.Cedula</span>
+                <div class="ledger-body">
+                    <div class="ledger-name">@item.Nombre</div>
+                    <div class="ledger-desc">@item.Email</div>
+                </div>
 
-                <span class="status-pill @(activo ? "on" : "off")">
-                    <span class="dot"></span> @item.Estado
-                </span>
+                <div class="ledger-meta">
+                    <div class="meta-col">
+                        <div class="l">Teléfono</div>
+                        <div class="v">@item.Telefono</div>
+                    </div>
 
-                <div class="ledger-actions">
-                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
+                    <div class="meta-col">
+                        <div class="l">Cédula / RNC</div>
+                        <div class="v">@item.Cedula</div>
+                    </div>
 
-                    @if (activo)
-                    {
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
-                    }
-                    else
-                    {
-                        <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
-                            <button type="submit" class="icon-btn" title="Activar">@await Html.PartialAsync("_Icon", "check")</button>
-                        </form>
-                    }
+                    <span class="status-pill @(activo ? "on" : "off")">
+                        <span class="dot"></span> @item.Estado
+                    </span>
+
+                    <div class="ledger-actions">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver @item.Nombre">@await Html.PartialAsync("_Icon", "view")</a>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar @item.Nombre">@await Html.PartialAsync("_Icon", "edit")</a>
+
+                        @if (activo)
+                        {
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                        }
+                        else
+                        {
+                            <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
+                                <button type="submit" class="icon-btn" title="Activar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>
+                            </form>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
 
 @await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages })

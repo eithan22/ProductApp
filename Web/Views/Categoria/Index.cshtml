@@ -7,62 +7,79 @@
 }
 
 <div class="page-header">
-    <p class="text-muted">Organiza tu catálogo en categorías. El color de cada una es su identificador visual en todo el sistema.</p>
+    <p class="text-muted">
+        @Model.TotalCount @(Model.TotalCount == 1 ? "categoría" : "categorías") en el catálogo.
+        El color de cada una es su identificador visual en todo el sistema.
+    </p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">
         @await Html.PartialAsync("_Icon", "add") Nueva categoría
     </a>
 </div>
 
-<form asp-action="Index" method="get" class="mb-3">
-    <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="incluirInactivos" name="incluirInactivos" value="true" onchange="this.form.submit()" @(incluirInactivos ? "checked" : "") />
-        <label class="form-check-label" for="incluirInactivos">Mostrar inactivas</label>
+<div class="toolbar">
+    <div class="seg">
+        <a asp-action="Index" asp-route-incluirInactivos="false" class="@(incluirInactivos ? "" : "on")">Activas</a>
+        <a asp-action="Index" asp-route-incluirInactivos="true" class="@(incluirInactivos ? "on" : "")">Todas</a>
     </div>
-</form>
+</div>
 
-<div class="surface-card p-2">
-    @if (!Model.Items.Any())
-    {
-        <div class="text-center text-muted py-5">No hay categorías registradas todavía.</div>
-    }
+@if (!Model.Items.Any())
+{
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "tag")</div>
+        <p class="empty-title">Todavía no hay categorías</p>
+        <p class="empty-text">Las categorías agrupan el catálogo y le dan a cada producto su color en las listas.</p>
+        <a asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Crear la primera
+        </a>
+    </div>
+}
+else
+{
+    <div class="surface-card list-card">
+        @foreach (var item in Model.Items)
+        {
+            var color = tagColors[item.Id % tagColors.Length];
+            var activo = item.Estado == "Activo";
 
-    @foreach (var item in Model.Items)
-    {
-        var color = tagColors[item.Id % tagColors.Length];
-        var activo = item.Estado == "Activo";
+            <div class="ledger-row @(activo ? "" : "fila-apagada")">
+                <div class="cat-ico" style="--cat-color:@color" aria-hidden="true">
+                    @await Html.PartialAsync("_Icon", "tag")
+                </div>
 
-        <div class="ledger-row">
-            <div class="ledger-tag" style="background:@color"></div>
+                <div class="ledger-body">
+                    <div class="ledger-name">@item.Nombre</div>
+                    <div class="ledger-desc">@item.Descripcion</div>
+                </div>
 
-            <div class="ledger-body">
-                <div class="ledger-name">@item.Nombre</div>
-                <div class="ledger-desc">@item.Descripcion</div>
-            </div>
+                <div class="ledger-meta">
+                    <div class="meta-col">
+                        <div class="l">Código</div>
+                        <div class="v">#@item.Id</div>
+                    </div>
 
-            <div class="ledger-meta">
-                <span class="ledger-id mono">#@item.Id</span>
+                    <span class="status-pill @(activo ? "on" : "off")">
+                        <span class="dot"></span> @item.Estado
+                    </span>
 
-                <span class="status-pill @(activo ? "on" : "off")">
-                    <span class="dot"></span> @item.Estado
-                </span>
-
-                <div class="ledger-actions">
-                    @if (activo)
-                    {
-                        <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar">@await Html.PartialAsync("_Icon", "edit")</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar">@await Html.PartialAsync("_Icon", "trash")</a>
-                    }
-                    else
-                    {
-                        <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
-                            <button type="submit" class="icon-btn" title="Activar">@await Html.PartialAsync("_Icon", "check")</button>
-                        </form>
-                    }
+                    <div class="ledger-actions">
+                        @if (activo)
+                        {
+                            <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver @item.Nombre">@await Html.PartialAsync("_Icon", "view")</a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar @item.Nombre">@await Html.PartialAsync("_Icon", "edit")</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                        }
+                        else
+                        {
+                            <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
+                                <button type="submit" class="icon-btn" title="Activar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>
+                            </form>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
 
 @await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages })

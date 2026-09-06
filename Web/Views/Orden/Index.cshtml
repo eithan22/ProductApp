@@ -3,58 +3,125 @@
 @{
     ViewData["Title"] = "Órdenes";
     var estadoFiltro = ViewBag.EstadoFiltro as string;
+    var ordenes = Model.ToList();
+
+    // Una orden se ubica primero por su día y después por su número: así la
+    // lista se lee como un diario de ventas y no como una tabla suelta.
+    var grupos = ordenes
+        .GroupBy(o => o.Fecha.Date)
+        .OrderByDescending(g => g.Key)
+        .ToList();
+
+    var hoy = DateTime.Today;
+
+    // Cada estado tiene su icono en el canto de la fila, del mismo color que
+    // su píldora: el estado se reconoce sin leer, y el color nunca va solo.
+    var iconoEstado = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Pendiente"] = "clock",
+        ["Procesada"] = "refresh",
+        ["Pagada"] = "tick",
+        ["Entregada"] = "package",
+        ["Cancelada"] = "x-circle"
+    };
+
+    string EtiquetaDia(DateTime dia)
+    {
+        if (dia == hoy) { return $"Hoy · {dia:dd/MM/yyyy}"; }
+        if (dia == hoy.AddDays(-1)) { return $"Ayer · {dia:dd/MM/yyyy}"; }
+        return dia.ToString("dd/MM/yyyy");
+    }
 }
 
 <div class="page-header">
-    <p class="text-muted">Historial de órdenes de venta.</p>
+    <p class="text-muted">
+        @ordenes.Count @(ordenes.Count == 1 ? "orden" : "órdenes")
+        @(string.IsNullOrEmpty(estadoFiltro) ? "sin contar las canceladas" : $"en estado {estadoFiltro.ToLower()}").
+    </p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "add") Nueva orden</a>
 </div>
 
-<div class="surface-card p-3 mb-4">
-    <form asp-action="Buscar" method="get" class="row g-2">
-        <div class="col-md-3">
-            <input type="number" name="clienteId" class="form-control" placeholder="ID de cliente..." />
-        </div>
-        <div class="col-md-3">
-            <input type="date" name="fecha" class="form-control" />
-        </div>
-        <div class="col-md-3">
-            <select name="estado" class="form-select">
-                <option value="" selected="@(string.IsNullOrEmpty(estadoFiltro))">Todas (sin canceladas)</option>
-                <option value="Pendiente" selected="@(estadoFiltro == "Pendiente")">Pendiente</option>
-                <option value="Procesada" selected="@(estadoFiltro == "Procesada")">Procesada</option>
-                <option value="Pagada" selected="@(estadoFiltro == "Pagada")">Pagada</option>
-                <option value="Entregada" selected="@(estadoFiltro == "Entregada")">Entregada</option>
-                <option value="Cancelada" selected="@(estadoFiltro == "Cancelada")">Cancelada</option>
-            </select>
-        </div>
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "search") Buscar</button>
-            <a asp-action="Index" class="btn-pa btn-pa-outline w-100">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
-        </div>
-    </form>
-</div>
+<form asp-action="Buscar" method="get" class="toolbar">
+    <div class="toolbar-search">
+        @await Html.PartialAsync("_Icon", "search")
+        <label class="visually-hidden" for="filtro-cliente">Buscar por número de cliente</label>
+        <input id="filtro-cliente" type="number" name="clienteId" placeholder="Número de cliente…" />
+    </div>
 
-<div class="surface-card p-2">
-    @if (!Model.Any())
-    {
-        <div class="text-center text-muted py-5">No hay órdenes registradas.</div>
-    }
+    <label class="visually-hidden" for="filtro-fecha">Filtrar por fecha</label>
+    <input id="filtro-fecha" type="date" name="fecha" class="form-control" style="width:180px;" />
 
-    @foreach (var item in Model)
+    <label class="visually-hidden" for="filtro-estado">Filtrar por estado</label>
+    <select id="filtro-estado" name="estado" class="form-select" style="width:210px;">
+        <option value="" selected="@(string.IsNullOrEmpty(estadoFiltro))">Estado: todas</option>
+        <option value="Pendiente" selected="@(estadoFiltro == "Pendiente")">Pendiente</option>
+        <option value="Procesada" selected="@(estadoFiltro == "Procesada")">Procesada</option>
+        <option value="Pagada" selected="@(estadoFiltro == "Pagada")">Pagada</option>
+        <option value="Entregada" selected="@(estadoFiltro == "Entregada")">Entregada</option>
+        <option value="Cancelada" selected="@(estadoFiltro == "Cancelada")">Cancelada</option>
+    </select>
+
+    <div class="toolbar-group">
+        <button type="submit" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "search") Buscar</button>
+        <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+    </div>
+</form>
+
+@if (!grupos.Any())
+{
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "receipt")</div>
+        <p class="empty-title">No hay órdenes que mostrar</p>
+        <p class="empty-text">Ajustá los filtros para ampliar la búsqueda, o creá una orden nueva para empezar a vender.</p>
+        <a asp-action="Create" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "add") Nueva orden</a>
+    </div>
+}
+else
+{
+    foreach (var grupo in grupos)
     {
-        <div class="ledger-row">
-            <div class="ledger-body">
-                <div class="ledger-name">Orden #@item.Id &middot; @item.NombreCliente</div>
-                <div class="ledger-desc">@item.Fecha.ToString("dd/MM/yyyy")</div>
+        var delDia = grupo.OrderByDescending(o => o.Id).ToList();
+        var totalDia = delDia.Where(o => !string.Equals(o.Estado, "Cancelada", StringComparison.OrdinalIgnoreCase)).Sum(o => o.Total);
+
+        <section class="day-group">
+            <div class="day-label">
+                <span class="d">@EtiquetaDia(grupo.Key)</span>
+                <span class="n">
+                    @delDia.Count @(delDia.Count == 1 ? "orden" : "órdenes") · @Html.Moneda(totalDia)
+                </span>
             </div>
-            <div class="ledger-meta">
-                <span class="mono" style="font-weight:700;">@Html.Moneda(item.Total)</span>
-                <span class="estado-pill estado-@item.Estado.ToLower()">@item.Estado</span>
-                <div class="ledger-actions">
-                    <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver">@await Html.PartialAsync("_Icon", "view")</a>
-                </div>
+
+            <div class="surface-card">
+                @foreach (var item in delDia)
+                {
+                    var e = item.Estado.ToLower();
+                    var cancelada = string.Equals(item.Estado, "Cancelada", StringComparison.OrdinalIgnoreCase);
+                    var icono = iconoEstado.TryGetValue(item.Estado, out var ic) ? ic : "receipt";
+
+                    <a class="orden-row @(cancelada ? "fila-apagada" : "")"
+                       asp-action="Details" asp-route-id="@item.Id">
+
+                        <span class="orden-edge e-@e" aria-hidden="true"></span>
+
+                        <span class="orden-thumb e-@e" aria-hidden="true">
+                            @await Html.PartialAsync("_Icon", icono)
+                        </span>
+
+                        <span class="orden-id">#@item.Id</span>
+
+                        <span class="orden-body">
+                            <span class="orden-cliente d-block">@item.NombreCliente</span>
+                            <span class="orden-sub d-block">@item.Fecha.ToString("HH:mm")</span>
+                        </span>
+
+                        <span class="estado-pill estado-@e">@item.Estado</span>
+
+                        <span class="orden-total mono">@Html.Moneda(item.Total)</span>
+
+                        <span class="orden-chevron">@await Html.PartialAsync("_Icon", "chevron-right")</span>
+                    </a>
+                }
             </div>
-        </div>
+        </section>
     }
-</div>
+}
