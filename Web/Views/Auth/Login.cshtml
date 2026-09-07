@@ -5,85 +5,474 @@
     var empresa = Context.Session.GetString("EMPRESA") ?? "ProductApp";
 }
 
-<div class="login-split">
+@*
+    Pantalla pública: se renderiza ANTES de autenticarse, sin token en sesión.
 
-    <section class="login-visual">
+    TODO el contenido de las "capturas" (montos, cantidades, nombres de
+    clientes, productos y SKUs) es estático e inventado, a propósito.
+    Esta vista NO consulta la API ni muestra datos reales del negocio:
+    cualquiera con la URL puede verla. No conectar nada de acá al backend.
+
+    Lo único vivo de la página es el formulario del final.
+*@
+
+<div class="landing-page">
+
+    <a class="visually-hidden-focusable landing-skip" href="#acceso">Ir al formulario de acceso</a>
+
+    @* ============ Barra superior ============ *@
+    <header class="landing-nav">
 
         <div class="login-brand">
             <span class="login-brand-mark" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" />
-                    <path d="m3 8 9 5 9-5M12 13v8" />
-                </svg>
+                @await Html.PartialAsync("_Icon", "box")
             </span>
             <span class="login-brand-name">@empresa</span>
         </div>
 
-        <div class="login-art-wrap">
-            <svg class="login-art" viewBox="0 0 320 240" fill="none" aria-hidden="true">
+        <nav class="landing-nav-links" aria-label="Secciones de esta página">
+            <a href="#catalogo">Productos</a>
+            <a href="#inventario">Inventario</a>
+            <a href="#ventas">Órdenes</a>
+            <a href="#ventas">Reportes</a>
+        </nav>
 
-                <g transform="rotate(-8 113 111)">
-                    <rect x="38" y="52" width="150" height="118" rx="14"
-                          stroke="rgba(255,255,255,.20)" stroke-width="2" />
-                    <path d="M38 88h150" stroke="rgba(255,255,255,.20)" stroke-width="2" />
-                </g>
+        <a class="btn-pa btn-pa-invert landing-nav-cta" href="#acceso">
+            Iniciar sesión @await Html.PartialAsync("_Icon", "arrow-right")
+        </a>
 
-                <g transform="rotate(7 200 134)">
-                    <rect x="125" y="75" width="150" height="118" rx="14"
-                          stroke="rgba(255,255,255,.45)" stroke-width="2" />
-                    <path d="M125 111h150" stroke="rgba(255,255,255,.30)" stroke-width="2" />
-                    <path d="M186 75v36" stroke="rgba(255,255,255,.30)" stroke-width="2" />
-                </g>
+    </header>
 
-                <circle class="login-art-accent" cx="252" cy="58" r="23"
-                        stroke="rgba(255,255,255,.55)" stroke-width="2" />
-                <path d="m242 58 7 7 13-15" stroke="#fff" stroke-width="2.6"
-                      stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-        </div>
+    @* ============ Hero ============ *@
+    <section class="landing-hero" aria-labelledby="landing-titulo">
+        <div class="landing-hero-inner">
 
-        <div class="login-copy">
-            <p class="login-headline">Cada producto, cada pedido, en un solo lugar.</p>
-            <p class="login-subline">
-                Catálogo, inventario y ventas — un mismo sistema para todo el negocio.
+            <p class="landing-eyebrow">Gestión de productos, inventario y ventas</p>
+
+            <h1 id="landing-titulo">Tu catálogo, tu inventario y tus ventas, en un solo sistema.</h1>
+
+            <p class="landing-hero-sub">
+                @empresa centraliza productos, categorías, existencias, órdenes y pagos
+                — con alertas de stock bajo y reportes en tiempo real, para que nunca
+                pierdas el rastro de tu negocio.
             </p>
+
+            <div class="landing-hero-btns">
+                <a class="btn-pa btn-pa-invert" href="#acceso">Iniciar sesión</a>
+                <a class="btn-pa btn-pa-ghost" href="#catalogo">Ver el sistema en acción</a>
+            </div>
+
+            @* Captura recreada con HTML/CSS: son los componentes reales de la
+               aplicación (.stat-strip, .ledger-row, .estado-pill) con datos de ejemplo. *@
+            <div class="landing-shot" role="img"
+                 aria-label="Vista de ejemplo del panel de inicio: indicadores del día y órdenes recientes. Los datos son ilustrativos.">
+
+                <div class="landing-shot-bar" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </div>
+
+                <div class="landing-shot-body">
+
+                    <div class="landing-shot-head">
+                        <p class="landing-shot-title">Hola, Eithan — este es el resumen de hoy.</p>
+                    </div>
+
+                    <div class="stat-strip">
+                        <div class="stat-cell">
+                            <div class="label">Ingresos hoy</div>
+                            <div class="value">RD$ 86,400</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="label">Órdenes pendientes</div>
+                            <div class="value is-warn">14</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="label">Stock bajo</div>
+                            <div class="value is-danger">3</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="label">Clientes activos</div>
+                            <div class="value">312</div>
+                        </div>
+                    </div>
+
+                    <div class="surface-card landing-shot-card">
+                        <p class="ctitle">Órdenes recientes</p>
+
+                        <div class="ledger-row">
+                            <div class="ledger-body">
+                                <div class="ledger-name">Constructora Ferreira SRL</div>
+                            </div>
+                            <div class="ledger-meta">
+                                <span class="mono landing-amount">RD$ 18,420</span>
+                                <span class="estado-pill estado-pendiente">Pendiente</span>
+                            </div>
+                        </div>
+
+                        <div class="ledger-row">
+                            <div class="ledger-body">
+                                <div class="ledger-name">Marisol Rodríguez</div>
+                            </div>
+                            <div class="ledger-meta">
+                                <span class="mono landing-amount">RD$ 6,140</span>
+                                <span class="estado-pill estado-procesada">Procesada</span>
+                            </div>
+                        </div>
+
+                        <div class="ledger-row">
+                            <div class="ledger-body">
+                                <div class="ledger-name">Distribuidora Aurora</div>
+                            </div>
+                            <div class="ledger-meta">
+                                <span class="mono landing-amount">RD$ 24,860</span>
+                                <span class="estado-pill estado-pagada">Pagada</span>
+                            </div>
+                        </div>
+
+                        <div class="ledger-row">
+                            <div class="ledger-body">
+                                <div class="ledger-name">Ana Gómez</div>
+                            </div>
+                            <div class="ledger-meta">
+                                <span class="mono landing-amount">RD$ 3,275</span>
+                                <span class="estado-pill estado-entregada">Entregada</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    @* ============ Franja de números ============ *@
+    <section class="landing-band" aria-labelledby="landing-band-titulo">
+
+        <div class="landing-band-head">
+            <p class="landing-eyebrow">Así de completo se ve un catálogo real</p>
+            <h2 id="landing-band-titulo">Pensado para crecer con tu negocio</h2>
+        </div>
+
+        <div class="landing-numstrip">
+            <div class="landing-num">
+                <div class="v mono">1,240</div>
+                <div class="l">productos activos</div>
+            </div>
+            <div class="landing-num">
+                <div class="v mono">38</div>
+                <div class="l">categorías</div>
+            </div>
+            <div class="landing-num">
+                <div class="v mono">312</div>
+                <div class="l">clientes activos</div>
+            </div>
+            <div class="landing-num">
+                <div class="v mono">5,860</div>
+                <div class="l">órdenes procesadas</div>
+            </div>
         </div>
 
     </section>
 
-    <section class="login-form-panel">
-        <div class="login-form">
+    @* ============ Features ============ *@
+    <section class="landing-features" aria-labelledby="landing-features-titulo">
 
-            <h1>Iniciar sesión</h1>
-            <p class="login-sub">Accedé con tu cuenta para continuar.</p>
+        <div class="landing-fhead">
+            <p class="landing-eyebrow">Un sistema, tres frentes</p>
+            <h2 id="landing-features-titulo">Todo lo que hoy manejás en hojas sueltas, en un mismo lugar</h2>
+        </div>
 
-            <form asp-action="Login" method="post">
+        @* ---- Catálogo ---- *@
+        <div class="landing-frow" id="catalogo">
 
-                <div asp-validation-summary="ModelOnly"></div>
+            <div class="landing-ftext">
+                <p class="landing-eyebrow2">Catálogo</p>
+                <h3>Un catálogo que se ve tan bien como se vende</h3>
+                <p>
+                    Fotos, categorías, precio y estado de stock en una sola vista — así tus
+                    vendedores encuentran cualquier producto en segundos, sin abrir tres
+                    pantallas distintas.
+                </p>
+            </div>
 
-                <div class="mb-3">
-                    <label asp-for="Username" class="form-label">Usuario</label>
-                    <input asp-for="Username" class="form-control"
-                           autocomplete="username" autofocus placeholder="Ej: admin" />
-                    <span asp-validation-for="Username"></span>
+            <div class="landing-fshot" role="img"
+                 aria-label="Vista de ejemplo del catálogo: seis productos con foto, categoría, existencia y precio. Los datos son ilustrativos.">
+                <div class="producto-catalog-grid">
+
+                    <div class="producto-catalog-item">
+                        <div class="producto-catalog-shot">
+                            <img src="~/images/landing/laptop.jpg" alt="" width="520" height="447" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="producto-catalog-info">
+                            <span class="producto-catalog-name">Laptop 14" Pro</span>
+                            <div class="producto-catalog-sub">Electrónica &middot; Stock 22</div>
+                            <div class="producto-catalog-price mono">RD$ 32,900</div>
+                        </div>
+                    </div>
+
+                    <div class="producto-catalog-item">
+                        <div class="producto-catalog-shot">
+                            <img src="~/images/landing/usb.jpg" alt="" width="520" height="447" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="producto-catalog-info">
+                            <span class="producto-catalog-name">Memoria USB 32GB</span>
+                            <div class="producto-catalog-sub">Accesorios &middot; Stock 58</div>
+                            <div class="producto-catalog-price mono">RD$ 450</div>
+                        </div>
+                    </div>
+
+                    <div class="producto-catalog-item">
+                        <div class="producto-catalog-shot">
+                            <img src="~/images/landing/keyboard.jpg" alt="" width="520" height="447" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="producto-catalog-info">
+                            <span class="producto-catalog-name">Teclado mecánico</span>
+                            <div class="producto-catalog-sub">Accesorios &middot; Stock 34</div>
+                            <div class="producto-catalog-price mono">RD$ 2,450</div>
+                        </div>
+                    </div>
+
+                    <div class="producto-catalog-item">
+                        <div class="producto-catalog-shot">
+                            <img src="~/images/landing/headphones.jpg" alt="" width="520" height="447" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="producto-catalog-info">
+                            <span class="producto-catalog-name">Audífonos estéreo</span>
+                            <div class="producto-catalog-sub">Accesorios &middot; Stock 12</div>
+                            <div class="producto-catalog-price mono">RD$ 1,450</div>
+                        </div>
+                    </div>
+
+                    @* sin unidades: el catálogo real pinta la marca de agotado y apaga la foto *@
+                    <div class="producto-catalog-item">
+                        <div class="producto-catalog-shot off">
+                            <span class="producto-catalog-badge agotado">Agotado</span>
+                            <img src="~/images/landing/mouse.jpg" alt="" width="520" height="447" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="producto-catalog-info">
+                            <span class="producto-catalog-name">Mouse inalámbrico</span>
+                            <div class="producto-catalog-sub">Accesorios &middot; Stock 0</div>
+                            <div class="producto-catalog-price mono">RD$ 890</div>
+                        </div>
+                    </div>
+
+                    <div class="producto-catalog-item">
+                        <div class="producto-catalog-shot">
+                            <img src="~/images/landing/tablet.jpg" alt="" width="520" height="447" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="producto-catalog-info">
+                            <span class="producto-catalog-name">Tablet 10"</span>
+                            <div class="producto-catalog-sub">Electrónica &middot; Stock 16</div>
+                            <div class="producto-catalog-price mono">RD$ 11,600</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        @* ---- Inventario ---- *@
+        <div class="landing-frow alt" id="inventario">
+
+            <div class="landing-ftext">
+                <p class="landing-eyebrow2">Inventario</p>
+                <h3>Alertas de stock antes de que sea tarde</h3>
+                <p>
+                    Cada producto tiene su mínimo. Cuando el inventario cruza esa línea,
+                    el sistema avisa — sin hojas de cálculo, sin sorpresas de última hora.
+                </p>
+            </div>
+
+            <div class="landing-fshot" role="img"
+                 aria-label="Vista de ejemplo del inventario: cuatro productos con su existencia, su mínimo y una barra de nivel. Los datos son ilustrativos.">
+
+                <div class="inv-row">
+                    <div>
+                        <div class="ledger-name">Laptop 14" Pro</div>
+                        <div class="ledger-desc mono">SKU-LAP-014</div>
+                    </div>
+                    <div>
+                        <div class="inv-qty">22 <span class="sub">/ mín. 8</span></div>
+                        <div class="inv-bar">
+                            <div class="inv-bar-fill" style="width:90%; background:var(--color-primary);"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-4">
-                    <label asp-for="Password" class="form-label">Contraseña</label>
-                    <input asp-for="Password" type="password" class="form-control"
-                           autocomplete="current-password" placeholder="••••••••" />
-                    <span asp-validation-for="Password"></span>
+                <div class="inv-row">
+                    <div>
+                        <div class="ledger-name">Memoria USB 32GB</div>
+                        <div class="ledger-desc mono">SKU-USB-032</div>
+                    </div>
+                    <div>
+                        <div class="inv-qty is-warn">17 <span class="sub">/ mín. 15</span></div>
+                        <div class="inv-bar">
+                            <div class="inv-bar-fill" style="width:35%; background:var(--color-warn);"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-pa btn-pa-primary login-submit">
-                    Iniciar Sesión
-                </button>
+                <div class="inv-row">
+                    <div>
+                        <div class="ledger-name">Mouse inalámbrico</div>
+                        <div class="ledger-desc mono">SKU-MOU-005</div>
+                    </div>
+                    <div>
+                        <div class="inv-qty is-danger">0 <span class="sub">/ mín. 15</span></div>
+                        <div class="inv-bar">
+                            <div class="inv-bar-fill" style="width:2%; background:var(--color-danger);"></div>
+                        </div>
+                    </div>
+                </div>
 
-            </form>
+                <div class="inv-row">
+                    <div>
+                        <div class="ledger-name">Teclado mecánico</div>
+                        <div class="ledger-desc mono">SKU-TEC-009</div>
+                    </div>
+                    <div>
+                        <div class="inv-qty">34 <span class="sub">/ mín. 12</span></div>
+                        <div class="inv-bar">
+                            <div class="inv-bar-fill" style="width:95%; background:var(--color-primary);"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        @* ---- Ventas y reportes ---- *@
+        <div class="landing-frow" id="ventas">
+
+            <div class="landing-ftext">
+                <p class="landing-eyebrow2">Ventas y reportes</p>
+                <h3>Del pedido al pago, todo en un mismo lugar</h3>
+                <p>
+                    Registrá órdenes, cobrá en partes si hace falta, y mirá cómo va el
+                    negocio con reportes que se actualizan solos, sin pedirle nada a nadie.
+                </p>
+            </div>
+
+            <div class="landing-fshot" role="img"
+                 aria-label="Vista de ejemplo del reporte de ventas: gráfico de barras de la semana y las dos últimas órdenes. Los datos son ilustrativos.">
+
+                <div class="landing-chart" aria-hidden="true">
+                    <span style="height:52%"></span>
+                    <span style="height:68%"></span>
+                    <span class="soft" style="height:34%"></span>
+                    <span style="height:88%"></span>
+                    <span style="height:61%"></span>
+                    <span class="soft" style="height:40%"></span>
+                    <span style="height:100%"></span>
+                </div>
+
+                <div class="ledger-row">
+                    <div class="ledger-body">
+                        <div class="ledger-name">Orden #1046 &middot; Constructora Ferreira</div>
+                    </div>
+                    <div class="ledger-meta">
+                        <span class="mono landing-amount">RD$ 18,420</span>
+                        <span class="estado-pill estado-pendiente">Pendiente</span>
+                    </div>
+                </div>
+
+                <div class="ledger-row">
+                    <div class="ledger-body">
+                        <div class="ledger-name">Orden #1045 &middot; Marisol Rodríguez</div>
+                    </div>
+                    <div class="ledger-meta">
+                        <span class="mono landing-amount">RD$ 6,140</span>
+                        <span class="estado-pill estado-pagada">Pagada</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+    @* ============ Acceso (formulario real) ============ *@
+    <section class="landing-acceso" id="acceso" aria-labelledby="landing-acceso-titulo">
+        <div class="landing-acc-grid">
+
+            <div class="landing-acc-copy">
+                <p class="landing-eyebrow">Acceso al sistema</p>
+                <h2 id="landing-acceso-titulo">¿Ya tenés cuenta? Entrá y seguí donde quedaste.</h2>
+                <p>
+                    Tu equipo ya está gestionando productos, inventario y ventas ahí adentro.
+                    Iniciá sesión para ver el panel actualizado del día.
+                </p>
+
+                <ul class="landing-modtiles">
+                    <li class="landing-modtile">
+                        <span class="landing-modtile-icon" aria-hidden="true">@await Html.PartialAsync("_Icon", "box")</span>
+                        Productos
+                    </li>
+                    <li class="landing-modtile">
+                        <span class="landing-modtile-icon" aria-hidden="true">@await Html.PartialAsync("_Icon", "layers")</span>
+                        Inventario
+                    </li>
+                    <li class="landing-modtile">
+                        <span class="landing-modtile-icon" aria-hidden="true">@await Html.PartialAsync("_Icon", "receipt")</span>
+                        Órdenes
+                    </li>
+                    <li class="landing-modtile">
+                        <span class="landing-modtile-icon" aria-hidden="true">@await Html.PartialAsync("_Icon", "chart")</span>
+                        Reportes
+                    </li>
+                </ul>
+            </div>
+
+            <div class="landing-logincard">
+                <div class="login-form">
+
+                    <h3>Iniciar sesión</h3>
+                    <p class="login-sub">Accedé con tu cuenta para continuar.</p>
+
+                    @* asp-fragment: si el intento falla, la respuesta vuelve al #acceso
+                       en vez de dejar el error fuera de pantalla, y funciona sin JS. *@
+                    <form asp-action="Login" method="post" asp-fragment="acceso">
+
+                        <div asp-validation-summary="ModelOnly"></div>
+
+                        @* sin autofocus: el formulario está al final de la página y el
+                           navegador saltaría al pie apenas carga *@
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label">Usuario</label>
+                            <input asp-for="Username" class="form-control"
+                                   autocomplete="username" placeholder="Ej: admin" />
+                            <span asp-validation-for="Username"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label">Contraseña</label>
+                            <input asp-for="Password" type="password" class="form-control"
+                                   autocomplete="current-password" placeholder="••••••••" />
+                            <span asp-validation-for="Password"></span>
+                        </div>
+
+                        <button type="submit" class="btn-pa btn-pa-primary login-submit">
+                            Iniciar Sesión
+                        </button>
+
+                    </form>
+
+                    <p class="landing-logincard-foot">@empresa &copy; @DateTime.Now.Year</p>
+
+                </div>
+            </div>
 
         </div>
     </section>
+
+    <footer class="landing-credits">
+        <p>
+            Fotos de catálogo: Wikimedia Commons — dominio público / CC0
+            (Evan-Amos, Matthew Guay), y &laquo;Toshiba Satellite Pro&raquo; de Smial
+            (Free Art License).
+        </p>
+    </footer>
 
 </div>
 
@@ -91,4 +480,19 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        // El formulario vive al final de la landing. Si el intento de acceso
+        // falló, la respuesta se pinta arriba de todo y el mensaje de error
+        // queda fuera de la pantalla: hay que llevar la vista y el foco ahí.
+        (function () {
+            if (!document.querySelector('.validation-summary-errors, .field-validation-error')) { return; }
+
+            var acceso = document.getElementById('acceso');
+            if (acceso) { acceso.scrollIntoView(); }
+
+            var usuario = document.getElementById('Username');
+            if (usuario) { usuario.focus(); }
+        })();
+    </script>
 }
