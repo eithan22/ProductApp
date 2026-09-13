@@ -1479,6 +1479,49 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .surface-card > .empty-state:not(:only-child) { padding: 36px 24px; }
 
 /* ============================================================
+   Logo de la empresa (Configuración)
+   Fila propia arriba de los datos de identidad. El logo se
+   muestra completo (contain), no recortado como las fotos de
+   producto, y sin logo la caja queda en el verde suave.
+   ============================================================ */
+
+.logo-row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+}
+
+.logo-box {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.logo-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.logo-box.is-empty {
+  background: var(--color-primary-soft);
+  border-color: transparent;
+  color: var(--color-primary);
+}
+.logo-box.is-empty .icon { width: 26px; height: 26px; }
+
+.logo-body { flex: 1; min-width: 220px; }
+.logo-body label { font-size: .83rem; font-weight: 700; color: var(--color-ink); display: block; margin-bottom: 7px; }
+.logo-acts { display: flex; gap: 8px; margin-top: 11px; }
+
+/* ============================================================
    Errores de validación en formularios.
    Las clases input-validation-error / field-validation-error /
    validation-summary-* las agrega MVC solo: no hay que tocar las vistas.

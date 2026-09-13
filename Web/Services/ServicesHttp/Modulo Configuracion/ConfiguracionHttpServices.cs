@@ -29,10 +29,24 @@ namespace Web.Services.ServicesHttp.Modulo_Configuracion
                 CantidadMinimaInventarioDefecto = model.CantidadMinimaInventarioDefecto,
                 DuracionTokenMinutos = model.DuracionTokenMinutos,
                 NombreEmpresa = model.NombreEmpresa,
-                Moneda = model.Moneda
+                Moneda = model.Moneda,
+                RucONit = model.RucONit,
+                Direccion = model.Direccion
             };
 
             return await _baseHttpServices.PutAsync<ActualizarConfiguracionSistemaDto, ConfiguracionModel>(_configuracionEndpoint.Url, dto);
+        }
+
+        public async Task<ConfiguracionModel> SubirLogoAsync(Stream contenido, string nombreArchivo, string contentType)
+        {
+            return await _baseHttpServices.PostFileAsync<ConfiguracionModel>(
+                _configuracionEndpoint.SubirLogo, contenido, nombreArchivo, contentType);
+        }
+
+        public async Task<bool> QuitarLogoAsync()
+        {
+            await _baseHttpServices.DeleteAsync(_configuracionEndpoint.Logo);
+            return true;
         }
     }
 }
