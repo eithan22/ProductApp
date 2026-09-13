@@ -7,5 +7,7 @@ namespace ProductApp.Aplication.Interface.Servicios.Modulo_Configuracion
     {
         Task<OperationResultD<ConfiguracionSistemaDto>> ObtenerAsync();
         Task<OperationResultD<ConfiguracionSistemaDto>> ActualizarAsync(ActualizarConfiguracionSistemaDto dto);
+        Task<OperationResultD<ConfiguracionSistemaDto>> SubirLogoAsync(SubirLogoEmpresaDto dto);
+        Task<OperationResultD<ConfiguracionSistemaDto>> QuitarLogoAsync();
     }
 }

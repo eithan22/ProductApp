@@ -13,7 +13,10 @@ namespace ProductApp.Aplication.Mappers.Modulo_Configuracion
                 CantidadMinimaInventarioDefecto = entity.CantidadMinimaInventarioDefecto,
                 DuracionTokenMinutos = entity.DuracionTokenMinutos,
                 NombreEmpresa = entity.NombreEmpresa,
-                Moneda = entity.Moneda
+                Moneda = entity.Moneda,
+                RucONit = entity.RucONit,
+                Direccion = entity.Direccion,
+                LogoUrl = entity.LogoUrl
             };
         }
     }

@@ -127,6 +127,16 @@ namespace ProductApp.Aplication.Services
                     ? $"La orden #{orden.Id} fue pagada completamente."
                     : $"Se registró un pago de {dto.Monto} para la orden #{orden.Id}. Saldo pendiente: {nuevoSaldo}.");
 
+            // Los administradores se enteran de todo dinero que entra, no solo el vendedor dueño
+            // de la orden (RF-3.6.1). Se excluye a orden.UsuarioId para no duplicarle la
+            // notificación si ese vendedor además tiene rol Administrador.
+            await _notificacionServices.NotificarAdministradoresAsync(
+                TipoNotificacion.PagoRegistrado,
+                pagoCompleto
+                    ? $"Pago completo de {dto.Monto} registrado en la orden #{orden.Id}. La orden quedó Pagada."
+                    : $"Pago de {dto.Monto} registrado en la orden #{orden.Id}. Saldo pendiente: {nuevoSaldo}.",
+                orden.UsuarioId);
+
             var response = _mapperPago.MapToPagoResponseDto(pago, nuevoSaldo);
             return OperationResultD<PagoResponseDto>.Success(response, mensaje);
         }

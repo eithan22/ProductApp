@@ -30,12 +30,19 @@ namespace ProductApp.Aplication.Services
             await _notificacionRepository.CreateAsync(notificacion);
         }
 
-        public async Task NotificarAdministradoresAsync(TipoNotificacion tipo, string mensaje)
+        public async Task NotificarAdministradoresAsync(TipoNotificacion tipo, string mensaje, int? excluirUsuarioId = null)
         {
             var idsAdministradores = await _usuarioRepository.ObtenerIdsAdministradoresActivosAsync();
 
             foreach (var usuarioId in idsAdministradores)
+            {
+                // Evita notificar dos veces al mismo usuario cuando ya recibió la notificación
+                // por otra vía (ej. el vendedor dueño de la orden que además es Administrador).
+                if (excluirUsuarioId.HasValue && usuarioId == excluirUsuarioId.Value)
+                    continue;
+
                 await NotificarUsuarioAsync(usuarioId, tipo, mensaje);
+            }
         }
 
         public async Task<OperationResultD<NotificacionResumenDto>> ObtenerResumenAsync(int usuarioId, int cantidad = 10)
