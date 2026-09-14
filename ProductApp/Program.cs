@@ -13,6 +13,10 @@ namespace ProductApp
     {
         public static async Task Main(string[] args)
         {
+            // QuestPDF exige declarar la licencia una sola vez antes de generar cualquier
+            // documento. El proyecto califica para la licencia Community (gratuita).
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Reemplaza el logging por consola por defecto: mismos niveles que Serilog:MinimumLevel

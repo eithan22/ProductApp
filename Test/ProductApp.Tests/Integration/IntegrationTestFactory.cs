@@ -67,6 +67,7 @@ namespace ProductApp.Tests.Integration
                 new CreatePagoValidator(),
                 new ValidatorBusinessPago(),
                 CrearNotificacionService(context),
+                new FacturaPdfServiceFake(),
                 NullLogger<PagoService>.Instance);
 
         public static ReporteService CrearReporteService(AppDbContext context)

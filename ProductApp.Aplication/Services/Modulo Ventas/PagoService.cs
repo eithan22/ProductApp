@@ -24,6 +24,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<CreatePagoDto> _createPagoValidator;
         private readonly IValidatorBusinessPago _validatorBusinessPago;
         private readonly INotificacionServices _notificacionServices;
+        private readonly IFacturaPdfService _facturaPdfService;
         private readonly ILogger<PagoService> _logger;
 
         public PagoService(
@@ -35,6 +36,7 @@ namespace ProductApp.Aplication.Services
             IValidator<CreatePagoDto> createPagoValidator,
             IValidatorBusinessPago validatorBusinessPago,
             INotificacionServices notificacionServices,
+            IFacturaPdfService facturaPdfService,
             ILogger<PagoService> logger)
         {
             _pagoRepository = pagoRepository;
@@ -45,6 +47,7 @@ namespace ProductApp.Aplication.Services
             _createPagoValidator = createPagoValidator;
             _validatorBusinessPago = validatorBusinessPago;
             _notificacionServices = notificacionServices;
+            _facturaPdfService = facturaPdfService;
             _logger = logger;
         }
 
@@ -113,6 +116,18 @@ namespace ProductApp.Aplication.Services
                             TipoNotificacion.StockBajo,
                             $"Stock bajo: \"{inventario.Producto.Nombre}\" quedó en {inventario.CantidadActual} unidades (mínimo {inventario.CantidadMinima}).");
                     }
+                }
+
+                // La factura se emite en el mismo flujo en que la orden queda Pagada (RF-3.2.2):
+                // una sola vez y archivada en Blob Storage, no regenerada en cada descarga.
+                var factura = await _facturaPdfService.GenerarYAlmacenarAsync(orden.Id);
+                if (!factura.IsSuccess)
+                {
+                    // El cobro ya se registró: un fallo al emitir el PDF no puede revertirlo ni
+                    // ocultarlo. Queda el log para regenerar la factura manualmente.
+                    _logger.LogError(
+                        "El pago de la orden {OrdenId} se registró correctamente, pero la factura PDF no pudo emitirse: {Motivo}",
+                        orden.Id, factura.Message);
                 }
             }
 

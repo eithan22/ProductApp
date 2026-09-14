@@ -15,7 +15,7 @@ namespace ProductApp.Extensions
             services.AddModuloNotificaciones();
             services.AddModuloUsuarios();
             services.AddModuloProductos(configuration);
-            services.AddModuloVentas();
+            services.AddModuloVentas(configuration);
             services.AddModuloReportes();
             services.AddModuloConfiguracion();
 

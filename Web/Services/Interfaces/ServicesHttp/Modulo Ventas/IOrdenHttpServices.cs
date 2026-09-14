@@ -13,5 +13,6 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Ventas
         Task<bool> CambiarEstadoAsync(CambiarEstadoOrdenModel model);
         Task<bool> CancelarOrdenAsync(int id);
         Task<bool> ConfirmarOrdenAsync(int id);
+        Task<byte[]> GetFacturaAsync(int id);
     }
 }

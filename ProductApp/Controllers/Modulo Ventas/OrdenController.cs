@@ -14,12 +14,12 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
     public class OrdenController : ControllerBase
     {
         private readonly IOrdenServices _ordenServices;
+        private readonly IFacturaPdfService _facturaPdfService;
 
-        public OrdenController(IOrdenServices ordenServices) 
+        public OrdenController(IOrdenServices ordenServices, IFacturaPdfService facturaPdfService)
         {
             _ordenServices = ordenServices;
-
-        
+            _facturaPdfService = facturaPdfService;
         }
 
         //crear orden y listar ordenes por cliente
@@ -158,6 +158,20 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
             return Ok(ApiResponseT<List<OrdenResponseDto>>.SuccessResponse(result.Data, result.Message));
+        }
+
+        // Descarga la factura PDF emitida al completarse el pago de la orden (RF-3.2).
+        // La factura vive dentro de Orden por decisión de diseño: no hay FacturaController.
+
+        [Authorize]
+        [HttpGet("GetFactura/{id}")]
+        public async Task<IActionResult> GetFactura(int id)
+        {
+            var result = await _facturaPdfService.ObtenerAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+            return File(result.Data!, "application/pdf", $"factura-orden-{id}.pdf");
         }
 
         private bool TryParseEstadoFiltro(string? estado, out EstadoOrden? estadoFiltro, out IActionResult? error)

@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using FluentValidation;
 using ProductApp.Aplication.BusinessValidator.Modulo_Ventas;
 using ProductApp.Aplication.Dtos.Modulo_Ventas.DetalleOrdenDto;
@@ -13,13 +14,17 @@ using ProductApp.Aplication.Validators.Modulo_Ventas.OrdenValidator;
 using ProductApp.Aplication.Dtos.Modulo_Ventas.OrdenDto;
 using ProductApp.Aplication.Validators.Modulo_Ventas.PagoValidator;
 using ProductApp.Domian.Interfaces;
+using ProductApp.Infraesctructura.Persistencia.Almacenamiento;
+using ProductApp.Infraesctructura.Persistencia.Facturacion;
 using ProductApp.Infraesctructura.Persistencia.Repository;
 
 namespace ProductApp.Extensions.Modulo_Ventas
 {
     public static class VentasDependenciesExtension
     {
-        public static IServiceCollection AddModuloVentas(this IServiceCollection services)
+        private const string ContenedorFacturasPorDefecto = "facturas";
+
+        public static IServiceCollection AddModuloVentas(this IServiceCollection services, IConfiguration configuration)
         {
             // Repositorios
             services.AddScoped<IOrdenRepository, OrdenRepository>();
@@ -35,6 +40,15 @@ namespace ProductApp.Extensions.Modulo_Ventas
             services.AddScoped<IOrdenServices, OrdenServices>();
             services.AddScoped<IDetalleOrdenServices, DetalleOrdenService>();
             services.AddScoped<IPagoServices, PagoService>();
+            services.AddScoped<IFacturaPdfService, FacturaPdfService>();
+
+            // Facturación PDF (RF-3.2): reutiliza el BlobServiceClient que ya registra el módulo
+            // de Productos, pero en un contenedor propio y privado.
+            var contenedorFacturas = configuration["AzureStorage:ContenedorFacturas"] ?? ContenedorFacturasPorDefecto;
+
+            services.AddSingleton<IAlmacenamientoFacturas>(sp =>
+                new AlmacenamientoFacturasBlob(sp.GetRequiredService<BlobServiceClient>(), contenedorFacturas));
+            services.AddScoped<IGeneradorFacturaPdf, GeneradorFacturaPdfQuestPdf>();
 
             // Reglas de negocio
             services.AddScoped<IValidatorBusinessOrden, ValidatorBusinessOrden>();
