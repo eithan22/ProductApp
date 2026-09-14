@@ -1,0 +1,233 @@
+@model Web.Models.Modelo_Ventas.PagoModels.PagoListadoViewModel
+
+@{
+    ViewData["Title"] = "Pagos";
+
+    // Un pago se lee por el día en que entró el dinero, igual que las órdenes:
+    // la lista funciona como un libro de caja y no como una tabla suelta.
+    var grupos = Model.Pagos
+        .GroupBy(p => p.FechaPago.Date)
+        .OrderByDescending(g => g.Key)
+        .ToList();
+
+    var hoy = DateTime.Today;
+
+    // El valor que viaja a la API es el nombre del enum; el texto es solo
+    // para leerlo en pantalla.
+    var metodosPago = new (string Valor, string Texto)[]
+    {
+        ("Efectivo", "Efectivo"),
+        ("TarjetaCredito", "Tarjeta de crédito"),
+        ("TarjetaDebito", "Tarjeta de débito"),
+        ("TransferenciaBancaria", "Transferencia bancaria"),
+        ("PayPal", "PayPal")
+    };
+
+    string TextoMetodo(string valor) =>
+        metodosPago.FirstOrDefault(m => m.Valor == valor).Texto ?? valor;
+
+    // Cada familia de método tiene su color e icono en el canto de la fila: el
+    // método se reconoce sin leer, y el color nunca va solo.
+    string ClaseMetodo(string valor) => valor switch
+    {
+        "TransferenciaBancaria" => "transferencia",
+        "Efectivo" => "efectivo",
+        "TarjetaCredito" or "TarjetaDebito" => "tarjeta",
+        _ => "otro"
+    };
+
+    string IconoMetodo(string valor) => valor switch
+    {
+        "TransferenciaBancaria" => "refresh",
+        "Efectivo" => "cash",
+        _ => "card"
+    };
+
+    string EtiquetaDia(DateTime dia)
+    {
+        if (dia == hoy) { return $"Hoy · {dia:dd/MM/yyyy}"; }
+        if (dia == hoy.AddDays(-1)) { return $"Ayer · {dia:dd/MM/yyyy}"; }
+        return dia.ToString("dd/MM/yyyy");
+    }
+}
+
+<div class="page-header">
+    <p class="text-muted">
+        @Model.CantidadPagos @(Model.CantidadPagos == 1 ? "pago registrado" : "pagos registrados")
+        @(Model.HayFiltros ? "con los filtros aplicados" : "en total").
+    </p>
+    <a asp-action="Registrar" class="btn-pa btn-pa-primary">
+        @await Html.PartialAsync("_Icon", "add") Registrar pago
+    </a>
+</div>
+
+<form asp-action="Index" method="get" class="toolbar">
+    <div class="toolbar-search">
+        @await Html.PartialAsync("_Icon", "search")
+        <label class="visually-hidden" for="filtro-orden">Buscar por número de orden</label>
+        <input id="filtro-orden" type="number" name="ordenId" value="@Model.OrdenId"
+               placeholder="Número de orden…" />
+    </div>
+
+    <label class="visually-hidden" for="filtro-desde">Desde</label>
+    <input id="filtro-desde" type="date" name="desde" class="form-control" style="width:170px;"
+           value="@(Model.Desde?.ToString("yyyy-MM-dd"))" />
+
+    <label class="visually-hidden" for="filtro-hasta">Hasta</label>
+    <input id="filtro-hasta" type="date" name="hasta" class="form-control" style="width:170px;"
+           value="@(Model.Hasta?.ToString("yyyy-MM-dd"))" />
+
+    <label class="visually-hidden" for="filtro-metodo">Filtrar por método de pago</label>
+    <select id="filtro-metodo" name="metodoPago" class="form-select" style="width:220px;">
+        <option value="" selected="@(string.IsNullOrEmpty(Model.MetodoPago))">Método: todos</option>
+        @foreach (var m in metodosPago)
+        {
+            <option value="@m.Valor" selected="@(Model.MetodoPago == m.Valor)">@m.Texto</option>
+        }
+    </select>
+
+    @{
+        var desdeSemana = DateTime.Today.AddDays(-7);
+        var hastaSemana = DateTime.Today;
+        var semanaActiva = Model.Desde?.Date == desdeSemana && Model.Hasta?.Date == hastaSemana;
+    }
+    <a asp-action="Index"
+       asp-route-desde="@desdeSemana.ToString("yyyy-MM-dd")"
+       asp-route-hasta="@hastaSemana.ToString("yyyy-MM-dd")"
+       asp-route-ordenId="@Model.OrdenId"
+       asp-route-metodoPago="@Model.MetodoPago"
+       class="btn-pa @(semanaActiva ? "btn-pa-primary" : "btn-pa-outline")"
+       aria-pressed="@(semanaActiva ? "true" : "false")">
+        Última semana
+    </a>
+
+    <div class="toolbar-group">
+        <button type="submit" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "search") Buscar</button>
+        <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+    </div>
+</form>
+
+<div class="stat-strip">
+    <div class="stat-cell">
+        <div class="label">Total recibido</div>
+        <div class="value">@Html.Moneda(Model.TotalRecibido)</div>
+        <div class="hint">@(Model.HayFiltros ? "En el rango filtrado" : "Histórico completo")</div>
+    </div>
+    <div class="stat-cell">
+        <div class="label">Pagos registrados</div>
+        <div class="value">@Model.CantidadPagos</div>
+        <div class="hint">
+            @(Model.CantidadPagos > 0
+                ? $"Promedio {Html.Moneda(Model.TotalRecibido / Model.CantidadPagos)}"
+                : "Sin pagos todavía")
+        </div>
+    </div>
+    <div class="stat-cell">
+        <div class="label">Órdenes saldadas</div>
+        <div class="value">@Model.OrdenesSaldadas</div>
+        <div class="hint">Pagos que cubrieron el total de su orden</div>
+    </div>
+    <div class="stat-cell">
+        <div class="label">Por método</div>
+        @if (Model.PorMetodo.Any())
+        {
+            var top = Model.PorMetodo.First();
+            var resto = Model.PorMetodo.Skip(1)
+                .Select(m => $"{m.Porcentaje:0}% {TextoMetodo(m.MetodoPago).ToLower()}");
+
+            <div class="value">@top.Porcentaje.ToString("0")% <span style="font-size:.6em; font-weight:600;">@TextoMetodo(top.MetodoPago).ToLower()</span></div>
+            <div class="hint">@(resto.Any() ? string.Join(" · ", resto) : "Único método usado")</div>
+        }
+        else
+        {
+            <div class="value">—</div>
+            <div class="hint">Sin pagos todavía</div>
+        }
+    </div>
+</div>
+
+@if (!grupos.Any())
+{
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "card")</div>
+        <p class="empty-title">No hay pagos que mostrar</p>
+        <p class="empty-text">
+            Ajustá los filtros para ampliar la búsqueda, o registrá un pago sobre una orden pendiente.
+        </p>
+        <a asp-action="Registrar" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Registrar pago
+        </a>
+    </div>
+}
+else
+{
+    foreach (var grupo in grupos)
+    {
+        var delDia = grupo.OrderByDescending(p => p.FechaPago).ToList();
+        var totalDia = delDia.Sum(p => p.Monto);
+
+        <section class="day-group">
+            <div class="day-label">
+                <span class="d">@EtiquetaDia(grupo.Key)</span>
+                <span class="n">
+                    @delDia.Count @(delDia.Count == 1 ? "pago" : "pagos") · @Html.Moneda(totalDia)
+                </span>
+            </div>
+
+            <div class="surface-card">
+                @foreach (var pago in delDia)
+                {
+                    var m = ClaseMetodo(pago.MetodoPago);
+                    var saldo = string.Equals(pago.EstadoPago, "Completado", StringComparison.OrdinalIgnoreCase);
+                    var fallido = string.Equals(pago.EstadoPago, "Fallido", StringComparison.OrdinalIgnoreCase);
+
+                    <a class="orden-row @(fallido ? "fila-apagada" : "")"
+                       asp-controller="Orden" asp-action="Details" asp-route-id="@pago.OrdenId">
+
+                        <span class="orden-edge m-@m" aria-hidden="true"></span>
+
+                        <span class="orden-thumb m-@m" aria-hidden="true">
+                            @await Html.PartialAsync("_Icon", IconoMetodo(pago.MetodoPago))
+                        </span>
+
+                        <span class="orden-id">#@pago.OrdenId</span>
+
+                        <span class="orden-body">
+                            <span class="orden-cliente d-block">@pago.NombreCliente</span>
+                            <span class="orden-sub d-block">
+                                @TextoMetodo(pago.MetodoPago) &middot; @pago.FechaPago.ToString("HH:mm")
+                            </span>
+                        </span>
+
+                        @if (fallido)
+                        {
+                            <span class="estado-pill estado-cancelada">Pago fallido</span>
+                        }
+                        else if (saldo)
+                        {
+                            <span class="estado-pill estado-pagada">Saldó la orden</span>
+                        }
+                        else if (pago.EsPrimerPago)
+                        {
+                            <span class="estado-pill estado-pendiente">Pago inicial</span>
+                        }
+                        else
+                        {
+                            <span class="estado-pill estado-pendiente">Abono parcial</span>
+                        }
+
+                        <span class="orden-total mono">@Html.Moneda(pago.Monto)</span>
+
+                        <span class="orden-chevron">@await Html.PartialAsync("_Icon", "chevron-right")</span>
+                    </a>
+                }
+            </div>
+        </section>
+    }
+
+    @await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo
+    {
+        PageNumber = Model.PageNumber,
+        TotalPages = Model.TotalPages
+    })
+}

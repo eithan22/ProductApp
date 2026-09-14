@@ -1118,6 +1118,30 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .orden-thumb.e-entregada { background: var(--color-accent2-soft); color: var(--color-accent2); }
 .orden-thumb.e-cancelada { background: var(--color-danger-soft);  color: var(--color-danger); }
 
+/* Pagos: el canto y el icono identifican el método de cobro, con el mismo
+   lenguaje visual que los estados de orden. El color nunca va solo: siempre
+   lo acompaña el icono del método y el texto en la línea secundaria. */
+.orden-edge.m-transferencia { background: var(--color-primary); }
+.orden-edge.m-efectivo      { background: var(--color-warn); }
+.orden-edge.m-tarjeta       { background: var(--color-info); }
+.orden-edge.m-otro          { background: var(--color-accent2); }
+
+.orden-thumb.m-transferencia { background: var(--color-primary-soft); color: var(--color-primary); }
+.orden-thumb.m-efectivo      { background: var(--color-warn-soft);    color: var(--color-warn); }
+.orden-thumb.m-tarjeta       { background: var(--color-info-soft);    color: var(--color-info); }
+.orden-thumb.m-otro          { background: var(--color-accent2-soft); color: var(--color-accent2); }
+
+/* Selector de orden a cobrar: cada fila se despliega en su propio formulario,
+   sin JavaScript, para no sacar al usuario de la pantalla de Pagos. */
+.cobrar-item { border-bottom: 1px solid var(--color-border); }
+.cobrar-item:last-child { border-bottom: none; }
+.cobrar-item > summary { list-style: none; cursor: pointer; }
+.cobrar-item > summary::-webkit-details-marker { display: none; }
+.cobrar-item > summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.cobrar-item > summary .orden-row { border-bottom: none; }
+.cobrar-item[open] > summary .orden-chevron { transform: rotate(180deg); }
+.cobrar-form { padding: 4px 20px 20px 74px; }
+
 .orden-id {
   font-family: var(--font-mono);
   font-size: .78rem;
@@ -2336,6 +2360,13 @@ html:has(.landing-page) { scroll-behavior: smooth; }
   .orden-id { width: auto; }
   .orden-total { width: auto; margin-left: auto; }
   .orden-chevron { display: none; }
+
+  /* ---------- Pagos: selector de orden a cobrar ---------- */
+
+  /* En las filas del selector el chevron no es decorativo: es lo único que
+     avisa que la fila se abre, así que acá sí se muestra. */
+  .cobrar-item > summary .orden-chevron { display: block; }
+  .cobrar-form { padding: 4px 16px 16px; }
 
   /* ---------- Usuarios ---------- */
 

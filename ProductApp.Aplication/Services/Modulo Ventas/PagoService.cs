@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.PagoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Ventas;
@@ -7,6 +8,7 @@ using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Ventas;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Common.Enums.EnumsNotificacion;
 using ProductApp.Domian.Common.Enums.EnumsOrden;
+using ProductApp.Domian.Common.Enums.EnumsPago;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 
@@ -168,6 +170,68 @@ namespace ProductApp.Aplication.Services
             var saldoPendiente = orden.Total - totalPagado;
 
             return OperationResultD<decimal>.Success(saldoPendiente, "Saldo pendiente obtenido exitosamente");
+        }
+
+        public async Task<OperationResultD<PagoListadoResponseDto>> ObtenerPagosAsync(PagoFiltroDto filtro)
+        {
+            if (filtro.PageNumber < 1)
+                return OperationResultD<PagoListadoResponseDto>.Failure("pageNumber debe ser mayor o igual a 1");
+
+            if (filtro.PageSize < 1 || filtro.PageSize > 100)
+                return OperationResultD<PagoListadoResponseDto>.Failure("pageSize debe estar entre 1 y 100");
+
+            if (filtro.Desde.HasValue && filtro.Hasta.HasValue && filtro.Desde.Value.Date > filtro.Hasta.Value.Date)
+                return OperationResultD<PagoListadoResponseDto>.Failure("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'");
+
+            MetodoPago? metodoPago = null;
+            if (!string.IsNullOrWhiteSpace(filtro.MetodoPago))
+            {
+                if (!Enum.TryParse<MetodoPago>(filtro.MetodoPago, true, out var metodoParseado))
+                    return OperationResultD<PagoListadoResponseDto>.Failure(
+                        $"El método de pago '{filtro.MetodoPago}' no es válido. Valores permitidos: {string.Join(", ", Enum.GetNames<MetodoPago>())}");
+
+                metodoPago = metodoParseado;
+            }
+
+            var (pagos, totalCount, totalMonto, ordenesSaldadas, montoPorMetodo, idsPrimerPago) =
+                await _pagoRepository.ObtenerPagosPaginadosAsync(
+                    filtro.OrdenId, filtro.Desde, filtro.Hasta, metodoPago, filtro.PageNumber, filtro.PageSize);
+
+            var items = pagos.Select(p => _mapperPago.MapToPagoListaResponseDto(p)).ToList();
+            foreach (var item in items)
+            {
+                item.EsPrimerPago = idsPrimerPago.Contains(item.Id);
+            }
+
+            var pagedResult = new PagedResult<PagoListaResponseDto>
+            {
+                Items = items,
+                PageNumber = filtro.PageNumber,
+                PageSize = filtro.PageSize,
+                TotalCount = totalCount
+            };
+
+            // El desglose por método se calcula sobre el monto total filtrado, no
+            // sobre la página actual, para que el porcentaje sea representativo.
+            var porMetodo = montoPorMetodo
+                .Select(kv => new PagoMetodoResumenDto
+                {
+                    MetodoPago = kv.Key.ToString(),
+                    Porcentaje = totalMonto > 0 ? Math.Round(kv.Value / totalMonto * 100, 0) : 0
+                })
+                .OrderByDescending(m => m.Porcentaje)
+                .ToList();
+
+            var response = new PagoListadoResponseDto
+            {
+                Pagos = pagedResult,
+                TotalRecibido = totalMonto,
+                CantidadPagos = totalCount,
+                OrdenesSaldadas = ordenesSaldadas,
+                PorMetodo = porMetodo
+            };
+
+            return OperationResultD<PagoListadoResponseDto>.Success(response, "Pagos obtenidos exitosamente");
         }
     }
 }

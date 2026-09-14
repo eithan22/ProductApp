@@ -25,5 +25,21 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
                 SaldoPendiente = saldoPendiente
             };
         }
+
+        public PagoListaResponseDto MapToPagoListaResponseDto(Pago pago)
+        {
+            return new PagoListaResponseDto
+            {
+                Id            = pago.Id,
+                OrdenId       = pago.OrdenId,
+                NombreCliente = pago.Orden?.Cliente?.Nombre ?? string.Empty,
+                Monto         = pago.Monto,
+                MetodoPago    = pago.MetodoPago.ToString(),
+                EstadoPago    = pago.Estado.ToString(),
+                FechaPago     = pago.FechaPago,
+                TotalOrden    = pago.Orden?.Total ?? 0m,
+                EstadoOrden   = pago.Orden?.Estado.ToString() ?? string.Empty
+            };
+        }
     }
 }

@@ -1,0 +1,134 @@
+@model List<Web.Models.Modelo_Ventas.PagoModels.OrdenCobrableModel>
+
+@{
+    ViewData["Title"] = "Registrar pago";
+
+    // El valor que viaja al backend es el nombre del enum; el texto es solo
+    // para leerlo en pantalla. Misma tabla que usa Orden/Details.
+    var metodosPago = new (string Valor, string Texto)[]
+    {
+        ("Efectivo", "Efectivo"),
+        ("TarjetaCredito", "Tarjeta de crédito"),
+        ("TarjetaDebito", "Tarjeta de débito"),
+        ("TransferenciaBancaria", "Transferencia bancaria"),
+        ("PayPal", "PayPal")
+    };
+
+    var hoy = DateTime.Today;
+
+    string EtiquetaDia(DateTime dia)
+    {
+        if (dia.Date == hoy) { return "Hoy"; }
+        if (dia.Date == hoy.AddDays(-1)) { return "Ayer"; }
+        return dia.ToString("dd/MM/yyyy");
+    }
+}
+
+<div class="crumb">
+    <a asp-action="Index">Pagos</a>
+    @await Html.PartialAsync("_Icon", "chevron-right")
+    <span>Registrar pago</span>
+</div>
+
+<div class="page-header">
+    <p class="text-muted">
+        @Model.Count @(Model.Count == 1 ? "orden espera cobro" : "órdenes esperan cobro").
+        Elegí una para registrar el pago.
+    </p>
+    <a asp-action="Index" class="btn-pa btn-pa-outline">
+        @await Html.PartialAsync("_Icon", "back") Volver a Pagos
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "tick")</div>
+        <p class="empty-title">No hay nada por cobrar</p>
+        <p class="empty-text">
+            Todas las órdenes pendientes y procesadas ya están saldadas. Cuando se cree
+            una orden nueva va a aparecer acá.
+        </p>
+        <a asp-controller="Orden" asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Nueva orden
+        </a>
+    </div>
+}
+else
+{
+    <div class="surface-card">
+        @foreach (var orden in Model)
+        {
+            var e = orden.Estado.ToLower();
+            var cobrado = orden.Total - orden.SaldoPendiente;
+
+            <details class="cobrar-item">
+                <summary>
+                    <span class="orden-row">
+                        <span class="orden-edge e-@e" aria-hidden="true"></span>
+
+                        <span class="orden-thumb e-@e" aria-hidden="true">
+                            @await Html.PartialAsync("_Icon", "card")
+                        </span>
+
+                        <span class="orden-id">#@orden.Id</span>
+
+                        <span class="orden-body">
+                            <span class="orden-cliente d-block">@orden.NombreCliente</span>
+                            <span class="orden-sub d-block">
+                                @EtiquetaDia(orden.Fecha) &middot; @orden.Fecha.ToString("HH:mm")
+                                &middot; total @Html.Moneda(orden.Total)
+                                @if (cobrado > 0)
+                                {
+                                    <text>&middot; @Html.Moneda(cobrado) ya cobrados</text>
+                                }
+                            </span>
+                        </span>
+
+                        <span class="estado-pill estado-@e">@orden.Estado</span>
+
+                        <span class="orden-total mono">@Html.Moneda(orden.SaldoPendiente)</span>
+
+                        <span class="orden-chevron">@await Html.PartialAsync("_Icon", "chevron-down")</span>
+                    </span>
+                </summary>
+
+                <form asp-action="Registrar" method="post" class="cobrar-form">
+                    <input type="hidden" name="ordenId" value="@orden.Id" />
+
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="monto-@orden.Id">Monto a pagar</label>
+                            <input type="number" id="monto-@orden.Id" name="monto"
+                                   step="0.01" min="0.01" max="@orden.SaldoPendiente"
+                                   value="@orden.SaldoPendiente"
+                                   class="form-control mono" required />
+                        </div>
+
+                        <div class="col-md-5">
+                            <label for="metodo-@orden.Id">Método de pago</label>
+                            <select id="metodo-@orden.Id" name="metodoPago" class="form-select" required>
+                                <option value="">Elegí un método…</option>
+                                @foreach (var m in metodosPago)
+                                {
+                                    <option value="@m.Valor">@m.Texto</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <button type="submit" class="btn-pa btn-pa-primary w-100 justify-content-center">
+                                @await Html.PartialAsync("_Icon", "card") Registrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="text-muted" style="font-size:.76rem; margin:10px 0 0;">
+                        Se admiten pagos parciales. Al cubrir el saldo completo la orden pasa
+                        a Pagada y se descuenta el stock.
+                    </p>
+                </form>
+            </details>
+        }
+    </div>
+}

@@ -11,5 +11,6 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto, int usuarioSolicitanteId);
         Task<OperationResultD<List<PagoResponseDto>>> ObtenerPagosPorOrdenAsync(int ordenId);
         Task<OperationResultD<decimal>> ObtenerSaldoPendienteAsync(int ordenId);
+        Task<OperationResultD<PagoListadoResponseDto>> ObtenerPagosAsync(PagoFiltroDto filtro);
     }
 }

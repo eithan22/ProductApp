@@ -7,5 +7,6 @@ namespace Web.Services.EndPoints.Modulo_Ventas
         public string RegistrarPago => "Pago/RegistrarPago";
         public string GetPagosByOrden => "Pago/GetPagosByOrden/";
         public string GetSaldoPendiente => "Pago/GetSaldoPendiente/";
+        public string GetAll => "Pago/GetAllPagos";
     }
 }

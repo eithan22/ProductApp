@@ -51,5 +51,16 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
             return Ok(ApiResponseT<decimal>.SuccessResponse(result.Data, result.Message));
         }
+
+        [Authorize]
+        [HttpGet("GetAllPagos")]
+        public async Task<IActionResult> GetAllPagos([FromQuery] PagoFiltroDto filtro)
+        {
+            var result = await _pagoServices.ObtenerPagosAsync(filtro);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<PagoListadoResponseDto>.SuccessResponse(result.Data, result.Message));
+        }
     }
 }

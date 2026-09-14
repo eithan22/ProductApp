@@ -99,6 +99,10 @@
                    class="@Activo("Orden")" aria-current="@Actual("Orden")">
                     @await Html.PartialAsync("_Icon", "receipt") Órdenes
                 </a>
+                <a asp-controller="Pago" asp-action="Index"
+                   class="@Activo("Pago")" aria-current="@Actual("Pago")">
+                    @await Html.PartialAsync("_Icon", "cash") Pagos
+                </a>
                 <a asp-controller="Cliente" asp-action="Index"
                    class="@Activo("Cliente")" aria-current="@Actual("Cliente")">
                     @await Html.PartialAsync("_Icon", "users") Clientes
