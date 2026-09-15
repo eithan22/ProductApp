@@ -19,5 +19,7 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<ClienteTotalComprasDto>> ObtenerTotalComprasAsync(int clienteId);
 
+        Task<OperationResultD<ClienteResponseDto>> ObtenerClienteReservadoAsync();
+
     }
 }

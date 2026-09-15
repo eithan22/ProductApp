@@ -98,6 +98,12 @@ namespace Web.Controllers.Modulo_Usuarios
 
                 var cliente = await _clienteHttpServices.GetClienteByIdAsync(id);
 
+                if (cliente.EsReservado)
+                {
+                    TempData["Error"] = "«Consumidor Final» es un cliente reservado del sistema: no se puede editar.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var model = new UpdateClientemodel
                 {
                     Id = cliente.Id,
@@ -155,6 +161,12 @@ namespace Web.Controllers.Modulo_Usuarios
 
                 if (cliente == null)
                     return RedirectToAction(nameof(Index));
+
+                if (cliente.EsReservado)
+                {
+                    TempData["Error"] = "«Consumidor Final» es un cliente reservado del sistema: no se puede desactivar.";
+                    return RedirectToAction(nameof(Index));
+                }
 
                 return View(cliente);
             }

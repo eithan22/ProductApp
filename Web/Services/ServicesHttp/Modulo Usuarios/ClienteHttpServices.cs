@@ -3,6 +3,7 @@ using ProductApp.Aplication.Dtos.ClienteDto;
 using System.Buffers.Text;
 using System.Net;
 using Web.Models.ClienteModels;
+using Web.Services.Base;
 using Web.Services.Interfaces.IBase;
 using Web.Services.Interfaces.IEndPoints;
 using Web.Services.Interfaces.ServicesHttp;
@@ -83,6 +84,20 @@ namespace Web.Services.ServicesHttp
         {
             var response = await _baseHttpServices.GetAsync<ClienteTotalComprasModel>($"{_clienteEndpointcs.TotalCompras}{id}");
             return response;
+        }
+
+        public async Task<ClienteModel?> GetClienteReservadoAsync()
+        {
+            try
+            {
+                return await _baseHttpServices.GetAsync<ClienteModel>(_clienteEndpointcs.GetReservado);
+            }
+            catch (ApiHttpException)
+            {
+                // Todavía no existe (por ejemplo, antes de que corra el seed en el
+                // primer arranque). El llamador decide qué hacer ante un null.
+                return null;
+            }
         }
     }
 }

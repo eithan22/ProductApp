@@ -30,8 +30,21 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success("Validacion Correcta");
         }
 
+        public OperationResult ValidarClienteNoReservado(Cliente cliente)
+        {
+            if (cliente.EsConsumidorFinal())
+                return OperationResult.Failure(
+                    "«Consumidor Final» es un cliente reservado del sistema: no se puede editar, desactivar ni eliminar.");
+
+            return OperationResult.Success("Validacion Correcta");
+        }
+
         public async Task<OperationResult> ValidarDeleteClienteAsync(Cliente cliente)
         {
+            var reservado = ValidarClienteNoReservado(cliente);
+            if (!reservado.IsSuccess)
+                return reservado;
+
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("El cliente ya está inactivo.");
 
@@ -40,6 +53,10 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 
         public async Task<OperationResult> ValidarUpdateClienteAsync(UpdateClienteDto dto, Cliente cliente)
         {
+            var reservado = ValidarClienteNoReservado(cliente);
+            if (!reservado.IsSuccess)
+                return reservado;
+
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("No se puede actualizar un cliente inactivo.");
 

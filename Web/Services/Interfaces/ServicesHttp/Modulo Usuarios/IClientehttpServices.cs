@@ -24,6 +24,10 @@ namespace Web.Services.Interfaces.ServicesHttp
             Task<bool> EnableClienteAsync(int id);
 
             Task<ClienteTotalComprasModel> GetTotalComprasAsync(int id);
+
+            // Nullable: puede no existir todavía (por ejemplo, en el primer arranque de
+            // la app antes de que corra el seed). El llamador decide el fallback.
+            Task<ClienteModel?> GetClienteReservadoAsync();
         }
 
 

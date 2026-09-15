@@ -12,8 +12,9 @@
 
         public string Direccion { get; set; } = string.Empty;
 
-        public string Estado { get; set; } = string.Empty; 
+        public string Estado { get; set; } = string.Empty;
 
-        
+        // Viene calculado desde la API: identifica al "Consumidor Final" del sistema.
+        public bool EsReservado { get; set; }
     }
 }

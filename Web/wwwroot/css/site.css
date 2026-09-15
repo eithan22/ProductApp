@@ -493,6 +493,46 @@ button.notif-item:hover { background: var(--color-bg); }
   margin-top: 6px;
 }
 
+/* Píldora del registro reservado del sistema (Consumidor Final) y su gemela
+   "Predeterminado" del combo de cliente en Orden/Create. Mismo lenguaje visual
+   que .status-pill pero más chica, porque acompañan a un texto, no lo reemplazan. */
+.lockpill, .defpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  vertical-align: middle;
+}
+.lockpill { margin-left: 8px; }
+.lockpill .icon, .defpill .icon { width: 11px; height: 11px; vertical-align: -1px; }
+
+/* El candado no es un botón: no reacciona al hover ni es alcanzable por teclado,
+   solo explica por qué no hay acciones en esa fila. */
+.icon-btn.locked {
+  cursor: default;
+  background: var(--color-primary-soft);
+  border-color: transparent;
+  color: var(--color-primary);
+}
+.icon-btn.locked:hover { color: var(--color-primary); border-color: transparent; }
+
+.labelrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.labelrow label { margin-bottom: 7px; }
+
+.field-hint {
+  font-size: .8rem;
+  color: var(--color-muted);
+  margin-top: 7px;
+  line-height: 1.45;
+}
+
 /* Tabla que no se puede reflowar: desplazamiento horizontal contenido.
    Lleva tabindex en el markup para que sea alcanzable por teclado. */
 .tabla-scroll {

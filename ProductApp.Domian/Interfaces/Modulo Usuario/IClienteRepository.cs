@@ -10,5 +10,10 @@ namespace ProductApp.Domian.Interfaces
         Task<bool> ExistePorCorreoAsync(string correo);
         Task<bool> ExistePorCedulaAsync(string cedula);
         Task<(int CantidadOrdenes, decimal TotalComprado, DateTime? FechaUltimaCompra)> ObtenerTotalComprasAsync(int clienteId);
+
+        // Consulta dedicada e independiente de la paginación general: garantiza que el
+        // "Consumidor Final" se encuentre sin importar cuántos clientes existan ni en
+        // qué orden se muestren en el resto del sistema.
+        Task<Cliente?> ObtenerClienteReservadoAsync();
     }
 }

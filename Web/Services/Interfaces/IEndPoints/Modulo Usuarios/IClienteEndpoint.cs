@@ -14,5 +14,7 @@
 
         string TotalCompras { get; }
 
+        string GetReservado { get; }
+
     }
 }

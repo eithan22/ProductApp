@@ -64,8 +64,20 @@ namespace Web.Controllers.Modulo_Ventas
 
         public async Task<ActionResult> Create()
         {
-            ViewBag.Clientes = (await _clienteHttpServices.GetClientesAsync(pageSize: 100)).Items;
-            return View();
+            var clientes = (await _clienteHttpServices.GetClientesAsync(pageSize: 100)).Items;
+            ViewBag.Clientes = clientes;
+
+            // Se pide el reservado con una consulta dedicada, independiente de la
+            // paginación general de Clientes: así la preselección no depende de cuántos
+            // clientes existan ni de en qué página caiga el registro reservado.
+            var reservado = await _clienteHttpServices.GetClienteReservadoAsync();
+
+            var model = new CreateOrdenModel
+            {
+                ClienteId = reservado?.Id ?? 0
+            };
+
+            return View(model);
         }
 
         [HttpPost]

@@ -117,6 +117,11 @@ namespace ProductApp.Aplication.Services
 
             }
 
+            var validationResult = _validatorBusinessClientes.ValidarClienteNoReservado(cliente);
+            if (!validationResult.IsSuccess)
+            {
+                return OperationResultD<bool>.Failure(validationResult.Message);
+            }
 
             await _clienteRepository.DeleteAsync(id);
 
@@ -295,6 +300,19 @@ namespace ProductApp.Aplication.Services
             };
 
             return OperationResultD<ClienteTotalComprasDto>.Success(dto, "Total de compras obtenido correctamente");
+        }
+
+        public async Task<OperationResultD<ClienteResponseDto>> ObtenerClienteReservadoAsync()
+        {
+            var cliente = await _clienteRepository.ObtenerClienteReservadoAsync();
+            if (cliente == null)
+            {
+                return OperationResultD<ClienteResponseDto>.Failure("El cliente reservado del sistema todavía no existe.");
+            }
+
+            var clienteResponseDto = _mapperCliente.MapToClienteResponseDto(cliente);
+
+            return OperationResultD<ClienteResponseDto>.Success(clienteResponseDto, "Cliente reservado obtenido correctamente");
         }
 
     }

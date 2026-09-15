@@ -30,6 +30,22 @@ namespace ProductApp.Api.Seed
                 context.ConfiguracionSistema.Add(configuracionSistema);
                 await context.SaveChangesAsync();
             }
+
+            // Cliente reservado de las ventas de mostrador. A diferencia de los dos seeds
+            // de arriba, la tabla de clientes sí tiene otros registros, así que la
+            // condición no es "está vacía" sino "no existe todavía el reservado".
+            if (!await context.Clientes.AnyAsync(c => c.Cedula == Cliente.CedulaConsumidorFinal))
+            {
+                var consumidorFinal = new Cliente(
+                    Cliente.NombreConsumidorFinal,
+                    Cliente.CedulaConsumidorFinal,
+                    Cliente.DireccionConsumidorFinal,
+                    Cliente.CorreoConsumidorFinal,
+                    Cliente.TelefonoConsumidorFinal);
+
+                context.Clientes.Add(consumidorFinal);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

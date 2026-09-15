@@ -17,8 +17,12 @@ namespace ProductApp.Aplication.Dtos.ClienteDto
 
         public string Direccion { get; set; } = string.Empty;
 
-        public string Estado { get; set; } = string.Empty; //para poder mapearlo a string y mostrar si esta activo o desactivado sin el enum 
+        public string Estado { get; set; } = string.Empty; //para poder mapearlo a string y mostrar si esta activo o desactivado sin el enum
 
+        // Calculado en el mapper a partir del dominio, no persistido. Le dice a la Web
+        // que este cliente es el "Consumidor Final" del sistema, para pintar el candado
+        // en el listado y preseleccionarlo al crear una orden.
+        public bool EsReservado { get; set; }
 
     }
 }

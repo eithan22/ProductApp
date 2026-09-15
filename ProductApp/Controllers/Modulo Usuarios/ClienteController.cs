@@ -131,6 +131,17 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
             return Ok(ApiResponseT<ClienteTotalComprasDto>.SuccessResponse(result.Data, result.Message));
         }
+
+        [Authorize]
+        [HttpGet("GetReservado")]
+        public async Task<IActionResult> GetReservado()
+        {
+            var result = await _clienteService.ObtenerClienteReservadoAsync();
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(result.Data, result.Message));
+        }
     }
 
 
