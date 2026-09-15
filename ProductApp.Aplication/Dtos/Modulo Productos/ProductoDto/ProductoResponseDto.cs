@@ -21,6 +21,10 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
 
         public string? ImagenUrl { get; set; }
 
+        public int? ProveedorId { get; set; }
+
+        public string? Proveedor { get; set; } // nombre del proveedor, null si el producto no tiene uno asignado
+
         public int? StockActual { get; set; }
         public int? StockMinimo { get; set; }
 

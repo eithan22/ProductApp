@@ -19,9 +19,11 @@ namespace ProductApp.Aplication.Interface
         // Este método se puede usar para obtener el inventario de un producto específico, incluyendo la cantidad actual, la cantidad mínima y cualquier otra información relevante. Es útil para mostrar el estado del inventario en la interfaz de usuario o para tomar decisiones basadas en el stock disponible.
         Task<OperationResultD<InventarioResponseDto>> ObtenerInventarioAsync(int productoId);
 
-        Task<OperationResultD<List<InventarioResponseDto>>> ObtenerStockBajoAsync();
+        // proveedorId opcional (RF-3.7.3): la vista de stock bajo puede filtrarse por
+        // proveedor para saber qué hay que pedirle a cada uno.
+        Task<OperationResultD<List<InventarioResponseDto>>> ObtenerStockBajoAsync(int? proveedorId = null);
 
         // Este método se puede usar para obtener una lista de todos los inventarios, lo que es útil para mostrar un resumen del estado del inventario en la interfaz de usuario o para realizar análisis y reportes sobre el inventario.
-        Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = 10);
+        Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = 10, int? proveedorId = null);
     }
 }

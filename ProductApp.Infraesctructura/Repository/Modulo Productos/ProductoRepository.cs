@@ -21,6 +21,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
             var query = _context.Productos
             .Include(p => p.Categoria)
             .Include(p => p.Inventario)
+            .Include(p => p.Proveedor)
             .Where(p => !p.EstaEliminado)
             .AsQueryable();
 
@@ -49,6 +50,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Productos
                 .Include(p => p.Categoria)
+                .Include(p => p.Proveedor)
                 .FirstOrDefaultAsync(p => !p.EstaEliminado && p.Id == id);
         }
 
@@ -60,6 +62,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
             var query = _context.Productos
                 .Include(p => p.Categoria)
                 .Include(p => p.Inventario)
+                .Include(p => p.Proveedor)
                 .Where(p => !p.EstaEliminado)
                 .AsQueryable();
 

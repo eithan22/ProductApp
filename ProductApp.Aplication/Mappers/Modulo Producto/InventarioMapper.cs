@@ -16,6 +16,8 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 Id = inventario.Id,
                 ProductoId = inventario.ProductoId,
                 Producto = inventario.Producto.Nombre,
+                ProveedorId = inventario.Producto.ProveedorId,
+                Proveedor = inventario.Producto.Proveedor?.Nombre,
                 StockActual = inventario.CantidadActual,
                 StockMinimo = inventario.CantidadMinima,
                 FechaActualizacion = inventario.UltimaActualizacion

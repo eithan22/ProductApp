@@ -12,11 +12,17 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
         }
 
-        public async Task<(List<Inventario> Items, int TotalCount)> GetAllConProductoAsync(int pageNumber, int pageSize)
+        public async Task<(List<Inventario> Items, int TotalCount)> GetAllConProductoAsync(int pageNumber, int pageSize, int? proveedorId = null)
         {
             var query = _context.Inventario
                 .Include(i => i.Producto)
+                    .ThenInclude(p => p.Proveedor)
                 .Where(i => !i.EstaEliminado);
+
+            if (proveedorId.HasValue)
+            {
+                query = query.Where(i => i.Producto.ProveedorId == proveedorId.Value);
+            }
 
             var totalCount = await query.CountAsync();
 
@@ -32,16 +38,26 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Inventario
                 .Include(i => i.Producto)
+                    .ThenInclude(p => p.Proveedor)
                 .FirstOrDefaultAsync(i => !i.EstaEliminado && i.ProductoId == productoId);
         }
 
         // Método para obtener el inventario con stock bajo
-        public async Task<List<Inventario>> GetStockBajoAsync()
+        public async Task<List<Inventario>> GetStockBajoAsync(int? proveedorId = null)
         {
-            return await _context.Inventario
+            var query = _context.Inventario
                 .Include(i => i.Producto)
-                .Where(i => !i.EstaEliminado && i.CantidadActual <= i.CantidadMinima)
-                .ToListAsync();
+                    .ThenInclude(p => p.Proveedor)
+                .Where(i => !i.EstaEliminado && i.CantidadActual <= i.CantidadMinima);
+
+            // Filtro por proveedor (RF-3.7.3): permite ver de una sola vez todo lo que hay
+            // que reponerle a un mismo proveedor.
+            if (proveedorId.HasValue)
+            {
+                query = query.Where(i => i.Producto.ProveedorId == proveedorId.Value);
+            }
+
+            return await query.ToListAsync();
         }
     }
 }

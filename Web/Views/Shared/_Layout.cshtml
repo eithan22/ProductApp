@@ -92,6 +92,10 @@
                    class="@Activo("Inventario")" aria-current="@Actual("Inventario")">
                     @await Html.PartialAsync("_Icon", "layers") Inventario
                 </a>
+                <a asp-controller="Proveedor" asp-action="Index"
+                   class="@Activo("Proveedor")" aria-current="@Actual("Proveedor")">
+                    @await Html.PartialAsync("_Icon", "inbox") Proveedores
+                </a>
 
                 <p class="nav-group">Ventas</p>
 

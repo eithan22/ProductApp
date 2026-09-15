@@ -38,9 +38,9 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         [Authorize]
         [HttpGet("GetAllInventarios")]
-        public async Task<IActionResult> GetAllInventarios([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllInventarios([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] int? proveedorId = null)
         {
-            var result = await _inventarioService.ObtenerTodosInventariosAsync(pageNumber, pageSize);
+            var result = await _inventarioService.ObtenerTodosInventariosAsync(pageNumber, pageSize, proveedorId);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
@@ -51,9 +51,9 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         [Authorize]
         [HttpGet("GetStockBajo")]
-        public async Task<IActionResult> GetStockBajo()
+        public async Task<IActionResult> GetStockBajo([FromQuery] int? proveedorId = null)
         {
-            var result = await _inventarioService.ObtenerStockBajoAsync();
+            var result = await _inventarioService.ObtenerStockBajoAsync(proveedorId);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));

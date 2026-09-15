@@ -4,8 +4,22 @@
     ViewData["Title"] = "Inventario";
     var soloBajo = ViewBag.SoloBajo as bool? ?? false;
     var totalBajo = ViewBag.TotalBajo as int? ?? 0;
+    var proveedorId = ViewBag.ProveedorId as int?;
+    var proveedores = ViewBag.Proveedores as List<Web.Models.Modelo_Proveedores.ProveedorModels.ProveedorModel>;
     var unidadesPagina = Model.Items.Sum(i => i.StockActual);
     var agotadosPagina = Model.Items.Count(i => i.StockActual <= 0);
+
+    // En la vista de reposición el stock bajo se lee por proveedor: cada grupo es una
+    // llamada distinta que hay que hacer. Los productos sin proveedor van al final.
+    var gruposProveedor = Model.Items
+        .GroupBy(i => new
+        {
+            i.ProveedorId,
+            Nombre = string.IsNullOrWhiteSpace(i.Proveedor) ? "Sin proveedor asignado" : i.Proveedor
+        })
+        .OrderBy(g => g.Key.ProveedorId.HasValue ? 0 : 1)
+        .ThenBy(g => g.Key.Nombre)
+        .ToList();
 }
 
 <div class="page-header">
@@ -37,12 +51,30 @@
     </div>
 </div>
 
-<div class="toolbar">
-    <div class="seg">
-        <a asp-action="Index" class="@(soloBajo ? "" : "on")">Todo el inventario</a>
-        <a asp-action="StockBajo" class="@(soloBajo ? "on" : "")">Solo stock bajo</a>
+@* El filtro se envía a la acción que se esté viendo para no perder el modo (todo / solo bajo). *@
+<form asp-action="@(soloBajo ? "StockBajo" : "Index")" method="get" class="toolbar">
+    <label class="visually-hidden" for="filtro-proveedor">Filtrar por proveedor</label>
+    <select id="filtro-proveedor" name="proveedorId" class="form-select" style="width:240px;">
+        <option value="" selected="@(!proveedorId.HasValue)">Proveedor: todos</option>
+        @if (proveedores != null)
+        {
+            @foreach (var p in proveedores)
+            {
+                <option value="@p.Id" selected="@(proveedorId == p.Id)">@p.Nombre</option>
+            }
+        }
+    </select>
+
+    <div class="toolbar-group">
+        <button type="submit" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "search") Filtrar</button>
+        <a asp-action="@(soloBajo ? "StockBajo" : "Index")" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
     </div>
-</div>
+
+    <div class="seg">
+        <a asp-action="Index" asp-route-proveedorId="@proveedorId" class="@(soloBajo ? "" : "on")">Todo el inventario</a>
+        <a asp-action="StockBajo" asp-route-proveedorId="@proveedorId" class="@(soloBajo ? "on" : "")">Solo stock bajo</a>
+    </div>
+</form>
 
 @if (!Model.Items.Any())
 {
@@ -63,6 +95,62 @@
             <a asp-controller="Producto" asp-action="Create" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "add") Nuevo producto</a>
         }
     </div>
+}
+else if (soloBajo)
+{
+    foreach (var grupo in gruposProveedor)
+    {
+        var delProveedor = grupo.OrderBy(i => i.Producto).ToList();
+        var agotadosGrupo = delProveedor.Count(i => i.StockActual <= 0);
+
+        <section class="day-group">
+            <div class="day-label">
+                <span class="d">@grupo.Key.Nombre</span>
+                <span class="n">
+                    @delProveedor.Count @(delProveedor.Count == 1 ? "producto" : "productos") por reponer@(agotadosGrupo > 0 ? $" · {agotadosGrupo} agotado" + (agotadosGrupo == 1 ? "" : "s") : "")
+                </span>
+            </div>
+
+            <div class="surface-card">
+                @foreach (var item in delProveedor)
+                {
+                    var bajo = item.StockActual <= item.StockMinimo;
+                    var agotado = item.StockActual <= 0;
+                    var cerca = !bajo && item.StockActual <= item.StockMinimo * 1.5;
+                    var color = bajo ? "var(--color-danger)" : cerca ? "var(--color-warn)" : "var(--color-primary)";
+                    var nivel = agotado || bajo ? "is-danger" : cerca ? "is-warn" : "";
+                    var referencia = item.StockMinimo > 0 ? item.StockMinimo * 2 : Math.Max(item.StockActual, 1);
+                    var ancho = Math.Min(100, (int)Math.Round((double)item.StockActual / referencia * 100));
+
+                    <div class="inv-row">
+                        <div>
+                            <div class="ledger-name">@item.Producto</div>
+                            <div class="text-muted" style="font-size:.78rem; margin-top:1px;">
+                                Actualizado @item.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="inv-qty @nivel">
+                                @item.StockActual <span class="sub">/ mín. @item.StockMinimo</span>
+                            </div>
+                            <div class="inv-bar" role="img"
+                                 aria-label="@item.StockActual unidades, mínimo @item.StockMinimo">
+                                <div class="inv-bar-fill" style="width:@(ancho)%; background:@color;"></div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <a asp-action="Movimiento" asp-route-productoId="@item.ProductoId"
+                               class="btn-pa @(bajo ? "btn-pa-warn" : "btn-pa-outline")">
+                                @await Html.PartialAsync("_Icon", "layers") Ajustar
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
 }
 else
 {

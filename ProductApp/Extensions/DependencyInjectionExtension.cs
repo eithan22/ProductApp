@@ -1,6 +1,7 @@
 using ProductApp.Extensions.Modulo_Configuracion;
 using ProductApp.Extensions.Modulo_Notificaciones;
 using ProductApp.Extensions.Modulo_Productos;
+using ProductApp.Extensions.Modulo_Proveedores;
 using ProductApp.Extensions.Modulo_Reportes;
 using ProductApp.Extensions.Modulo_Usuarios;
 using ProductApp.Extensions.Modulo_Ventas;
@@ -15,6 +16,7 @@ namespace ProductApp.Extensions
             services.AddModuloNotificaciones();
             services.AddModuloUsuarios();
             services.AddModuloProductos(configuration);
+            services.AddModuloProveedores();
             services.AddModuloVentas(configuration);
             services.AddModuloReportes();
             services.AddModuloConfiguracion();

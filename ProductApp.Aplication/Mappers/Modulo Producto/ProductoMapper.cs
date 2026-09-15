@@ -24,6 +24,9 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
             if (!string.IsNullOrWhiteSpace(dto.ImagenUrl))
                 producto.AsignarImagen(dto.ImagenUrl);
 
+            if (dto.ProveedorId.HasValue)
+                producto.AsignarProveedor(dto.ProveedorId);
+
             return producto;
 
         }
@@ -41,6 +44,8 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 Estado = producto.Estado.ToString(),
                 Categoria = producto.Categoria?.Nombre,
                 ImagenUrl = producto.ImagenUrl,
+                ProveedorId = producto.ProveedorId,
+                Proveedor = producto.Proveedor?.Nombre,
                 StockActual = producto.Inventario?.CantidadActual,
                 StockMinimo = producto.Inventario?.CantidadMinima,
 
@@ -57,6 +62,10 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
             producto.CambiarYvalidarDescripcion(dto.Descripcion);
             producto.CambiarYvalidarNombre(dto.Nombre);
             producto.CambiarYvalidarCategoria(dto.CategoriaId);
+
+            // El proveedor sí se aplica tal cual venga, incluido null: así el formulario
+            // puede quitarle el proveedor a un producto que ya lo tenía.
+            producto.AsignarProveedor(dto.ProveedorId);
 
             // Si el dto no trae imagen se conserva la que ya tenía: el update por JSON nunca
             // borra un archivo ya subido al storage.

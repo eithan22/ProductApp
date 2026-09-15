@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Common;
 using Web.Models.Modelo_Productos.ProductoModels;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Productos;
+using Web.Services.Interfaces.ServicesHttp.Modulo_Proveedores;
 
 namespace Web.Controllers.Modulo_Productos
 {
@@ -9,14 +10,17 @@ namespace Web.Controllers.Modulo_Productos
     {
         private readonly IProductoHttpServices _productoHttpServices;
         private readonly ICategoriaHttpServices _categoriaHttpServices;
+        private readonly IProveedorHttpServices _proveedorHttpServices;
         private readonly ILogger<ProductoController> _logger;
 
         public ProductoController(IProductoHttpServices productoHttpServices,
             ICategoriaHttpServices categoriaHttpServices,
+            IProveedorHttpServices proveedorHttpServices,
             ILogger<ProductoController> logger)
         {
             _productoHttpServices = productoHttpServices;
             _categoriaHttpServices = categoriaHttpServices;
+            _proveedorHttpServices = proveedorHttpServices;
             _logger = logger;
         }
 
@@ -57,6 +61,7 @@ namespace Web.Controllers.Modulo_Productos
         public async Task<ActionResult> Create()
         {
             await CargarCategorias();
+            await CargarProveedores();
             return View();
         }
 
@@ -73,12 +78,14 @@ namespace Web.Controllers.Modulo_Productos
                     return RedirectToAction(nameof(Index));
                 }
                 await CargarCategorias();
+                await CargarProveedores();
                 return View(model);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
                 await CargarCategorias();
+                await CargarProveedores();
                 return View(model);
             }
         }
@@ -98,10 +105,17 @@ namespace Web.Controllers.Modulo_Productos
                     Descripcion = producto.Descripcion,
                     Precio = producto.Precio,
                     Costo = producto.Costo,
-                    CategoriaId = categoriaActual?.Id ?? 0
+                    CategoriaId = categoriaActual?.Id ?? 0,
+                    // La API devuelve el id del proveedor directamente, así que acá no
+                    // hace falta el rodeo de buscarlo por nombre como con la categoría.
+                    ProveedorId = producto.ProveedorId
                 };
 
                 ViewBag.Categorias = categorias;
+                await CargarProveedores();
+                // Si el proveedor asignado ya está dado de baja no viene en la lista de
+                // activos: el nombre viaja aparte para poder conservarlo en el select.
+                ViewBag.ProveedorActual = producto.Proveedor;
                 ViewBag.ImagenUrl = producto.ImagenUrl;
                 return View(model);
             }
@@ -126,12 +140,14 @@ namespace Web.Controllers.Modulo_Productos
                     return RedirectToAction(nameof(Index));
                 }
                 await CargarCategorias();
+                await CargarProveedores();
                 return View(model);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
                 await CargarCategorias();
+                await CargarProveedores();
                 return View(model);
             }
         }
@@ -174,6 +190,12 @@ namespace Web.Controllers.Modulo_Productos
         private async Task CargarCategorias()
         {
             ViewBag.Categorias = await _categoriaHttpServices.GetCategoriasAsync();
+        }
+
+        // Solo los activos: a un proveedor dado de baja no se le asignan productos nuevos.
+        private async Task CargarProveedores()
+        {
+            ViewBag.Proveedores = await _proveedorHttpServices.GetProveedoresActivosAsync();
         }
     }
 }

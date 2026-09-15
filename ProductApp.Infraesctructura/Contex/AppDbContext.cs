@@ -31,6 +31,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Contex
 
         public DbSet<Notificacion> Notificaciones { get; set; }
 
+        public DbSet<Proveedor> Proveedores { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

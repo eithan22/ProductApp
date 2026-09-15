@@ -9,6 +9,10 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
         public decimal Costo { get; set; }
         public int CategoriaId { get; set; }
 
+        // A diferencia de ImagenUrl, aquí null sí se aplica: mandar null es la forma de
+        // dejar el producto sin proveedor.
+        public int? ProveedorId { get; set; }
+
         // null significa "no tocar la imagen actual": el update por JSON no sube ni borra archivos,
         // eso se hace contra el endpoint dedicado de imagen.
         public string? ImagenUrl { get; set; }
