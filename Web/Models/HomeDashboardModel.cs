@@ -20,6 +20,12 @@ namespace Web.Models
         public List<VentaPorFechaModel> VentasSemana { get; set; } = new();
         public List<OrdenModel> OrdenesRecientes { get; set; } = new();
         public List<InventarioModel> AlertasStock { get; set; } = new();
+        public List<ProductoMasVendidoModel> TopProductos { get; set; } = new();
+
+        // Ventana que comparten el gráfico semanal y el top de productos.
+        // La vista la usa para enlazar al reporte completo con el mismo rango.
+        public DateTime RangoDesde { get; set; }
+        public DateTime RangoHasta { get; set; }
 
         // true si algún bloque no se pudo cargar; la vista lo avisa.
         public bool HuboErrores { get; set; }

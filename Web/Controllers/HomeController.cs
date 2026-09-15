@@ -93,12 +93,26 @@ namespace Web.Controllers
                 }
 
                 var desde = hoy.AddDays(-6);
+                model.RangoDesde = desde;
+                model.RangoHasta = hoy;
+
                 var ventas = await CargarBloqueAsync(
                     () => _reporteHttpServices.GetVentasPorFechaAsync(desde, hoy), "ventas de la semana", model);
 
                 if (ventas is not null)
                 {
                     model.VentasSemana = CompletarSemana(ventas, desde);
+                }
+
+                // Mismo rango de 7 días que el gráfico: las dos lecturas del
+                // panel tienen que estar hablando de la misma semana.
+                var topProductos = await CargarBloqueAsync(
+                    () => _reporteHttpServices.GetProductosMasVendidosAsync(desde, hoy, 5),
+                    "productos más vendidos", model);
+
+                if (topProductos is not null)
+                {
+                    model.TopProductos = topProductos;
                 }
             }
 

@@ -140,7 +140,7 @@
 
 </div>
 
-<div class="surface-card p-3">
+<div class="surface-card p-3 mb-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <span class="ledger-name">Alertas de inventario</span>
         <a asp-controller="Inventario" asp-action="StockBajo" class="btn-pa btn-pa-outline">Ver inventario</a>
@@ -175,6 +175,91 @@
             </div>
         }
     }
+</div>
+
+<div class="row g-3">
+
+    @if (Model.EsAdministrador)
+    {
+        <div class="col-lg-7">
+            <div class="surface-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <span class="ledger-name">Top productos &middot; últimos 7 días</span>
+                    <a asp-controller="Reporte" asp-action="ProductosMasVendidos"
+                       asp-route-desde="@Model.RangoDesde.ToString("yyyy-MM-dd")"
+                       asp-route-hasta="@Model.RangoHasta.ToString("yyyy-MM-dd")"
+                       asp-route-top="10"
+                       class="btn-pa btn-pa-outline">Ver reporte</a>
+                </div>
+
+                @if (!Model.TopProductos.Any())
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">@await Html.PartialAsync("_Icon", "box")</div>
+                        <p class="empty-title">Sin productos vendidos aún</p>
+                        <p class="empty-text">El ranking se arma con las órdenes de los últimos 7 días.</p>
+                    </div>
+                }
+                else
+                {
+                    @* el primero marca el 100%: cada barra se lee contra el líder de la semana *@
+                    var maxVendido = Model.TopProductos.Max(p => p.CantidadVendida);
+
+                    <div class="rank-list">
+                        @{ var posicion = 0; }
+                        @foreach (var p in Model.TopProductos)
+                        {
+                            posicion++;
+                            var ancho = maxVendido > 0
+                                ? (int)Math.Round((double)p.CantidadVendida / maxVendido * 100)
+                                : 0;
+
+                            <div class="rank-row">
+                                <div class="rank-pos">@posicion</div>
+
+                                <div class="rank-main">
+                                    <div class="rank-name" title="@p.NombreProducto">@p.NombreProducto</div>
+                                    @* la cifra ya está en texto al lado: la barra no se anuncia dos veces *@
+                                    <div class="inv-bar" aria-hidden="true">
+                                        <div class="inv-bar-fill"
+                                             style="width:@(ancho)%; background:var(--color-primary);"></div>
+                                    </div>
+                                </div>
+
+                                <div class="rank-value">@p.CantidadVendida uds</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="@(Model.EsAdministrador ? "col-lg-5" : "col-12")">
+        <div class="surface-card p-3 h-100">
+            <div class="ledger-name mb-3">Accesos rápidos</div>
+
+            <div class="quick-links">
+                <a class="quick-link" asp-controller="Producto" asp-action="Index">
+                    @await Html.PartialAsync("_Icon", "box")
+                    <span class="quick-label">Productos</span>
+                </a>
+                <a class="quick-link" asp-controller="Inventario" asp-action="Index">
+                    @await Html.PartialAsync("_Icon", "layers")
+                    <span class="quick-label">Inventario</span>
+                </a>
+                <a class="quick-link" asp-controller="Orden" asp-action="Index">
+                    @await Html.PartialAsync("_Icon", "receipt")
+                    <span class="quick-label">Órdenes</span>
+                </a>
+                <a class="quick-link" asp-controller="Reporte" asp-action="Index">
+                    @await Html.PartialAsync("_Icon", "chart")
+                    <span class="quick-label">Reportes</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {

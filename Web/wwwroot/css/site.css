@@ -1498,6 +1498,71 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .stat-cell .value.is-danger { color: var(--color-danger); }
 
 /* ============================================================
+   Panel de inicio — ranking de productos y accesos rápidos
+   La barra proporcional reutiliza .inv-bar/.inv-bar-fill: es la
+   misma pieza que en Inventario (canal + relleno), no una nueva.
+   ============================================================ */
+
+.rank-list { display: flex; flex-direction: column; gap: 13px; }
+
+.rank-row { display: flex; align-items: center; gap: 11px; }
+
+.rank-pos {
+  width: 20px;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--color-muted);
+}
+
+.rank-main { flex: 1; min-width: 0; }
+
+.rank-name {
+  font-size: .85rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* el nombre ya dejó su propio aire abajo: la barra no suma el suyo */
+.rank-main .inv-bar { margin-top: 0; }
+
+.rank-value {
+  width: 62px;
+  flex: none;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--color-muted);
+}
+
+/* auto-fit y no dos columnas fijas: la tarjeta ocupa 5 columnas para el
+   administrador y las 12 para el resto; así da 2x2 o una sola línea de 4
+   sin necesitar un media query */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: border-color .12s ease, background .12s ease;
+}
+.quick-link:hover { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.quick-link .icon { width: 20px; height: 20px; color: var(--color-primary); }
+.quick-link .quick-label { font-size: .84rem; font-weight: 700; }
+
+/* ============================================================
    Estado vacío
    ============================================================ */
 
