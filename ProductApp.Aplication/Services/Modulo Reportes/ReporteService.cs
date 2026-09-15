@@ -1,3 +1,4 @@
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ReporteDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Reportes;
@@ -92,6 +93,130 @@ namespace ProductApp.Aplication.Services
             var response = _mapperReporte.MapToIngresosTotalesDto(desdeResuelto, hastaResuelto, total, cantidadPagos, ticketPromedio);
 
             return OperationResultD<IngresosTotalesDto>.Success(response, "Ingresos totales obtenidos exitosamente");
+        }
+
+        // ---------- Exportación a CSV (RF-3.5) ----------
+        // Cada método delega en su Obtener* correspondiente: no repite la consulta ni la
+        // validación del rango, solo traduce el mismo resultado a filas de texto.
+
+        public async Task<OperationResultD<byte[]>> ExportarVentasPorFechaCsvAsync(DateTime? desde, DateTime? hasta)
+        {
+            var result = await ObtenerVentasPorFechaAsync(desde, hasta);
+            if (!result.IsSuccess)
+                return OperationResultD<byte[]>.Failure(result.Message);
+
+            var csv = GeneradorCsv.Generar(
+                new[] { "Fecha", "Cantidad de órdenes", "Total" },
+                result.Data!.Select(v => new[]
+                {
+                    GeneradorCsv.Fecha(v.Fecha),
+                    GeneradorCsv.Entero(v.CantidadOrdenes),
+                    GeneradorCsv.Numero(v.Total)
+                }));
+
+            return OperationResultD<byte[]>.Success(csv, "Reporte exportado exitosamente");
+        }
+
+        public async Task<OperationResultD<byte[]>> ExportarVentasPorProductoCsvAsync(DateTime? desde, DateTime? hasta)
+        {
+            var result = await ObtenerVentasPorProductoAsync(desde, hasta);
+            if (!result.IsSuccess)
+                return OperationResultD<byte[]>.Failure(result.Message);
+
+            var csv = GeneradorCsv.Generar(
+                new[] { "Id del producto", "Producto", "Unidades vendidas", "Total" },
+                result.Data!.Select(v => new[]
+                {
+                    GeneradorCsv.Entero(v.ProductoId),
+                    v.NombreProducto,
+                    GeneradorCsv.Entero(v.CantidadVendida),
+                    GeneradorCsv.Numero(v.Total)
+                }));
+
+            return OperationResultD<byte[]>.Success(csv, "Reporte exportado exitosamente");
+        }
+
+        public async Task<OperationResultD<byte[]>> ExportarVentasPorVendedorCsvAsync(DateTime? desde, DateTime? hasta, int? usuarioId, int usuarioAutenticadoId, bool esAdministrador)
+        {
+            var result = await ObtenerVentasPorVendedorAsync(desde, hasta, usuarioId, usuarioAutenticadoId, esAdministrador);
+            if (!result.IsSuccess)
+                return OperationResultD<byte[]>.Failure(result.Message);
+
+            var csv = GeneradorCsv.Generar(
+                new[] { "Id del usuario", "Vendedor", "Cantidad de órdenes", "Total" },
+                result.Data!.Select(v => new[]
+                {
+                    GeneradorCsv.Entero(v.UsuarioId),
+                    v.NombreVendedor,
+                    GeneradorCsv.Entero(v.CantidadOrdenes),
+                    GeneradorCsv.Numero(v.Total)
+                }));
+
+            return OperationResultD<byte[]>.Success(csv, "Reporte exportado exitosamente");
+        }
+
+        public async Task<OperationResultD<byte[]>> ExportarInventarioActualCsvAsync()
+        {
+            var result = await ObtenerInventarioActualAsync();
+            if (!result.IsSuccess)
+                return OperationResultD<byte[]>.Failure(result.Message);
+
+            var csv = GeneradorCsv.Generar(
+                new[] { "Id del producto", "Producto", "Cantidad actual", "Cantidad mínima", "Stock bajo" },
+                result.Data!.Select(i => new[]
+                {
+                    GeneradorCsv.Entero(i.ProductoId),
+                    i.NombreProducto,
+                    GeneradorCsv.Entero(i.CantidadActual),
+                    GeneradorCsv.Entero(i.CantidadMinima),
+                    GeneradorCsv.Booleano(i.StockBajo)
+                }));
+
+            return OperationResultD<byte[]>.Success(csv, "Reporte exportado exitosamente");
+        }
+
+        public async Task<OperationResultD<byte[]>> ExportarProductosMasVendidosCsvAsync(DateTime? desde, DateTime? hasta, int top)
+        {
+            var result = await ObtenerProductosMasVendidosAsync(desde, hasta, top);
+            if (!result.IsSuccess)
+                return OperationResultD<byte[]>.Failure(result.Message);
+
+            var csv = GeneradorCsv.Generar(
+                new[] { "Id del producto", "Producto", "Unidades vendidas" },
+                result.Data!.Select(p => new[]
+                {
+                    GeneradorCsv.Entero(p.ProductoId),
+                    p.NombreProducto,
+                    GeneradorCsv.Entero(p.CantidadVendida)
+                }));
+
+            return OperationResultD<byte[]>.Success(csv, "Reporte exportado exitosamente");
+        }
+
+        public async Task<OperationResultD<byte[]>> ExportarIngresosTotalesCsvAsync(DateTime? desde, DateTime? hasta)
+        {
+            var result = await ObtenerIngresosTotalesAsync(desde, hasta);
+            if (!result.IsSuccess)
+                return OperationResultD<byte[]>.Failure(result.Message);
+
+            var datos = result.Data!;
+
+            // Este reporte es un resumen, no un listado: el CSV sale con una sola fila.
+            var csv = GeneradorCsv.Generar(
+                new[] { "Desde", "Hasta", "Total", "Cantidad de pagos", "Ticket promedio" },
+                new[]
+                {
+                    new[]
+                    {
+                        GeneradorCsv.Fecha(datos.Desde),
+                        GeneradorCsv.Fecha(datos.Hasta),
+                        GeneradorCsv.Numero(datos.Total),
+                        GeneradorCsv.Entero(datos.CantidadPagos),
+                        GeneradorCsv.Numero(datos.TicketPromedio)
+                    }
+                });
+
+            return OperationResultD<byte[]>.Success(csv, "Reporte exportado exitosamente");
         }
 
         private static (DateTime Desde, DateTime Hasta) ResolverRango(DateTime? desde, DateTime? hasta)

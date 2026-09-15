@@ -4,7 +4,13 @@
     ViewData["Title"] = "Ingresos totales";
 }
 
-<a asp-action="Index" class="btn-pa btn-pa-outline mb-3">@await Html.PartialAsync("_Icon", "back") Reportes</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Reportes</a>
+    <a asp-action="ExportarIngresosTotales"
+       asp-route-desde="@Model.Desde.ToString("yyyy-MM-dd")"
+       asp-route-hasta="@Model.Hasta.ToString("yyyy-MM-dd")"
+       class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "download") Exportar CSV</a>
+</div>
 
 <div class="surface-card p-3 mb-4">
     <form asp-action="IngresosTotales" method="get" class="row g-2">

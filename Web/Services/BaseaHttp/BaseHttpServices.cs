@@ -87,6 +87,14 @@ namespace Web.Services.Base
         // Solo cuando algo falla el cuerpo trae el ApiResponse con el mensaje real.
         public async Task<byte[]> GetBytesAsync(string url)
         {
+            var (contenido, _) = await GetArchivoAsync(url);
+            return contenido;
+        }
+
+        // 🔹 GET de archivo con su nombre. La API es la única que decide cómo se llama el
+        // archivo y lo manda en Content-Disposition; acá solo se lee, no se reconstruye.
+        public async Task<(byte[] Contenido, string? NombreArchivo)> GetArchivoAsync(string url)
+        {
             var client = CreateClient();
 
             var response = await client.GetAsync(url);
@@ -122,7 +130,10 @@ namespace Web.Services.Base
                 throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
             }
 
-            return contenido;
+            var disposition = response.Content.Headers.ContentDisposition;
+            var nombreArchivo = disposition?.FileNameStar ?? disposition?.FileName?.Trim('"');
+
+            return (contenido, nombreArchivo);
         }
 
         // 🔹 POST

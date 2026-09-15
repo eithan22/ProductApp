@@ -10,5 +10,12 @@ namespace Web.Services.EndPoints.Modulo_Reportes
         public string InventarioActual => "Reporte/InventarioActual";
         public string ProductosMasVendidos => "Reporte/ProductosMasVendidos";
         public string IngresosTotales => "Reporte/IngresosTotales";
+
+        public string ExportarVentasPorFecha => "Reporte/VentasPorFecha/Exportar";
+        public string ExportarVentasPorProducto => "Reporte/VentasPorProducto/Exportar";
+        public string ExportarVentasPorVendedor => "Reporte/VentasPorVendedor/Exportar";
+        public string ExportarInventarioActual => "Reporte/InventarioActual/Exportar";
+        public string ExportarProductosMasVendidos => "Reporte/ProductosMasVendidos/Exportar";
+        public string ExportarIngresosTotales => "Reporte/IngresosTotales/Exportar";
     }
 }

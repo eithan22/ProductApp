@@ -7,7 +7,14 @@
     var top = ViewBag.Top as int? ?? 10;
 }
 
-<a asp-action="Index" class="btn-pa btn-pa-outline mb-3">@await Html.PartialAsync("_Icon", "back") Reportes</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Reportes</a>
+    <a asp-action="ExportarProductosMasVendidos"
+       asp-route-desde="@(desde?.ToString("yyyy-MM-dd"))"
+       asp-route-hasta="@(hasta?.ToString("yyyy-MM-dd"))"
+       asp-route-top="@top"
+       class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "download") Exportar CSV</a>
+</div>
 
 <div class="surface-card p-3 mb-4">
     <form asp-action="ProductosMasVendidos" method="get" class="row g-2">

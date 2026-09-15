@@ -48,6 +48,38 @@ namespace Web.Services.ServicesHttp.Modulo_Reportes
             return await _baseHttpServices.GetAsync<IngresosTotalesModel>($"{_reporteEndpoint.IngresosTotales}{BuildQuery(desde, hasta)}");
         }
 
+        public async Task<(byte[] Contenido, string? NombreArchivo)> ExportarVentasPorFechaCsvAsync(DateTime? desde, DateTime? hasta)
+        {
+            return await _baseHttpServices.GetArchivoAsync($"{_reporteEndpoint.ExportarVentasPorFecha}{BuildQuery(desde, hasta)}");
+        }
+
+        public async Task<(byte[] Contenido, string? NombreArchivo)> ExportarVentasPorProductoCsvAsync(DateTime? desde, DateTime? hasta)
+        {
+            return await _baseHttpServices.GetArchivoAsync($"{_reporteEndpoint.ExportarVentasPorProducto}{BuildQuery(desde, hasta)}");
+        }
+
+        public async Task<(byte[] Contenido, string? NombreArchivo)> ExportarVentasPorVendedorCsvAsync(DateTime? desde, DateTime? hasta, int? usuarioId)
+        {
+            var query = BuildQuery(desde, hasta, ("usuarioId", usuarioId?.ToString()));
+            return await _baseHttpServices.GetArchivoAsync($"{_reporteEndpoint.ExportarVentasPorVendedor}{query}");
+        }
+
+        public async Task<(byte[] Contenido, string? NombreArchivo)> ExportarInventarioActualCsvAsync()
+        {
+            return await _baseHttpServices.GetArchivoAsync(_reporteEndpoint.ExportarInventarioActual);
+        }
+
+        public async Task<(byte[] Contenido, string? NombreArchivo)> ExportarProductosMasVendidosCsvAsync(DateTime? desde, DateTime? hasta, int top)
+        {
+            var query = BuildQuery(desde, hasta, ("top", top.ToString()));
+            return await _baseHttpServices.GetArchivoAsync($"{_reporteEndpoint.ExportarProductosMasVendidos}{query}");
+        }
+
+        public async Task<(byte[] Contenido, string? NombreArchivo)> ExportarIngresosTotalesCsvAsync(DateTime? desde, DateTime? hasta)
+        {
+            return await _baseHttpServices.GetArchivoAsync($"{_reporteEndpoint.ExportarIngresosTotales}{BuildQuery(desde, hasta)}");
+        }
+
         private static string BuildQuery(DateTime? desde, DateTime? hasta, params (string Key, string? Value)[] extra)
         {
             var parts = new List<string>();
