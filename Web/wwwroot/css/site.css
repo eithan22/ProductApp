@@ -3018,6 +3018,126 @@ html:has(.landing-page) { scroll-behavior: smooth; }
 }
 
 /* ============================================================
+   Páginas legales (Privacidad / Términos)
+   ============================================================ */
+
+/* Estas dos vistas se abren en dos contextos: con sesión, dentro del shell; y
+   sin sesión, desde el pie de la landing. Sin sesión el layout las encierra en
+   la caja de 440px del login, donde un documento largo no se puede leer. Mismo
+   recurso que en .landing-page: la pantalla se detecta por su contenido y el
+   layout no se toca. */
+.auth-container:has(.legal-page) {
+  display: block;
+  padding: 0;
+  background: var(--color-bg);
+}
+
+.auth-box:has(.legal-page) {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.legal-page { max-width: 820px; margin: 0 auto; }
+
+/* El aire exterior solo hace falta sin sesión: con sesión lo pone .app-content */
+.auth-box:has(.legal-page) .legal-page { padding: 40px 24px 64px; }
+
+.legal-back { display: inline-flex; margin-bottom: 18px; }
+
+.legal-title { font-size: 1.6rem; font-weight: 800; margin: 0 0 6px; }
+
+.legal-meta {
+  color: var(--color-muted);
+  font-size: .8rem;
+  margin: 0 0 20px;
+}
+
+.legal-doc { padding: 32px 36px; }
+
+/* La línea superior separa secciones sin necesidad de numerarlas a mano en CSS */
+.legal-doc h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 30px 0 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+.legal-doc > h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+
+.legal-doc h3 { font-size: .93rem; font-weight: 700; margin: 18px 0 6px; }
+
+.legal-doc p,
+.legal-doc li { font-size: .9rem; line-height: 1.65; }
+
+.legal-doc p { margin: 0 0 12px; }
+.legal-doc ul { margin: 0 0 12px; padding-left: 20px; }
+.legal-doc li { margin-bottom: 6px; }
+.legal-doc a { color: var(--color-primary); }
+
+.legal-doc code {
+  font-family: var(--font-mono);
+  font-size: .82em;
+  background: var(--color-bg);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* Aviso de encabezado: el documento arranca diciendo que es un proyecto
+   académico, y eso tiene que leerse antes que el resto */
+.legal-note {
+  background: var(--color-warn-soft);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin: 0 0 20px;
+}
+.legal-note p:last-child { margin-bottom: 0; }
+
+/* Enlaces legales al pie del menú lateral. Sin esto heredan el display:flex
+   y el padding de ancho completo de .app-sidebar a, y se ven como dos ítems
+   más de navegación. */
+.app-sidebar .sidebar-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 7px;
+  margin: 6px 0 0;
+  padding: 0 22px;
+  font-size: .72rem;
+  color: #6F777F;
+}
+.app-sidebar .sidebar-legal a {
+  display: inline;
+  padding: 0;
+  border-left: 0;
+  font-size: inherit;
+  color: #8B939C;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.app-sidebar .sidebar-legal a:hover { background: none; color: #fff; }
+
+/* Enlaces legales en el pie de la landing, sobre el verde oscuro */
+.landing-credits .landing-legal {
+  margin: 0 0 8px;
+  font-size: .8rem;
+  color: rgba(255,255,255,.82);
+}
+.landing-credits .landing-legal a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.landing-credits .landing-legal a:hover { color: #fff; }
+
+@media (max-width: 575.98px) {
+  .legal-doc { padding: 22px 18px; }
+  .auth-box:has(.legal-page) .legal-page { padding: 28px 16px 48px; }
+}
+
+/* ============================================================
    Movimiento reducido
    ============================================================ */
 

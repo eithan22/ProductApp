@@ -1,0 +1,474 @@
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewData["Title"] = "Términos de Servicio";
+
+    // Mismo criterio que Privacy.cshtml: con sesión el título lo pinta el shell;
+    // sin sesión la vista pone su propio encabezado y la vuelta al login.
+    var conSesion = !string.IsNullOrEmpty(Context.Session.GetString("TOKEN"));
+}
+
+@*
+    Contrato de un servicio por suscripción, con una instancia dedicada por
+    negocio operada por el Proveedor. Dos decisiones deliberadas:
+
+    1) Los importes, la moneda y el ciclo de facturación no se fijan acá: se
+       acuerdan en la orden de servicio de cada cliente, que estos términos
+       incorporan por referencia. Así este documento no queda desactualizado
+       cada vez que cambia un plan.
+    2) El nivel de servicio se describe como lo que realmente es —un
+       desarrollador independiente con soporte en horario hábil—, sin SLA con
+       penalizaciones que no se podrían sostener. Prometer 99.9% acá sería un
+       incumplimiento contractual esperando ocurrir.
+
+    La cláusula fiscal no es relleno: el sistema genera un PDF que parece una
+    factura y no es un comprobante fiscal electrónico, y el calendario de la
+    Ley 32-23 alcanza a las micro y pequeñas empresas.
+*@
+
+<div class="legal-page">
+
+    @if (!conSesion)
+    {
+        <a class="btn-pa btn-pa-outline legal-back" asp-controller="Auth" asp-action="Login">
+            @await Html.PartialAsync("_Icon", "back") Volver al inicio
+        </a>
+
+        <h1 class="legal-title">Términos de Servicio</h1>
+    }
+
+    <p class="legal-meta">Versión 2.0 &middot; Última actualización: 17 de septiembre de 2026</p>
+
+    <article class="surface-card legal-doc">
+
+        <div class="legal-note">
+            <p>
+                <strong>Lo esencial:</strong> ProductApp se contrata por suscripción. El Proveedor
+                entrega a cada negocio <strong>una instancia propia</strong>, alojada y operada por
+                él en Microsoft Azure, y la mantiene disponible mientras la suscripción esté al
+                día. El Proveedor es un desarrollador independiente, no una empresa con soporte
+                24/7: lo que se compromete acá es lo que puede cumplir, escrito sin adornos.
+                <strong>ProductApp no emite comprobantes fiscales electrónicos</strong>; eso se
+                explica en la sección 12 y conviene leerlo antes de contratar.
+            </p>
+        </div>
+
+        <h2>1. Partes y definiciones</h2>
+        <ul>
+            <li>
+                <strong>El Proveedor</strong>: el autor y desarrollador de ProductApp,
+                desarrollador independiente domiciliado en la República Dominicana. Contacto:
+                <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a>.
+            </li>
+            <li>
+                <strong>El Cliente</strong>: el negocio o la persona que contrata la suscripción.
+            </li>
+            <li>
+                <strong>Usuarios Autorizados</strong>: las personas a las que el Cliente da una
+                cuenta dentro de su instancia (por ejemplo, su personal de ventas).
+            </li>
+            <li>
+                <strong>Instancia</strong>: el despliegue individual de la aplicación, con su
+                propia base de datos y su propio almacenamiento de archivos, asignado a un único
+                Cliente.
+            </li>
+            <li>
+                <strong>Orden de Servicio</strong>: el documento, correo o cotización aceptada
+                donde se acuerdan el plan, el precio, la moneda, el ciclo de facturación y la fecha
+                de inicio. Forma parte integrante de estos términos.
+            </li>
+        </ul>
+
+        <h2>2. Aceptación</h2>
+        <p>
+            Estos términos rigen desde que el Cliente acepta la Orden de Servicio o comienza a usar
+            la Instancia, lo que ocurra primero. Los Usuarios Autorizados los aceptan al iniciar
+            sesión. No hay registro público: las cuentas las crea un administrador del Cliente. La
+            contratación por medios electrónicos es válida conforme a la Ley No. 126-02 sobre
+            Comercio Electrónico, Documentos y Firmas Digitales.
+        </p>
+
+        <h2>3. Qué incluye el servicio</h2>
+        <ul>
+            <li>Una Instancia dedicada, con base de datos y almacenamiento propios, alojada en Microsoft Azure bajo la cuenta del Proveedor.</li>
+            <li>Acceso al sistema para la cantidad de Usuarios Autorizados que el Cliente necesite crear, salvo límite distinto en la Orden de Servicio.</li>
+            <li>Actualizaciones y correcciones del producto a medida que se publican, sin costo adicional.</li>
+            <li>Soporte por correo electrónico, según la sección 8.</li>
+        </ul>
+        <p>
+            <strong>Aclaración importante sobre la arquitectura:</strong> ProductApp no es hoy un
+            sistema multiempresa dentro de una misma base de datos. Cada Cliente tiene una Instancia
+            separada, y esa separación es precisamente lo que impide que los datos de un negocio se
+            mezclen con los de otro. Si en el futuro el producto ofrece una modalidad compartida,
+            será opcional y se comunicará con antelación.
+        </p>
+        <p>
+            No incluye: migración de datos desde otro sistema, desarrollos a medida, capacitación
+            presencial, integraciones con terceros ni servicios de contabilidad. Cualquiera de esos
+            trabajos se cotiza aparte.
+        </p>
+
+        <h2>4. Suscripción, precios y facturación</h2>
+        <ul>
+            <li>
+                El servicio se presta contra el pago de una suscripción periódica,
+                <strong>según el plan contratado</strong>. El importe, la moneda, el ciclo de
+                facturación y la forma de pago son los indicados en la Orden de Servicio.
+            </li>
+            <li>
+                Los precios se entienden sin impuestos; los que correspondan conforme a la
+                legislación dominicana (por ejemplo, el ITBIS) se agregan a la factura cuando sean
+                aplicables.
+            </li>
+            <li>
+                La suscripción se renueva automáticamente por períodos iguales, salvo que alguna de
+                las partes avise lo contrario antes del fin del período en curso.
+            </li>
+            <li>
+                El Proveedor puede ajustar el precio para períodos futuros avisando al Cliente con
+                al menos <strong>30 días</strong> de antelación. El ajuste nunca aplica a un período
+                ya facturado; si el Cliente no lo acepta, puede cancelar antes de la renovación.
+            </li>
+        </ul>
+
+        <h2>5. Falta de pago</h2>
+        <ul>
+            <li>Ante un pago vencido, el Proveedor avisa por correo y otorga <strong>10 días corridos</strong> de gracia.</li>
+            <li>
+                Pasado ese plazo, el acceso a la Instancia puede <strong>suspenderse</strong>.
+                Suspender no es borrar: durante la suspensión los datos se conservan intactos y el
+                acceso se restablece al regularizar el pago.
+            </li>
+            <li>
+                Si la situación se mantiene por <strong>30 días</strong> más desde la suspensión, el
+                Proveedor puede dar por terminado el servicio, y a partir de ahí corren los plazos
+                de exportación y eliminación de la sección 7.
+            </li>
+            <li>
+                El Proveedor no retendrá los datos del Cliente como medio de presión: aun con
+                facturas impagas, el Cliente puede solicitar la exportación de su información dentro
+                de los plazos de la sección 7.
+            </li>
+        </ul>
+
+        <h2>6. Vigencia y cancelación</h2>
+        <ul>
+            <li>El Cliente puede cancelar en cualquier momento, avisando por escrito antes del fin del período en curso.</li>
+            <li>
+                La cancelación surte efecto al final del período ya pagado: el servicio sigue
+                disponible hasta esa fecha. Los importes del período en curso no se reembolsan de
+                forma proporcional, salvo acuerdo distinto o interrupción imputable al Proveedor.
+            </li>
+            <li>
+                El Proveedor puede dejar de ofrecer el producto avisando con al menos
+                <strong>90 días</strong> de antelación, entregando la exportación completa de los
+                datos y reembolsando la parte proporcional no utilizada de lo ya pagado.
+            </li>
+        </ul>
+
+        <h2>7. Sus datos: exportación, devolución y borrado</h2>
+        <ul>
+            <li>
+                <strong>Los datos son del Cliente.</strong> El Proveedor no reclama derechos sobre
+                ellos, no los usa para otros fines, no los comparte con otros Clientes y no los
+                emplea para entrenar modelos.
+            </li>
+            <li>
+                <strong>Durante el servicio</strong>: el Cliente puede exportar por su cuenta, en
+                formato CSV, los seis reportes del módulo de Reportes (ventas por fecha, por
+                producto y por vendedor, inventario actual, productos más vendidos e ingresos
+                totales), y descargar los comprobantes PDF de sus órdenes pagadas.
+            </li>
+            <li>
+                <strong>Exportación completa</strong>: como la aplicación todavía no ofrece una
+                exportación integral con un clic, el Cliente puede solicitarla por correo. El
+                Proveedor entrega, dentro de los <strong>10 días hábiles</strong>, una copia de la
+                información de su Instancia en un formato estándar y legible (archivos CSV y los
+                archivos almacenados). Este servicio no tiene costo mientras la suscripción esté
+                vigente y durante los 30 días posteriores a la terminación.
+            </li>
+            <li>
+                <strong>Después de la terminación</strong>: la información se conserva
+                <strong>30 días corridos</strong> para permitir la exportación; luego, y a más
+                tardar a los <strong>90 días</strong> de la terminación, la Instancia y sus datos se
+                eliminan de forma definitiva. Las copias de respaldo que puedan existir se purgan
+                dentro de los 30 días siguientes, conforme a los ciclos de retención de la
+                plataforma. A pedido, el Proveedor confirma por escrito que la eliminación se
+                realizó.
+            </li>
+            <li>
+                <strong>Recomendación honesta:</strong> conserve sus propias exportaciones con
+                regularidad. Ningún proveedor, grande o pequeño, sustituye la prudencia de tener una
+                copia propia de la información con la que se opera un negocio.
+            </li>
+        </ul>
+
+        <h2>8. Nivel de servicio y soporte</h2>
+        <p>
+            Acá no hay letra chica: el Proveedor es un desarrollador independiente. Lo que se
+            compromete es lo siguiente, y nada más que esto:
+        </p>
+        <ul>
+            <li>
+                <strong>Disponibilidad</strong>: mantener la Instancia disponible de forma continua
+                salvo mantenimiento, fallas de la plataforma de nube o fuerza mayor. <strong>No se
+                ofrece un acuerdo de nivel de servicio con porcentaje garantizado ni créditos
+                automáticos por indisponibilidad</strong>, porque no sería realista sostenerlo.
+            </li>
+            <li>
+                <strong>Mantenimiento</strong>: las tareas planificadas que impliquen interrupción
+                se avisan con al menos 48 horas y se procuran fuera del horario comercial. Las
+                correcciones urgentes de seguridad pueden aplicarse sin aviso previo.
+            </li>
+            <li>
+                <strong>Soporte</strong>: por correo electrónico, en horario hábil de la República
+                Dominicana (lunes a viernes). Objetivo de primera respuesta: el mismo día hábil para
+                una caída total del servicio y hasta 2 días hábiles para el resto de las consultas.
+                Son objetivos de trabajo, no plazos con penalización.
+            </li>
+            <li>
+                <strong>Respaldos</strong>: la Instancia se apoya en las copias automáticas que
+                provee Azure SQL Database, el motor de base de datos contratado en Azure. El
+                Proveedor <strong>no opera hoy un esquema propio adicional de respaldo con pruebas
+                periódicas de restauración</strong>, y no garantiza un punto de recuperación
+                determinado más allá de lo que ofrece la plataforma. Por eso la recomendación de la
+                sección 7.
+            </li>
+            <li>
+                <strong>Incidentes de seguridad</strong>: se notifican según la
+                <a asp-controller="Home" asp-action="Privacy">Política de Privacidad</a>, dentro de
+                las 72 horas de tomar conocimiento.
+            </li>
+        </ul>
+
+        <h2>9. Cuentas y contraseñas</h2>
+        <ul>
+            <li>Las cuentas las crea un administrador del Cliente, que también asigna el rol (Vendedor o Administrador).</li>
+            <li>La primera contraseña es temporal y el sistema obliga a cambiarla antes de permitir el uso de cualquier otra pantalla.</li>
+            <li>La cuenta es personal e intransferible: no debe compartirse ni prestarse.</li>
+            <li>Cada Usuario Autorizado es responsable de lo que se haga desde su cuenta; ante sospecha de uso indebido, debe avisar de inmediato al administrador y cambiar su contraseña.</li>
+            <li>La sesión caduca automáticamente tras un período de inactividad (60 minutos por defecto).</li>
+            <li>El Cliente es responsable de dar de baja a tiempo las cuentas del personal que deja de trabajar con él.</li>
+        </ul>
+
+        <h2>10. Uso aceptable</h2>
+        <p>No está permitido:</p>
+        <ul>
+            <li>Acceder o intentar acceder a cuentas ajenas, o usar credenciales que no le fueron entregadas.</li>
+            <li>Intentar eludir los controles de acceso por rol, alterar datos por vías no previstas o extraer información de forma masiva o automatizada sin autorización.</li>
+            <li>Cargar contenido ilícito, ofensivo o que infrinja derechos de terceros.</li>
+            <li>Subir imágenes que contengan datos personales de terceros: las imágenes de producto se guardan en un contenedor de lectura pública (ver la Política de Privacidad, sección 12).</li>
+            <li>Usar el sistema para almacenar datos sensibles (salud, biometría, religión, afiliación política o sindical).</li>
+            <li>Revender el servicio, cederlo a un tercero, ofrecerlo como propio o dar acceso a la Instancia a personas ajenas al Cliente.</li>
+            <li>Sobrecargar deliberadamente la infraestructura o usarla para fines distintos de la gestión del propio negocio.</li>
+        </ul>
+        <p>
+            Algunas de estas conductas, además de incumplir estos términos, pueden constituir
+            delitos bajo la Ley No. 53-07 sobre Crímenes y Delitos de Alta Tecnología.
+        </p>
+
+        <h2>11. Datos de terceros que el Cliente carga</h2>
+        <p>
+            Cuando el Cliente registra un cliente comprador o un proveedor, está cargando datos
+            personales de otra persona. En ese acto:
+        </p>
+        <ul>
+            <li>Declara contar con el consentimiento de esa persona, o con otra base legítima conforme a la Ley No. 172-13, y poder explicarle para qué se usan sus datos.</li>
+            <li>Es responsable de que los datos sean exactos y de mantenerlos actualizados.</li>
+            <li>
+                Debe atender los pedidos de acceso, rectificación, cancelación u oposición que esa
+                persona le dirija. El Proveedor, por su parte, asume la custodia y seguridad de esos
+                datos y colabora con el Cliente para resolver esos pedidos en los plazos de la
+                Política de Privacidad, incluidas las tareas que hoy requieren intervención manual
+                (por ejemplo, borrar una factura en PDF).
+            </li>
+            <li>
+                Si la venta no requiere identificar al comprador, corresponde usar el cliente
+                &laquo;Consumidor Final&raquo; en lugar de pedir la cédula. Recolectar menos datos
+                de los necesarios no es una limitación del sistema: es la conducta correcta.
+            </li>
+            <li>
+                El Cliente mantiene indemne al Proveedor frente a reclamos derivados de haber
+                cargado datos sin base legítima o de haber usado el sistema para fines ilícitos.
+            </li>
+        </ul>
+
+        <h2>12. Comprobantes y obligaciones fiscales</h2>
+        <p>
+            <strong>Las facturas en PDF que genera ProductApp son comprobantes internos de venta, no
+            comprobantes fiscales.</strong> El sistema puede mostrar en el documento el RNC, el
+            nombre, la dirección y el logo que el Cliente cargue en la configuración, pero eso no lo
+            convierte en un comprobante válido ante la DGII: ProductApp
+            <strong>no emite Números de Comprobante Fiscal (NCF) ni Comprobantes Fiscales
+            Electrónicos (e-CF)</strong>, no está acreditado como emisor electrónico, no firma los
+            documentos con un certificado digital de un proveedor de servicios de confianza
+            acreditado por el INDOTEL, no se conecta con la DGII, no valida RNC y no calcula ITBIS
+            ni retenciones.
+        </p>
+        <p>
+            Esto importa por una razón concreta y con fecha: la
+            <strong>Ley No. 32-23 de Facturación Electrónica</strong> estableció un calendario
+            escalonado de obligatoriedad del e-CF, que alcanza a las micro, pequeñas y no
+            clasificadas contribuyentes a partir del <strong>15 de noviembre de 2026</strong>.
+            Cumplir con ese régimen —contratando un emisor autorizado o el sistema que corresponda—
+            es responsabilidad exclusiva del Cliente. <strong>El Proveedor no responde por multas,
+            sanciones ni por la pérdida de validez fiscal de comprobantes</strong> derivadas de usar
+            los PDF de ProductApp como si fueran comprobantes fiscales.
+        </p>
+        <p>
+            Del mismo modo, los totales, reportes y cálculos de inventario son herramientas de
+            gestión y no sustituyen la contabilidad del negocio. Verificarlos antes de usarlos para
+            una declaración o una decisión de negocio es responsabilidad del Cliente.
+        </p>
+
+        <h2>13. Pagos registrados en el sistema</h2>
+        <p>
+            ProductApp no cobra dinero de los compradores, no procesa tarjetas y no se conecta a
+            ninguna pasarela de pago. Registrar un pago en el sistema es anotar un cobro que ocurrió
+            fuera de él; esa anotación no prueba por sí sola que el dinero se recibió ni genera
+            obligación alguna para el Proveedor. (El cobro de la suscripción del Cliente al Proveedor
+            también se realiza fuera de la aplicación, por los medios acordados.)
+        </p>
+
+        <h2>14. Propiedad intelectual</h2>
+        <ul>
+            <li>
+                <strong>El software es del Proveedor.</strong> La suscripción otorga al Cliente un
+                derecho de uso no exclusivo, intransferible y limitado al plazo contratado, sobre su
+                propia Instancia. No implica venta, cesión ni entrega del código fuente.
+            </li>
+            <li>
+                <strong>El código publicado y el servicio son cosas distintas.</strong> Si el
+                Proveedor publica total o parcialmente el código fuente bajo una licencia de código
+                abierto, esa licencia rige únicamente sobre el código publicado: no otorga derecho
+                al servicio alojado, al soporte, a las actualizaciones ni al uso de la Instancia,
+                que se rigen exclusivamente por estos términos y por la Orden de Servicio. La
+                licencia aplicable al código es la que conste expresamente en el archivo de licencia
+                del repositorio; mientras ese archivo no exista, el código se considera reservado.
+            </li>
+            <li>
+                <strong>Los datos son del Cliente</strong>, según la sección 7. El Proveedor no
+                reclama ningún derecho sobre ellos.
+            </li>
+            <li>
+                El Cliente conserva los derechos sobre su logo, sus imágenes y su contenido, y
+                autoriza al Proveedor a alojarlos y procesarlos solo para prestar el servicio.
+            </li>
+            <li>
+                Las fotografías que ilustran la página de inicio provienen de Wikimedia Commons, con
+                las atribuciones y licencias indicadas al pie de esa página.
+            </li>
+        </ul>
+
+        <h2>15. Confidencialidad</h2>
+        <p>
+            El Proveedor trata como confidencial toda la información del negocio del Cliente a la
+            que acceda para operar el servicio o para atender un pedido de soporte, y solo accede a
+            ella cuando es necesario para esos fines. Esta obligación subsiste después de terminada
+            la relación. El Cliente, por su parte, trata como confidenciales las credenciales de
+            acceso y cualquier información técnica no pública del sistema.
+        </p>
+
+        <h2>16. Suspensión y terminación por el Proveedor</h2>
+        <ul>
+            <li>Un administrador del Cliente puede desactivar o eliminar cuentas de sus propios Usuarios Autorizados cuando corresponda.</li>
+            <li>
+                El Proveedor puede suspender el acceso, con aviso previo salvo urgencia, cuando haya
+                falta de pago (sección 5), un uso que ponga en riesgo el sistema o los datos de
+                otras personas, un incumplimiento grave de la sección 10, o un requerimiento legal
+                válido.
+            </li>
+            <li>
+                La suspensión se limita a lo necesario y se levanta apenas cesa la causa. La
+                terminación definitiva por incumplimiento requiere aviso previo por escrito y un
+                plazo razonable para subsanarlo, salvo que la conducta sea manifiestamente ilícita.
+            </li>
+        </ul>
+
+        <h2>17. Garantías y limitación de responsabilidad</h2>
+        <p>
+            El Proveedor se compromete a prestar el servicio con diligencia profesional y a aplicar
+            las medidas de seguridad descritas en la Política de Privacidad. Fuera de eso, el
+            software se entrega <strong>&laquo;tal cual&raquo;</strong>: no se garantiza que esté
+            libre de errores, ni que resulte apto para un fin particular del Cliente distinto de la
+            gestión de productos, inventario y ventas que describe la documentación.
+        </p>
+        <ul>
+            <li>
+                La responsabilidad total acumulada del Proveedor por cualquier reclamo relacionado
+                con el servicio se limita al monto efectivamente pagado por el Cliente en los
+                <strong>últimos seis (6) meses</strong> anteriores al hecho que motiva el reclamo.
+            </li>
+            <li>
+                El Proveedor no responde por lucro cesante, pérdida de oportunidades comerciales,
+                daños indirectos ni por decisiones de negocio tomadas a partir de la información que
+                muestra el sistema.
+            </li>
+            <li>
+                Tampoco responde por interrupciones causadas por la plataforma de nube, por el
+                proveedor de conectividad del Cliente o por fuerza mayor, ni por la pérdida de datos
+                que el Cliente no haya respaldado pudiendo hacerlo conforme a la sección 7.
+            </li>
+            <li>
+                <strong>Estos límites no aplican</strong> en caso de dolo o culpa grave del
+                Proveedor, ni respecto de sus obligaciones de confidencialidad y protección de datos
+                personales, ni a nada que la ley dominicana no permita excluir, incluidas las
+                normas de protección al consumidor que resulten aplicables.
+            </li>
+        </ul>
+
+        <h2>18. Fuerza mayor</h2>
+        <p>
+            Ninguna de las partes responde por incumplimientos causados por hechos fuera de su
+            control razonable: desastres naturales, cortes prolongados de energía o de
+            telecomunicaciones, fallas generalizadas del proveedor de nube, actos de autoridad o
+            conflictos sociales. Si la situación se prolonga más de 30 días, cualquiera de las
+            partes puede terminar el contrato sin penalidad, con la devolución proporcional de lo
+            pagado y no usado.
+        </p>
+
+        <h2>19. Privacidad</h2>
+        <p>
+            El tratamiento de datos personales se describe en la
+            <a asp-controller="Home" asp-action="Privacy">Política de Privacidad</a>, que forma
+            parte integrante de estos términos. Allí también constan las limitaciones conocidas de
+            la versión actual y el procedimiento vigente para cada una.
+        </p>
+
+        <h2>20. Cambios en estos términos</h2>
+        <p>
+            Estos términos pueden actualizarse cuando el servicio cambie. Los cambios sustanciales
+            se avisan al Cliente por correo electrónico con al menos <strong>30 días</strong> de
+            antelación; si no los acepta, puede cancelar antes de su entrada en vigor sin penalidad.
+            La versión vigente es siempre la publicada en esta página, con su fecha en el
+            encabezado. Ante una discrepancia entre estos términos y la Orden de Servicio, prevalece
+            la Orden de Servicio.
+        </p>
+
+        <h2>21. Cesión y notificaciones</h2>
+        <p>
+            El Cliente no puede ceder el contrato sin autorización escrita del Proveedor. El
+            Proveedor puede cederlo en caso de reorganización de su actividad, avisando con
+            antelación y manteniendo las mismas condiciones. Las notificaciones entre las partes se
+            cursan por correo electrónico a las direcciones informadas, y se consideran recibidas al
+            día hábil siguiente de su envío.
+        </p>
+
+        <h2>22. Ley aplicable y jurisdicción</h2>
+        <p>
+            Estos términos se rigen por las leyes de la República Dominicana, en particular la Ley
+            No. 172-13 sobre Protección de Datos de Carácter Personal, la Ley No. 53-07 sobre
+            Crímenes y Delitos de Alta Tecnología, la Ley No. 126-02 sobre Comercio Electrónico,
+            Documentos y Firmas Digitales y la Ley No. 32-23 de Facturación Electrónica. Las partes
+            procurarán resolver de buena fe cualquier controversia; de no lograrlo, se someten a los
+            tribunales competentes de la República Dominicana.
+        </p>
+
+        <h2>23. Contacto</h2>
+        <p>
+            Consultas sobre estos términos, sobre la suscripción o sobre el servicio:
+            <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a>.
+        </p>
+
+    </article>
+</div>

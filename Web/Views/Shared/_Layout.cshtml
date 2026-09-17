@@ -143,6 +143,14 @@
             <a asp-controller="Auth" asp-action="Logout" class="logout">
                 @await Html.PartialAsync("_Icon", "logout") Cerrar sesión
             </a>
+
+            @* Los documentos legales tienen que ser alcanzables desde dentro de la app,
+               no solo desde el pie de la landing: con sesión iniciada la landing no se ve. *@
+            <p class="sidebar-legal">
+                <a asp-controller="Home" asp-action="Privacy">Privacidad</a>
+                <span aria-hidden="true">&middot;</span>
+                <a asp-controller="Home" asp-action="Terminos">Términos</a>
+            </p>
         </aside>
 
         <div class="sidebar-backdrop" data-sidebar-cerrar aria-hidden="true"></div>
