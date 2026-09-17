@@ -1,3 +1,4 @@
+using ProductApp.Extensions.Modulo_Busqueda;
 using ProductApp.Extensions.Modulo_Configuracion;
 using ProductApp.Extensions.Modulo_Notificaciones;
 using ProductApp.Extensions.Modulo_Productos;
@@ -20,6 +21,9 @@ namespace ProductApp.Extensions
             services.AddModuloVentas(configuration);
             services.AddModuloReportes();
             services.AddModuloConfiguracion();
+
+            // Va al final: solo consume repositorios que ya registraron los módulos anteriores.
+            services.AddModuloBusqueda();
 
             return services;
         }

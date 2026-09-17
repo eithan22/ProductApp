@@ -161,19 +161,30 @@
                     <h1>@ViewData["Title"]</h1>
                 </div>
 
-                <form class="topbar-search" id="topbar-search" role="search" method="get"
-                      asp-controller="Producto" asp-action="Buscar">
-                    <label class="visually-hidden" for="busqueda-global">Buscar productos</label>
+                @* Dejó de ser un <form> que navegaba a Producto/Buscar: ahora es el
+                   buscador único del sistema (RF-3.8) y responde en vivo sin recargar.
+                   El filtro por nombre del catálogo sigue vivo dentro de Producto/Index. *@
+                <div class="topbar-search" id="topbar-search" role="search">
+                    <label class="visually-hidden" for="busqueda-global">
+                        Buscar productos, clientes, órdenes y proveedores
+                    </label>
                     @await Html.PartialAsync("_Icon", "search")
-                    <input id="busqueda-global" type="search" name="nombre"
-                           placeholder="Buscar productos..." autocomplete="off" />
-                </form>
+                    <input id="busqueda-global" type="search" name="texto"
+                           placeholder="Buscar productos, clientes, órdenes..."
+                           autocomplete="off" spellcheck="false"
+                           role="combobox" aria-autocomplete="list" aria-expanded="false"
+                           aria-controls="busqueda-panel"
+                           data-busqueda-url="@Url.Action("Buscar", "Busqueda")" />
+                    <span class="busq-esc" aria-hidden="true">esc</span>
+
+                    @await Html.PartialAsync("_BusquedaGlobalDropdown")
+                </div>
 
                 <div class="topbar-actions">
 
                     <button class="topbar-search-toggle" type="button"
                             data-busqueda-toggle aria-controls="topbar-search" aria-expanded="false"
-                            aria-label="Mostrar búsqueda de productos">
+                            aria-label="Mostrar búsqueda">
                         @await Html.PartialAsync("_Icon", "search")
                     </button>
 
@@ -202,6 +213,11 @@
                 </div>
             </header>
 
+            @* Vive fuera del <header> a propósito: el topbar tiene z-index 30 y crea su
+               propio contexto de apilado, así que un velo puesto adentro taparía también
+               el input. Acá queda por debajo del topbar y por encima del contenido. *@
+            <div class="busq-scrim" aria-hidden="true"></div>
+
             @await Html.PartialAsync("_Alerts")
 
             @RenderBody()
@@ -220,6 +236,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/busqueda-global.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
 

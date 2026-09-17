@@ -1,3 +1,4 @@
+using Web.Extensions.Modulo_Busqueda;
 using Web.Extensions.Modulo_Configuracion;
 using Web.Extensions.Modulo_Notificaciones;
 using Web.Extensions.Modulo_Productos;
@@ -20,6 +21,7 @@ namespace Web.Extensions
             services.AddModuloVentas();
             services.AddModuloReportes();
             services.AddModuloConfiguracion();
+            services.AddModuloBusqueda();
 
             return services;
         }

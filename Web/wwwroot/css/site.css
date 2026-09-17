@@ -222,6 +222,8 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1 1 auto;
   max-width: 400px;
   margin-left: auto;
+  /* ancla del panel de resultados, que se posiciona absoluto debajo */
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -382,6 +384,193 @@ button.notif-item:hover { background: var(--color-bg); }
 }
 .notif-empty .icon { width: 28px; height: 28px; margin-bottom: 8px; }
 .notif-empty p { margin: 0; font-size: .84rem; }
+
+/* ---------- Búsqueda global ---------- */
+
+/* Pista del atajo, a la derecha del input (docs/diseno/.../BusquedaGlobal.dc.html) */
+.busq-esc {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 7px;
+  color: var(--color-muted);
+}
+
+.busq-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(22,25,29,.42);
+  /* debajo del topbar (30) y del sidebar (40): solo apaga el contenido */
+  z-index: 25;
+}
+body.busqueda-resultados .busq-scrim { display: block; }
+
+.busq-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.22);
+  z-index: 50;
+  overflow: hidden;
+  text-align: left;
+}
+body.busqueda-resultados .busq-panel { display: block; }
+
+.busq-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.busq-head p { margin: 0; }
+.busq-head .t { font-size: .83rem; color: var(--color-muted); }
+.busq-head .t b { color: var(--color-ink); }
+.busq-head .c { font-size: .76rem; color: var(--color-muted); white-space: nowrap; }
+
+/* Cuatro categorías llenas no pueden tapar la pantalla: mismo criterio que
+   la lista de notificaciones, el panel se desplaza por dentro. */
+.busq-body { max-height: min(60vh, 440px); overflow-y: auto; }
+
+.busq-group { border-bottom: 1px solid var(--color-border); }
+.busq-group:last-child { border-bottom: none; }
+
+.busq-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 11px 18px 7px;
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.busq-label .mono { letter-spacing: 0; font-weight: 700; }
+
+.busq-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  text-decoration: none;
+  color: inherit;
+}
+/* Una sola fila marcada: el teclado y el mouse comparten el mismo resaltado */
+.busq-item:hover,
+.busq-item.activa { background: var(--color-primary-soft); }
+
+.busq-tile {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.busq-tile .icon { width: 16px; height: 16px; vertical-align: 0; }
+.busq-tile.producto  { background: var(--color-primary-soft); color: var(--color-primary); }
+.busq-tile.cliente   { background: var(--color-info-soft);    color: var(--color-info); }
+.busq-tile.orden     { background: var(--color-warn-soft);    color: var(--color-warn); }
+.busq-tile.proveedor { background: var(--color-accent2-soft); color: var(--color-accent2); }
+
+.busq-texto { flex: 1 1 auto; min-width: 0; }
+.busq-name {
+  display: block;
+  font-weight: 700;
+  font-size: .89rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.busq-meta {
+  display: block;
+  font-size: .76rem;
+  color: var(--color-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Se reusa la pastilla de estado de las órdenes, en versión compacta */
+.busq-meta .estado-pill { font-size: .66rem; padding: 3px 9px; vertical-align: 1px; }
+
+.busq-right { flex: none; text-align: right; }
+.busq-val { display: block; font-family: var(--font-mono); font-size: .83rem; font-weight: 700; }
+.busq-sub { display: block; font-size: .72rem; color: var(--color-muted); margin-top: 2px; }
+
+.busq-item mark {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  border-radius: 3px;
+  padding: 0 1px;
+  font-weight: 800;
+}
+/* Sobre la fila marcada el resaltado se pierde contra el fondo: se invierte */
+.busq-item.activa mark,
+.busq-item:hover mark,
+.busq-item.activa .estado-pill,
+.busq-item:hover .estado-pill { background: #fff; }
+
+.busq-empty {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 4px 18px 12px;
+  font-size: .8rem;
+  color: var(--color-muted);
+}
+.busq-empty .icon { width: 15px; height: 15px; flex: none; vertical-align: 0; }
+
+.busq-mas {
+  margin: 0;
+  padding: 4px 18px 12px;
+  font-size: .79rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.busq-nada {
+  margin: 0;
+  padding: 28px 18px;
+  text-align: center;
+  font-size: .84rem;
+  color: var(--color-muted);
+}
+
+.busq-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 18px;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  font-size: .73rem;
+  color: var(--color-muted);
+}
+.busq-kb { display: inline-flex; align-items: center; gap: 5px; }
+.busq-kb b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--color-ink);
+}
 
 .user-chip {
   display: inline-flex;
@@ -2424,6 +2613,13 @@ html:has(.landing-page) { scroll-behavior: smooth; }
     cursor: pointer;
   }
   .topbar-search-toggle:hover { color: var(--color-ink); border-color: var(--color-ink); }
+
+  /* En pantalla táctil no hay teclado físico: la pista "esc" y el pie de
+     atajos ocupan espacio sin significar nada. */
+  .busq-esc,
+  .busq-foot { display: none; }
+
+  .busq-panel { width: calc(100vw - 32px); }
 
   .topbar-actions { margin-left: auto; }
 

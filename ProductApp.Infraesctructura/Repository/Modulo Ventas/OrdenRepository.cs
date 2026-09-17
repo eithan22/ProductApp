@@ -73,5 +73,37 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 .Include(o => o.Cliente)
                 .FirstOrDefaultAsync(o => o.Id == id && !o.EstaEliminado);
         }
+
+        public async Task<List<(Orden Orden, int CantidadProductos, decimal TotalPagado)>> BuscarOrdenesAsync(string texto)
+        {
+            var query = _context.Ordenes
+                .Include(o => o.Cliente)
+                .Where(o => !o.EstaEliminado && o.Estado != EstadoOrden.Cancelada)
+                .AsQueryable();
+
+            // El "número de orden" que ve el usuario es el Id: no hay un campo aparte.
+            // Se acepta con o sin '#' porque es como aparece escrito en toda la interfaz.
+            if (int.TryParse(texto.TrimStart('#'), out var numeroOrden))
+                query = query.Where(o => o.Id == numeroOrden || o.Cliente.Nombre.Contains(texto));
+            else
+                query = query.Where(o => o.Cliente.Nombre.Contains(texto));
+
+            // La cantidad de productos y el total pagado se calculan en la misma consulta:
+            // traerlos por separado significaría una consulta extra por cada orden hallada.
+            var resultados = await query
+                .OrderByDescending(o => o.Fecha)
+                .ThenByDescending(o => o.Id)
+                .Select(o => new
+                {
+                    Orden = o,
+                    CantidadProductos = o.Detalles.Count(d => !d.EstaEliminado),
+                    TotalPagado = o.Pagos.Where(p => !p.EstaEliminado).Sum(p => (decimal?)p.Monto) ?? 0m
+                })
+                .ToListAsync();
+
+            return resultados
+                .Select(r => (r.Orden, r.CantidadProductos, r.TotalPagado))
+                .ToList();
+        }
     }
 }
