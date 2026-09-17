@@ -6,14 +6,23 @@
     var categorias = ViewBag.Categorias as List<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>;
     var categoriaSeleccionada = ViewBag.CategoriaSeleccionada as string;
     var nombreBuscado = ViewBag.NombreBuscado as string;
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
     var categoriasActivas = Model.Items.Select(i => i.Categoria).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().Count();
 }
 
 <div class="page-header">
     <p class="text-muted">Catálogo activo · @Model.TotalCount productos en @categoriasActivas categorías.</p>
-    <a asp-action="Create" class="btn-pa btn-pa-primary">
-        @await Html.PartialAsync("_Icon", "add") Nuevo producto
-    </a>
+    <div class="page-header-actions">
+        @if (esAdministrador)
+        {
+            <a asp-action="Importar" class="btn-pa btn-pa-outline">
+                @await Html.PartialAsync("_Icon", "upload") Importar productos
+            </a>
+        }
+        <a asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Nuevo producto
+        </a>
+    </div>
 </div>
 
 <div class="producto-filtros">

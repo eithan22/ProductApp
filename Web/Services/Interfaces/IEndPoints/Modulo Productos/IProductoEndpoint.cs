@@ -10,5 +10,7 @@ namespace Web.Services.Interfaces.IEndPoints.Modulo_Productos
         string Enable { get; }
         string Buscar { get; }
         string SubirImagen { get; }
+        string DescargarPlantillaImportacion { get; }
+        string ImportarMasivo { get; }
     }
 }

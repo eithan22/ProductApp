@@ -1,0 +1,157 @@
+@model Web.Models.Modelo_Productos.ImportacionModels.ImportacionProductosResultadoModel
+
+@{
+    ViewData["Title"] = "Resultado de la importación";
+    var huboProblemas = Model.FilasConError > 0 || Model.FilasOmitidas > 0 || Model.Advertencias.Any();
+}
+
+<div class="crumb">
+    <a asp-action="Index">Productos</a>
+    <span>›</span>
+    <a asp-action="Importar">Importar</a>
+    <span>›</span>
+    <span>Resultado</span>
+</div>
+
+<div class="surface-card import-verdict @(huboProblemas ? "is-warn" : "")">
+    <div class="import-verdict-icon" aria-hidden="true">
+        @await Html.PartialAsync("_Icon", huboProblemas ? "alert" : "tick")
+    </div>
+    <div class="import-verdict-body">
+        <div class="import-verdict-titulo">
+            @if (Model.FilasCreadas == 0)
+            {
+                <text>No se agregó ningún producto al catálogo</text>
+            }
+            else
+            {
+                <text>Se agregaron @Model.FilasCreadas productos al catálogo</text>
+            }
+        </div>
+        <p class="import-verdict-desc">
+            @Model.FilasConError filas no se pudieron crear y @Model.FilasOmitidas se omitieron por estar ya registradas.
+        </p>
+    </div>
+    <div class="import-verdict-file">@Model.NombreArchivo<br />@Model.TotalFilas filas</div>
+</div>
+
+<div class="stat-strip mb-4">
+    <div class="stat-cell">
+        <div class="label">Filas procesadas</div>
+        <div class="value">@Model.TotalFilas</div>
+        <div class="hint">Total del archivo</div>
+    </div>
+    <div class="stat-cell">
+        <div class="label">Creadas</div>
+        <div class="value">@Model.FilasCreadas</div>
+        <div class="hint">Ya están en el catálogo</div>
+    </div>
+    <div class="stat-cell">
+        <div class="label">Con error</div>
+        <div class="value @(Model.FilasConError > 0 ? "is-danger" : "")">@Model.FilasConError</div>
+        <div class="hint">No se crearon</div>
+    </div>
+    <div class="stat-cell">
+        <div class="label">Omitidas</div>
+        <div class="value @(Model.FilasOmitidas > 0 ? "is-warn" : "")">@Model.FilasOmitidas</div>
+        <div class="hint">Ya existían</div>
+    </div>
+</div>
+
+@if (Model.Errores.Any())
+{
+    <div class="surface-card mb-4">
+        <div class="d-flex align-items-center justify-content-between gap-3 p-3 border-bottom">
+            <div class="ctitle mb-0">Filas con error · @Model.Errores.Count</div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ArchivoErroresBase64))
+            {
+                <form asp-action="DescargarErroresImportacion" method="post" class="m-0">
+                    <input type="hidden" name="archivoBase64" value="@Model.ArchivoErroresBase64" />
+                    <input type="hidden" name="nombreArchivo" value="@Model.NombreArchivoErrores" />
+                    <button type="submit" class="btn-pa btn-pa-outline">
+                        @await Html.PartialAsync("_Icon", "download") Descargar filas con error (.xlsx)
+                    </button>
+                </form>
+            }
+        </div>
+
+        <div class="list-head import-err-head">
+            <div>Fila</div>
+            <div>Producto</div>
+            <div>Columna</div>
+            <div>Motivo</div>
+        </div>
+
+        @foreach (var e in Model.Errores)
+        {
+            <div class="import-err-row">
+                <div class="import-fila">@e.NumeroFila</div>
+                <div class="import-prod">
+                    @(string.IsNullOrWhiteSpace(e.Nombre) ? "(sin nombre)" : e.Nombre)
+                </div>
+                <div><span class="import-col-pill">@e.Columna</span></div>
+                <div class="import-motivo">@e.Motivo</div>
+            </div>
+        }
+    </div>
+}
+
+@if (Model.Duplicadas.Any())
+{
+    <div class="surface-card mb-4">
+        <div class="p-3 border-bottom">
+            <div class="ctitle mb-0">Omitidas por duplicado · @Model.Duplicadas.Count</div>
+            <p class="cdesc mb-0">Coinciden en Nombre + Categoría con un producto que ya está en el catálogo.</p>
+        </div>
+
+        <div class="list-head import-dup-head">
+            <div>Fila</div>
+            <div>Producto</div>
+            <div>Categoría</div>
+        </div>
+
+        @foreach (var d in Model.Duplicadas)
+        {
+            <div class="import-dup-row">
+                <div class="import-fila">@d.NumeroFila</div>
+                <div class="import-dup-nombre">@d.Nombre</div>
+                <div class="import-dup-desc">@d.Categoria</div>
+            </div>
+        }
+    </div>
+}
+
+@if (Model.Advertencias.Any())
+{
+    <div class="surface-card mb-4">
+        <div class="p-3 border-bottom">
+            <div class="ctitle mb-0">Avisos · @Model.Advertencias.Count</div>
+            <p class="cdesc mb-0">Estas filas sí se crearon, pero conviene revisarlas.</p>
+        </div>
+
+        <div class="list-head import-dup-head">
+            <div>Fila</div>
+            <div>Columna</div>
+            <div>Detalle</div>
+        </div>
+
+        @foreach (var a in Model.Advertencias)
+        {
+            <div class="import-dup-row">
+                <div class="import-fila">@a.NumeroFila</div>
+                <div><span class="import-col-pill is-warn">@a.Columna</span></div>
+                <div class="import-motivo">@a.Mensaje</div>
+            </div>
+        }
+    </div>
+}
+
+<div class="factions">
+    <a asp-action="Index" class="btn-pa btn-pa-primary">
+        @await Html.PartialAsync("_Icon", "arrow-right") Ir al catálogo
+    </a>
+    <a asp-action="Importar" class="btn-pa btn-pa-outline">
+        @await Html.PartialAsync("_Icon", "upload") Importar otro archivo
+    </a>
+</div>

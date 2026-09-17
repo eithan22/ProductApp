@@ -2466,6 +2466,268 @@ html:has(.landing-page) { scroll-behavior: smooth; }
 }
 
 /* ============================================================
+   Importación masiva de productos (RF-3.10)
+   ------------------------------------------------------------
+   Dos pantallas. La de carga son tres pasos numerados y la zona
+   de archivo; la de resultado reusa .stat-strip para los cuatro
+   contadores y .list-head para las cabeceras, así que acá solo
+   van las grillas de filas y la píldora de columna.
+
+   Es la primera vez que el sistema sube un documento y no una
+   imagen: por eso la zona de archivo tiene caja propia en vez de
+   reusar .logo-row (pensada para una miniatura) o el input suelto
+   del formulario de producto (un campo más entre otros).
+   ============================================================ */
+
+/* ---------- Pantalla de carga ---------- */
+
+.import-paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-bottom: 16px;
+}
+
+.import-paso-num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.import-paso-titulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+
+.import-paso-desc {
+  margin: 3px 0 0;
+  font-size: .82rem;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+/* Encabezados esperados: el nombre exacto de la columna en mono a la
+   izquierda, qué acepta a la derecha. El nombre va en mono porque es
+   texto que el usuario tiene que copiar tal cual en su archivo. */
+.import-cols {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 14px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+.import-col-nombre {
+  font-family: var(--font-mono);
+  font-size: .79rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.import-col-nombre .req { color: var(--color-danger); }
+.import-col-desc { font-size: .79rem; color: var(--color-muted); line-height: 1.5; }
+
+/* Zona de archivo. Sin drag&drop propio: un <input type="file"> ya acepta
+   de fábrica los archivos que se le sueltan encima, así que el borde
+   punteado es la pista visual y el input hace el trabajo. Sin JS de por
+   medio, la zona sigue funcionando con teclado y lector de pantalla. */
+.import-drop {
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  padding: 28px 24px;
+  text-align: center;
+}
+.import-drop:focus-within { border-color: var(--color-primary); }
+
+.import-drop-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.import-drop-icon .icon { width: 24px; height: 24px; vertical-align: 0; }
+
+.import-drop-titulo { font-size: .94rem; font-weight: 700; }
+.import-drop-desc { font-size: .8rem; color: var(--color-muted); margin: 5px 0 16px; }
+.import-drop .form-control { max-width: 360px; margin: 0 auto; }
+
+/* Archivo elegido. Arranca oculto y el script de la vista le agrega
+   .is-visible: sin JS no aparece, pero el input ya muestra el nombre. */
+.import-file {
+  display: none;
+  align-items: center;
+  gap: 13px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-sm);
+}
+.import-file.is-visible { display: flex; }
+.import-file .icon { flex: none; color: var(--color-primary); }
+.import-file-nombre { font-weight: 700; font-size: .88rem; }
+.import-file-peso {
+  font-size: .75rem;
+  color: var(--color-primary-dark);
+  opacity: .8;
+  margin-top: 2px;
+}
+
+.import-reglas {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.import-regla { display: flex; gap: 10px; padding: 7px 0; font-size: .83rem; line-height: 1.5; }
+.import-regla .icon {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--color-primary);
+  margin-top: 3px;
+  vertical-align: 0;
+}
+
+/* ---------- Pantalla de resultado ---------- */
+
+/* Veredicto en una línea: el número que importa antes que las tablas.
+   Verde si salió todo limpio, ámbar si hay algo para revisar. */
+.import-verdict {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-left: 4px solid var(--color-primary);
+  margin-bottom: 20px;
+}
+.import-verdict.is-warn { border-left-color: var(--color-warn); }
+
+.import-verdict-icon {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.import-verdict.is-warn .import-verdict-icon {
+  background: var(--color-warn-soft);
+  color: var(--color-warn);
+}
+.import-verdict-icon .icon { width: 24px; height: 24px; vertical-align: 0; }
+
+.import-verdict-body { flex: 1; min-width: 0; }
+.import-verdict-titulo {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+.import-verdict-desc { margin: 3px 0 0; font-size: .85rem; color: var(--color-muted); }
+.import-verdict-file {
+  flex: none;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: .76rem;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+/* Filas rechazadas y omitidas: mismo esquema cabecera + fila en grilla
+   que ya usan Inventario y Usuarios (.list-head + clase de grilla). */
+.import-err-head,
+.import-err-row {
+  display: grid;
+  grid-template-columns: 64px 1.4fr 140px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.import-err-row {
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.import-err-row:last-child { border-bottom: none; }
+
+.import-dup-head,
+.import-dup-row {
+  display: grid;
+  grid-template-columns: 64px 1.4fr 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.import-dup-row {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.import-dup-row:last-child { border-bottom: none; }
+
+.import-fila {
+  font-family: var(--font-mono);
+  font-size: .83rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+.import-prod { font-size: .86rem; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.import-dup-nombre { font-size: .85rem; font-weight: 700; overflow-wrap: anywhere; }
+.import-dup-desc { font-size: .8rem; color: var(--color-muted); }
+.import-motivo { font-size: .82rem; line-height: 1.45; overflow-wrap: anywhere; }
+
+/* Nombre de la columna que falló: en mono porque es el encabezado
+   literal del archivo, el dato que el usuario tiene que ir a corregir. */
+.import-col-pill {
+  display: inline-flex;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+.import-col-pill.is-warn { background: var(--color-warn-soft); color: var(--color-warn); }
+
+/* En teléfono las cuatro columnas no entran: cada fila se lee de arriba
+   abajo y la cabecera de columnas deja de tener sentido. */
+@media (max-width: 767.98px) {
+  .import-err-head,
+  .import-dup-head { display: none; }
+
+  .import-err-row,
+  .import-dup-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    align-items: start;
+  }
+
+  .import-verdict { flex-wrap: wrap; }
+  .import-verdict-file { text-align: left; width: 100%; }
+
+  .import-cols { grid-template-columns: 1fr; gap: 4px 0; }
+  .import-col-desc { margin-bottom: 8px; }
+}
+
+/* ============================================================
    Adaptación a pantallas angostas
    ------------------------------------------------------------
    Tres tramos, sobre el diseño de escritorio que no se toca:

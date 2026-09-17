@@ -11,9 +11,11 @@ using ProductApp.Aplication.Mappers.Modulo_Producto;
 using ProductApp.Aplication.Services;
 using ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator;
+using ProductApp.Aplication.Dtos.Modulo_Productos.ImportacionDto;
 using ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator;
 using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Almacenamiento;
+using ProductApp.Infraesctructura.Persistencia.Importacion;
 using ProductApp.Infraesctructura.Persistencia.Repository;
 
 namespace ProductApp.Extensions.Modulo_Productos
@@ -46,6 +48,13 @@ namespace ProductApp.Extensions.Modulo_Productos
             services.AddScoped<ICategoriaServices, CategoriaServices>();
             services.AddScoped<IProductoServices, ProductoServices>();
             services.AddScoped<IInventarioServices, InventarioService>();
+            services.AddScoped<IImportacionProductosService, ImportacionProductosService>();
+
+            // Importación masiva (RF-3.10): ClosedXML y CsvHelper quedan encerrados en
+            // Infraestructura, igual que QuestPDF en la facturación. El servicio consume además
+            // IProveedorRepository, que registra el módulo de Proveedores — no se re-registra acá.
+            services.AddScoped<ILectorArchivoProductos, LectorArchivoProductos>();
+            services.AddScoped<IGeneradorArchivoProductos, GeneradorArchivoProductosClosedXml>();
 
             // Reglas de negocio
             services.AddScoped<IValidatorBusinessCategoria, ValidatorBusinessCategoria>();
@@ -60,6 +69,7 @@ namespace ProductApp.Extensions.Modulo_Productos
             services.AddScoped<IValidator<CreateProductoDto>, CreateProductoValidator>();
             services.AddScoped<IValidator<UpdateProductoDto>, UpdateProductoValidator>();
             services.AddScoped<IValidator<SubirImagenProductoDto>, SubirImagenProductoValidator>();
+            services.AddScoped<IValidator<ImportarProductosDto>, ImportarProductosValidator>();
 
             // Validadores DTO — Inventario
             services.AddScoped<IValidator<MovimientoStockDto>, MovimientoStockValidator>();
