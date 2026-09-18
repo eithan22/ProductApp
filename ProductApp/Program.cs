@@ -21,6 +21,12 @@ namespace ProductApp
 
             var builder = WebApplication.CreateBuilder(args);
 
+            // No revelar el stack tecnológico en cada respuesta HTTP.
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.AddServerHeader = false;
+            });
+
             // Reemplaza el logging por consola por defecto: mismos niveles que Serilog:MinimumLevel
             // en appsettings, pero ahora también persistidos en logs/ con rotación diaria.
             builder.Host.UseSerilog((context, configuration) =>
@@ -126,13 +132,18 @@ namespace ProductApp
 
             var app = builder.Build();
 
-            // Debe ir antes que cualquier middleware que use la IP del cliente: sin esto, detrás
-            // del balanceador de Azure RemoteIpAddress sería siempre la IP del balanceador, y el
-            // rate limit por IP de arriba colapsaría de nuevo a un único cubo compartido.
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            // Debe ir antes que cualquier middleware que use la IP del cliente. Restringido a
+            // loopback a propósito (todavía no hay balanceador real en producción): la app solo
+            // confía en X-Forwarded-For si la petición llega directo desde localhost, así nadie
+            // externo puede falsificar su IP para evadir el rate-limit de login de arriba.
+            // TODO: cuando se agregue el balanceador de Azure, sumar su IP/red real acá con
+            // fhOptions.KnownProxies.Add(IPAddress.Parse("<ip-del-balanceador>")).
+            var fhOptions = new ForwardedHeadersOptions
             {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                ForwardLimit = 1
+            };
+            app.UseForwardedHeaders(fhOptions);
 
             using (var scope = app.Services.CreateScope())
             {
@@ -153,6 +164,16 @@ namespace ProductApp
 
             app.UseExceptionHandler();
             app.UseHttpsRedirection();
+
+            // Headers de seguridad básicos (OWASP): mitigan MIME-sniffing y clickjacking.
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Append("X-Frame-Options", "DENY");
+                context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+                await next();
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseRateLimiter(); // aplica la política de rate limiting a las rutas que la declaren con [EnableRateLimiting]

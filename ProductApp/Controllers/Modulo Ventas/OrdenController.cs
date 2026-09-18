@@ -68,7 +68,8 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         public async Task<IActionResult> CancelarOrden(int id)
         {
             var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var result = await _ordenServices.CancelarOrden(id, usuarioSolicitanteId);
+            var esAdministrador = User.IsInRole("Administrador");
+            var result = await _ordenServices.CancelarOrden(id, usuarioSolicitanteId, esAdministrador);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
@@ -83,7 +84,8 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         public async Task<IActionResult> ConfirmarOrden(int id)
         {
             var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var result = await _ordenServices.ConfirmarOrden(id, usuarioSolicitanteId);
+            var esAdministrador = User.IsInRole("Administrador");
+            var result = await _ordenServices.ConfirmarOrden(id, usuarioSolicitanteId, esAdministrador);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 

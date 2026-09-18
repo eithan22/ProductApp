@@ -41,9 +41,16 @@ namespace ProductApp.Aplication.Common
 
         public static string Booleano(bool valor) => valor ? "Sí" : "No";
 
+        private static readonly char[] CaracteresFormula = { '=', '+', '-', '@', '\t', '\r' };
+
         private static string Escapar(string? valor)
         {
             var texto = valor ?? string.Empty;
+
+            // Mitigación de CSV Injection (OWASP): si el valor empieza con un carácter que
+            // Excel interpreta como inicio de fórmula, se neutraliza con un apóstrofo inicial.
+            if (texto.Length > 0 && CaracteresFormula.Contains(texto[0]))
+                texto = "'" + texto;
 
             // Un nombre de producto puede traer ';' o comillas. Si no se encierra entre
             // comillas, ese valor parte la fila en dos columnas al abrir el archivo.

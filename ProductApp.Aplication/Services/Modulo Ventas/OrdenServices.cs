@@ -93,11 +93,14 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Estado de la orden actualizado exitosamente");
         }
 
-        public async Task<OperationResultD<bool>> CancelarOrden(int id, int usuarioSolicitanteId)
+        public async Task<OperationResultD<bool>> CancelarOrden(int id, int usuarioSolicitanteId, bool esAdministrador)
         {
             var orden = await _ordenRepository.GetByIdAsync(id);
             if (orden == null)
                 return OperationResultD<bool>.Failure("Orden no encontrada");
+
+            if (!esAdministrador && orden.UsuarioId != usuarioSolicitanteId)
+                return OperationResultD<bool>.Failure("No tiene permiso sobre esta orden");
 
             orden.CancelarOrden();
             await _ordenRepository.UpdateAsync(orden);
@@ -112,11 +115,14 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Orden cancelada exitosamente");
         }
 
-        public async Task<OperationResultD<bool>> ConfirmarOrden(int id, int usuarioSolicitanteId)
+        public async Task<OperationResultD<bool>> ConfirmarOrden(int id, int usuarioSolicitanteId, bool esAdministrador)
         {
             var orden = await _ordenRepository.GetByIdAsync(id);
             if (orden == null)
                 return OperationResultD<bool>.Failure("Orden no encontrada");
+
+            if (!esAdministrador && orden.UsuarioId != usuarioSolicitanteId)
+                return OperationResultD<bool>.Failure("No tiene permiso sobre esta orden");
 
             var detallesOrden = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(id);
             if (detallesOrden == null || detallesOrden.Count == 0 || orden.Total <= 0)

@@ -31,7 +31,7 @@ namespace ProductApp.Tests.Integration
             });
             detalleResult.IsSuccess.Should().BeTrue(detalleResult.Message);
 
-            var cancelarResult = await ordenServices.CancelarOrden(ordenId, usuario.Id);
+            var cancelarResult = await ordenServices.CancelarOrden(ordenId, usuario.Id, esAdministrador: false);
             cancelarResult.IsSuccess.Should().BeTrue(cancelarResult.Message);
 
             var ordenFinal = await context.Ordenes.FindAsync(ordenId);

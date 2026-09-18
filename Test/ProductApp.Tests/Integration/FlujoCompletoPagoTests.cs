@@ -34,7 +34,7 @@ namespace ProductApp.Tests.Integration
             });
             detalleResult.IsSuccess.Should().BeTrue(detalleResult.Message);
 
-            var confirmarResult = await ordenServices.ConfirmarOrden(ordenId, usuario.Id);
+            var confirmarResult = await ordenServices.ConfirmarOrden(ordenId, usuario.Id, esAdministrador: false);
             confirmarResult.IsSuccess.Should().BeTrue(confirmarResult.Message);
 
             var pagoResult = await pagoService.RegistrarPagoAsync(new CreatePagoDto

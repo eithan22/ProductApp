@@ -35,7 +35,7 @@ namespace ProductApp.Tests.Integration
             var ordenBId = ordenBResult.Data!.Id;
             var detalleBResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenBId, ProductId = producto.Id, Cantidad = 5 });
             detalleBResult.IsSuccess.Should().BeTrue(detalleBResult.Message);
-            var cancelarBResult = await ordenServices.CancelarOrden(ordenBId, usuario.Id);
+            var cancelarBResult = await ordenServices.CancelarOrden(ordenBId, usuario.Id, esAdministrador: false);
             cancelarBResult.IsSuccess.Should().BeTrue(cancelarBResult.Message);
 
             // Orden C: se queda Pendiente. Total = 4 * 10 = 40.

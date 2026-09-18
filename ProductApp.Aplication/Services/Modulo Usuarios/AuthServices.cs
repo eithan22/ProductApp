@@ -62,7 +62,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
 
             var usuario = await _usuarioRepository.FirstOrDefaultAsync(x => x.Username == dto.Username);
             if (usuario == null)
-                return OperationResultD<AuthResponseDto>.Failure("Usuario no encontrado");
+                return OperationResultD<AuthResponseDto>.Failure("Usuario o contraseña incorrectos");
 
             var claims = new[]
             {

@@ -27,7 +27,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
                 .FirstOrDefaultAsync(x => x.Username == dto.Username);
 
             if (usuario == null)
-                return OperationResult.Failure("Usuario no encontrado");
+                return OperationResult.Failure("Usuario o contraseña incorrectos");
 
             if (usuario.EstaEliminado)
                 return OperationResult.Failure("Usuario deshabilitado");
@@ -38,7 +38,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             bool valido = PasswordHelper.Verify(dto.Password, usuario.PasswordHash);
 
             if (!valido)
-                return OperationResult.Failure("Contraseña incorrecta");
+                return OperationResult.Failure("Usuario o contraseña incorrectos");
 
             return OperationResult.Success();
         }

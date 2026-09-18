@@ -11,6 +11,12 @@ namespace Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // No revelar el stack tecnológico en cada respuesta HTTP.
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.AddServerHeader = false;
+            });
+
             builder.Services.AddWebDependencies(builder.Configuration);
 
             // Add services to the container.
@@ -36,6 +42,16 @@ namespace Web
             }
 
             app.UseHttpsRedirection();
+
+            // Headers de seguridad básicos (OWASP): mitigan MIME-sniffing y clickjacking.
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Append("X-Frame-Options", "DENY");
+                context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+                await next();
+            });
+
             app.UseSession();
             app.UseStaticFiles();
 
