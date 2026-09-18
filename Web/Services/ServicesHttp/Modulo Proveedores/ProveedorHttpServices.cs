@@ -19,7 +19,7 @@ namespace Web.Services.ServicesHttp.Modulo_Proveedores
             _proveedorEndpoint = proveedorEndpoint;
         }
 
-        public async Task<PagedResult<ProveedorModel>> GetProveedoresAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<ProveedorModel>> GetProveedoresAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             return await _baseHttpServices.GetAsync<PagedResult<ProveedorModel>>(
                 $"{_proveedorEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");

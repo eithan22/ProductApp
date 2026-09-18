@@ -197,10 +197,10 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Usuario activado correctamente");
         }
 
-        public Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
             => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
 
-        public async Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        public async Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<UsuarioResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");

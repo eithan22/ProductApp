@@ -43,7 +43,7 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             return await _baseHttpServices.GetAsync<ProductoModel>($"{_productoEndpoint.GetById}{id}");
         }
 
-        public async Task<PagedResult<ProductoModel>> GetProductosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<ProductoModel>> GetProductosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             return await _baseHttpServices.GetAsync<PagedResult<ProductoModel>>(
                 $"{_productoEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");

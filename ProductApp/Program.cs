@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Api.Filters;
@@ -6,6 +7,7 @@ using ProductApp.Aplication.Result.ApiResponses;
 using ProductApp.Extensions;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 using Serilog;
+using System.Threading.RateLimiting;
 
 namespace ProductApp
 {
@@ -95,16 +97,21 @@ namespace ProductApp
             // sin cola de espera (el intento número 6 se rechaza al instante con 429, no espera turno).
             builder.Services.AddRateLimiter(options =>
             {
-                options.AddFixedWindowLimiter("login", limiterOptions =>
+                options.AddPolicy("login", httpContext =>
                 {
-                    limiterOptions.PermitLimit = 5;
-                    limiterOptions.Window = TimeSpan.FromMinutes(1);
-                    limiterOptions.QueueLimit = 0;
+                    var clave = httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
+                    return RateLimitPartition.GetFixedWindowLimiter(clave, _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    });
                 });
 
                 // Cuando se excede el límite, responde con el mismo formato ApiResponseT que usa el resto de la API.
                 options.OnRejected = async (context, cancellationToken) =>
                 {
+                    context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
                     context.HttpContext.Response.ContentType = "application/json";
                     await context.HttpContext.Response.WriteAsJsonAsync(
                         ApiResponseT<object>.FailureResponse(
@@ -118,6 +125,14 @@ namespace ProductApp
                 .AddDbContextCheck<AppDbContext>();
 
             var app = builder.Build();
+
+            // Debe ir antes que cualquier middleware que use la IP del cliente: sin esto, detrás
+            // del balanceador de Azure RemoteIpAddress sería siempre la IP del balanceador, y el
+            // rate limit por IP de arriba colapsaría de nuevo a un único cubo compartido.
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             using (var scope = app.Services.CreateScope())
             {

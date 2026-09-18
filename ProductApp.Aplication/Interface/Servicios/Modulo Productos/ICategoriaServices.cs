@@ -12,6 +12,6 @@ namespace ProductApp.Aplication.Interface
     {
         Task<OperationResultD<bool>> EnableCategoria(int id);
 
-        Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
+        Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
     }
 }

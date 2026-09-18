@@ -39,7 +39,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize]
         // get 
         [HttpGet("GetClientes")]
-        public async Task<IActionResult> GetClientes([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetClientes([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _clienteService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
             if (!result.IsSuccess)

@@ -19,7 +19,7 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             _inventarioEndpoint = inventarioEndpoint;
         }
 
-        public async Task<PagedResult<InventarioModel>> GetAllInventariosAsync(int pageNumber = 1, int pageSize = 10, int? proveedorId = null)
+        public async Task<PagedResult<InventarioModel>> GetAllInventariosAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault, int? proveedorId = null)
         {
             var filtroProveedor = proveedorId.HasValue ? $"&proveedorId={proveedorId.Value}" : "";
 

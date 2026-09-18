@@ -18,7 +18,7 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto, int usuarioSolicitanteId);
 
-        Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
+        Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
         Task<OperationResultD<bool>> EnableUsuario(int id);
 

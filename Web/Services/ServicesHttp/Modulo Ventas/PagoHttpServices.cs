@@ -1,3 +1,4 @@
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.PagoDto;
 using Web.Models.Modelo_Ventas.PagoModels;
 using Web.Services.Interfaces.IBase;
@@ -40,7 +41,7 @@ namespace Web.Services.ServicesHttp.Modulo_Ventas
             DateTime? hasta = null,
             string? metodoPago = null,
             int pageNumber = 1,
-            int pageSize = 10)
+            int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var query = new List<string>
             {

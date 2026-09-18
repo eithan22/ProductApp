@@ -41,7 +41,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [Authorize]
         [HttpGet("GetAllProductos")]
 
-        public async Task<IActionResult> GetAllProductos([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllProductos([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _productoServices.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 

@@ -7,7 +7,7 @@ namespace ProductApp.Aplication.Interface
 {
     public interface IProveedorServices : IBaseServices<ProveedorResponseDto, CreateProveedorDto, UpdateProveedorDto>
     {
-        Task<OperationResultD<PagedResult<ProveedorResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
+        Task<OperationResultD<PagedResult<ProveedorResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
         Task<OperationResultD<bool>> EnableProveedor(int id);
 

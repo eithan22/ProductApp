@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ProductApp.Aplication.Common;
 using Web.Models.Modelo_Ventas.PagoModels;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Ventas;
 
@@ -23,7 +24,7 @@ namespace Web.Controllers.Modulo_Ventas
             DateTime? hasta = null,
             string? metodoPago = null,
             int pageNumber = 1,
-            int pageSize = 10)
+            int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var listado = await _pagoHttpServices.GetPagosAsync(
                 ordenId, desde, hasta, metodoPago, pageNumber, pageSize);

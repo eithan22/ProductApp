@@ -1,3 +1,4 @@
+using ProductApp.Aplication.Common;
 using Web.Models.Modelo_Ventas.PagoModels;
 
 namespace Web.Services.Interfaces.ServicesHttp.Modulo_Ventas
@@ -13,6 +14,6 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Ventas
             DateTime? hasta = null,
             string? metodoPago = null,
             int pageNumber = 1,
-            int pageSize = 10);
+            int pageSize = PaginacionDefaults.PageSizeDefault);
     }
 }

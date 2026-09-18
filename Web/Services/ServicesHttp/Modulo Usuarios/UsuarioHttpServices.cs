@@ -82,7 +82,7 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
             return response;
         }
 
-        public async Task<PagedResult<UsuarioModel>> GetUsuariosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<UsuarioModel>> GetUsuariosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var response = await _baseHttpServices.GetAsync<PagedResult<UsuarioModel>>(
                 $"{_usuarioEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");

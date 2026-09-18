@@ -7,7 +7,7 @@ namespace Web.Services.Interfaces.ServicesHttp
 
       public interface IClienteHttpServices
         {
-            Task<PagedResult<ClienteModel>> GetClientesAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10);
+            Task<PagedResult<ClienteModel>> GetClientesAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
             Task<ClienteModel> GetClienteByIdAsync(int id);
 

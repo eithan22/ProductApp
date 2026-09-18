@@ -56,10 +56,10 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<ProveedorResponseDto>.Success(proveedorResponse, "Proveedor creado correctamente");
         }
 
-        public Task<OperationResultD<PagedResult<ProveedorResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public Task<OperationResultD<PagedResult<ProveedorResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
             => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
 
-        public async Task<OperationResultD<PagedResult<ProveedorResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        public async Task<OperationResultD<PagedResult<ProveedorResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<ProveedorResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");

@@ -25,7 +25,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [Authorize(Roles = "Administrador")]
         [HttpGet("GetUsuarios")]
-        public async Task<IActionResult> GetUsuarios([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetUsuarios([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _usuarioService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
             if (!result.IsSuccess)

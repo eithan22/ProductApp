@@ -154,7 +154,7 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<List<InventarioResponseDto>>.Success(response, "Inventarios con stock bajo obtenidos exitosamente.");
         }
 
-        public async Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = 10, int? proveedorId = null)
+        public async Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault, int? proveedorId = null)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<InventarioResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");

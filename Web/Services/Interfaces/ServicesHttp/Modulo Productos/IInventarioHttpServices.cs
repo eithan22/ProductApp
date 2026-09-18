@@ -6,7 +6,7 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Productos
     public interface IInventarioHttpServices
     {
         // proveedorId null = sin filtrar por proveedor.
-        Task<PagedResult<InventarioModel>> GetAllInventariosAsync(int pageNumber = 1, int pageSize = 10, int? proveedorId = null);
+        Task<PagedResult<InventarioModel>> GetAllInventariosAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault, int? proveedorId = null);
         Task<List<InventarioModel>> GetStockBajoAsync(int? proveedorId = null);
         Task<InventarioModel> GetInventarioPorProductoAsync(int productoId);
         Task<InventarioModel> AgregarStockAsync(MovimientoStockModel model);

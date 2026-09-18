@@ -32,7 +32,7 @@ namespace ProductApp.Api.Controllers.Modulo_Proveedores
 
         [Authorize]
         [HttpGet("GetProveedores")]
-        public async Task<IActionResult> GetProveedores([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetProveedores([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _proveedorService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 

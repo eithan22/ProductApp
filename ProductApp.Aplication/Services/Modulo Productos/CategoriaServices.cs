@@ -150,10 +150,10 @@ namespace ProductApp.Aplication.Services
 
 
 
-        public Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
             => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
 
-        public async Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        public async Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<CategoriaResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");

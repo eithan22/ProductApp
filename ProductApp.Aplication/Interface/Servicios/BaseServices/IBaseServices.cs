@@ -10,7 +10,7 @@ namespace ProductApp.Aplication.Interface.Servicios.BaseServices
     {
         Task<OperationResultD<TResponsedto>> CreateAsync(TCreatedto dto);
 
-        Task<OperationResultD<PagedResult<TResponsedto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10);
+        Task<OperationResultD<PagedResult<TResponsedto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
         Task<OperationResultD<TResponsedto>> GetByIdAsync(int id);
         Task<OperationResultD<TResponsedto>> UpdateAsync(TUpdatedto dto);

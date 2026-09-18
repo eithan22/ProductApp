@@ -11,7 +11,7 @@ namespace ProductApp.Aplication.Interface
      public interface IClienteServices : IBaseServices<ClienteResponseDto, CreateClienteDto, UpdateClienteDto>
     {
 
-        Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
+        Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
         Task<OperationResultD<bool>> EnableCliente(int id);
 

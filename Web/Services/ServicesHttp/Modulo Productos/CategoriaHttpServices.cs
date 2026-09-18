@@ -42,7 +42,7 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             return paged.Items;
         }
 
-        public async Task<PagedResult<CategoriaModel>> GetCategoriasPagedAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<CategoriaModel>> GetCategoriasPagedAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             return await _baseHttpServices.GetAsync<PagedResult<CategoriaModel>>(
                 $"{_categoriaEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");

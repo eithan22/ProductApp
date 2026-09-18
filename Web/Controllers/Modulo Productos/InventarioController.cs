@@ -20,7 +20,7 @@ namespace Web.Controllers.Modulo_Productos
 
         public async Task<ActionResult> Index(int pageNumber = 1, int? proveedorId = null)
         {
-            var result = await _inventarioHttpServices.GetAllInventariosAsync(pageNumber, 10, proveedorId);
+            var result = await _inventarioHttpServices.GetAllInventariosAsync(pageNumber, proveedorId: proveedorId);
             // El contador de stock bajo respeta el mismo filtro: si se está viendo un
             // proveedor, el número de arriba tiene que hablar de ese proveedor.
             var stockBajo = await _inventarioHttpServices.GetStockBajoAsync(proveedorId);

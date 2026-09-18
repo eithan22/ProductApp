@@ -63,7 +63,7 @@ namespace Web.Services.ServicesHttp
 
         }
 
-        public async Task<PagedResult<ClienteModel>> GetClientesAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<ClienteModel>> GetClientesAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
            var response = await _baseHttpServices.GetAsync<PagedResult<ClienteModel>>(
                 $"{_clienteEndpointcs.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");
