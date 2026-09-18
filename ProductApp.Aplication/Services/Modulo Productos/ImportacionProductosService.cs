@@ -304,12 +304,20 @@ namespace ProductApp.Aplication.Services
 
         // Cultura invariante: el punto decimal es el mismo criterio que ya usa GeneradorCsv
         // para exportar, así el archivo no depende de la cultura del servidor.
+        // Sin AllowThousands a propósito: .NET no valida el tamaño de los grupos, así que
+        // "185,00" (coma decimal dominicana) se leería como 18500. Mejor rechazar la fila
+        // y que el usuario corrija el formato, que importar un monto 100 veces mayor.
         private static bool TryParseMonto(string? valor, out decimal monto)
         {
             monto = 0;
 
             return !string.IsNullOrWhiteSpace(valor)
-                && decimal.TryParse(valor.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out monto);
+                && decimal.TryParse(
+                    valor.Trim(),
+                    NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign
+                        | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
+                    CultureInfo.InvariantCulture,
+                    out monto);
         }
 
         // Duplicado = Nombre + Categoría. Solo trim + minúsculas, SIN quitar tildes: en nombres
