@@ -3,6 +3,7 @@ using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Helper;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
 using ProductApp.Aplication.Result.OperationResult;
+using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 
@@ -36,10 +37,27 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success();
         }
 
+        // Delete lógico (desactivación): es la baja real que usa la aplicación.
         public async Task<OperationResult> ValidarDeleteUsuarioAsync(Usuario usuario)
         {
             if (usuario == null)
                 return OperationResult.Failure("El usuario no existe.");
+
+            if (await EsUltimoAdministradorActivoAsync(usuario))
+                return OperationResult.Failure("No se puede desactivar al último administrador activo del sistema.");
+
+            return OperationResult.Success();
+        }
+
+        // Borrado físico: la fila desaparece de la base, así que la protección del último
+        // administrador aplica igual que en la desactivación, solo cambia el verbo del mensaje.
+        public async Task<OperationResult> ValidarBorradoFisicoUsuarioAsync(Usuario usuario)
+        {
+            if (usuario == null)
+                return OperationResult.Failure("El usuario no existe.");
+
+            if (await EsUltimoAdministradorActivoAsync(usuario))
+                return OperationResult.Failure("No se puede eliminar al último administrador activo del sistema.");
 
             return OperationResult.Success();
         }
@@ -64,7 +82,36 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 
         public async Task<OperationResult> ValidarCambiarRol(CambiarRolDto dto)
         {
+            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
+            if (usuario == null)
+                return OperationResult.Failure("Usuario no encontrado.");
+
+            if (!Enum.TryParse<RolUsuario>(dto.NuevoRol, true, out var nuevoRol))
+                return OperationResult.Failure("El rol indicado no es válido.");
+
+            // El sistema no puede quedarse sin ningún Administrador: si el usuario es el
+            // único administrador activo, no se le puede quitar ese rol. Un administrador
+            // inactivo no cuenta, por eso la comprobación es contra la lista de activos.
+            if (usuario.RolUsuario == RolUsuario.Administrador && nuevoRol != RolUsuario.Administrador)
+            {
+                var administradoresActivos = await _usuarioRepository.ObtenerIdsAdministradoresActivosAsync();
+
+                if (administradoresActivos.Count == 1 && administradoresActivos.Contains(usuario.Id))
+                    return OperationResult.Failure(
+                        "No se puede quitar el rol de Administrador: es el último administrador activo del sistema.");
+            }
+
             return OperationResult.Success("Usuario encontrado para cambiar rol.");
+        }
+
+        // El sistema siempre debe conservar al menos un administrador activo: si se queda sin
+        // ninguno, nadie puede volver a gestionar usuarios, roles ni configuración.
+        // Si el usuario no es administrador activo no aparece en la lista, así que no bloquea.
+        private async Task<bool> EsUltimoAdministradorActivoAsync(Usuario usuario)
+        {
+            var administradoresActivos = await _usuarioRepository.ObtenerIdsAdministradoresActivosAsync();
+
+            return administradoresActivos.Count <= 1 && administradoresActivos.Contains(usuario.Id);
         }
     }
 }

@@ -159,6 +159,10 @@ namespace ProductApp.Aplication.Services
             if (usuario == null)
                 return OperationResultD<bool>.Failure("Usuario no encontrado");
 
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarBorradoFisicoUsuarioAsync(usuario);
+            if (!validatorBusinessResult.IsSuccess)
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+
             await _usuarioRepository.DeleteAsync(id);
             return OperationResultD<bool>.Success(true, "Usuario Eliminado Correctamente");
         }

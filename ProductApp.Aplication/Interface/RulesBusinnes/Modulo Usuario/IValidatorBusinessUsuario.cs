@@ -13,6 +13,7 @@ namespace ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario
          Task<OperationResult> ValidarCreateUsuarioAsync(CreateUsuarioDto dto);
         Task<OperationResult> ValidarUpdateUsuarioAsync(UpdateUsuarioDto dto);
          Task<OperationResult> ValidarDeleteUsuarioAsync(Usuario usuario);
+        Task<OperationResult> ValidarBorradoFisicoUsuarioAsync(Usuario usuario);
 
         Task<OperationResult> ValidarCambiarPasswordUsuario(ChangePasswordDto dto, Usuario usuario);
         Task<OperationResult> ValidarResetearPassword (ResetearPasswordDto dto);
