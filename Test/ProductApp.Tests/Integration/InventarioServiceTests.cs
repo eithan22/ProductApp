@@ -175,5 +175,150 @@ namespace ProductApp.Tests.Integration
 
             resultado.IsSuccess.Should().BeFalse();
         }
+
+        // --- AgregarStockAsync: camino feliz (antes sin cobertura) ---
+
+        [Fact]
+        public async Task AgregarStockAsync_ConCantidadValida_SumaElStockYLoPersiste()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 7 });
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            resultado.Message.Should().Be("Stock agregado exitosamente.");
+            (await context.Inventario.SingleAsync()).CantidadActual.Should().Be(12);
+        }
+
+        [Fact]
+        public async Task AgregarStockAsync_DevuelveElInventarioYaActualizadoEnElDto()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 3 });
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            resultado.Data.Should().NotBeNull();
+            resultado.Data!.StockActual.Should().Be(8);
+            resultado.Data.ProductoId.Should().Be(producto.Id);
+            resultado.Data.Producto.Should().Be("Producto Test");
+            resultado.Data.StockMinimo.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task AgregarStockAsync_DosEntradasSeguidas_AcumulanSobreElMismoInventario()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 0);
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 4 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 6 });
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            resultado.Data!.StockActual.Should().Be(10);
+            (await context.Inventario.SingleAsync()).CantidadActual.Should().Be(10);
+        }
+
+        // El delay hace determinista la comparación de timestamps: sin él, dos lecturas
+        // consecutivas de DateTime.UtcNow pueden devolver el mismo valor.
+        [Fact]
+        public async Task AgregarStockAsync_RefrescaLaFechaDeUltimaActualizacion()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, inventario) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
+            var fechaPrevia = inventario.UltimaActualizacion;
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+            await Task.Delay(10);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 2 });
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            (await context.Inventario.SingleAsync()).UltimaActualizacion.Should().BeAfter(fechaPrevia);
+            resultado.Data!.FechaActualizacion.Should().BeAfter(fechaPrevia);
+        }
+
+        // Reponer stock saca al producto de stock bajo; la notificación solo se dispara al
+        // CRUZAR hacia abajo, así que aquí no debe generarse ninguna.
+        [Fact]
+        public async Task AgregarStockAsync_SobreUnProductoEnStockBajo_LoSacaDeStockBajoYNoNotifica()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            await SembrarAdministradorAsync(context);
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 1);
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 });
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            var inventario = await context.Inventario.SingleAsync();
+            inventario.CantidadActual.Should().Be(11);
+            inventario.EsStockBajo().Should().BeFalse();
+            (await context.Notificaciones.CountAsync()).Should().Be(0);
+        }
+
+        // --- AgregarStockAsync: caminos de error ---
+
+        [Fact]
+        public async Task AgregarStockAsync_DeUnProductoInactivo_DevuelveFailureYNoTocaElStock()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
+            producto.DesactivarProducto();
+            await context.SaveChangesAsync();
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 });
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Be("No se puede agregar stock a un producto inactivo.");
+            (await context.Inventario.SingleAsync()).CantidadActual.Should().Be(5);
+        }
+
+        [Fact]
+        public async Task AgregarStockAsync_ConCantidadNegativa_DevuelveFailureDeValidacionYNoTocaElStock()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = -3 });
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("Error de validación");
+            (await context.Inventario.SingleAsync()).CantidadActual.Should().Be(5);
+        }
+
+        [Fact]
+        public async Task AgregarStockAsync_ConProductoIdCero_DevuelveFailureDeValidacion()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = 0, Cantidad = 5 });
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("Error de validación");
+        }
+
+        // El producto existe pero su inventario fue borrado lógicamente: no hay dónde sumar.
+        [Fact]
+        public async Task AgregarStockAsync_ConInventarioEliminadoLogicamente_DevuelveFailure()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, inventario) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
+            inventario.Eliminar();
+            await context.SaveChangesAsync();
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 5 });
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Be("Inventario no encontrado.");
+        }
     }
 }
