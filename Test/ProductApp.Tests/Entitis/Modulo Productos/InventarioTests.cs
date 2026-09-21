@@ -194,5 +194,72 @@ namespace ProductApp.Tests.Entitis
             inventario.CantidadActual.Should().Be(10);
             inventario.UltimaActualizacion.Should().Be(ultimaActualizacionPrevia);
         }
+
+        // --- Tope máximo de stock (defensa contra el desbordamiento del int) ---
+
+        // Sin el tope, la suma habría desbordado el int y dejado la cantidad en negativo.
+        [Fact]
+        public void RegistrarEntradaStock_ConUnaCantidadQueDesbordariaElInt_LanzaValidacionDominioExceptionYNoTocaElStock()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            var accion = () => inventario.RegistrarEntradaStock(int.MaxValue);
+
+            accion.Should().Throw<ValidacionDominioException>()
+                .WithMessage("*Stock máximo excedido*")
+                .Which.Campo.Should().Be("Cantidad");
+            inventario.CantidadActual.Should().Be(10);
+        }
+
+        // Aquí no hay desbordamiento posible: la entrada simplemente cruza el tope.
+        [Fact]
+        public void RegistrarEntradaStock_ConUnaCantidadQueCruzaElTopeSinDesbordar_LanzaValidacionDominioExceptionYNoTocaElStock()
+        {
+            var inventario = CrearInventario(cantidadActual: Inventario.CantidadMaximaStock - 10, cantidadMinima: 5);
+
+            var accion = () => inventario.RegistrarEntradaStock(11);
+
+            accion.Should().Throw<ValidacionDominioException>()
+                .WithMessage("*Stock máximo excedido*")
+                .Which.Campo.Should().Be("Cantidad");
+            inventario.CantidadActual.Should().Be(Inventario.CantidadMaximaStock - 10);
+        }
+
+        // Borde inclusivo: llegar justo al tope es válido.
+        [Fact]
+        public void RegistrarEntradaStock_QueLlegaExactamenteAlTope_SeAcepta()
+        {
+            var inventario = CrearInventario(cantidadActual: Inventario.CantidadMaximaStock - 10, cantidadMinima: 5);
+
+            inventario.RegistrarEntradaStock(10);
+
+            inventario.CantidadActual.Should().Be(Inventario.CantidadMaximaStock);
+        }
+
+        [Theory]
+        [InlineData(Inventario.CantidadMaximaStock + 1)]
+        [InlineData(int.MaxValue)]
+        public void AjustarStock_ConUnValorMayorAlTope_LanzaValidacionDominioExceptionYNoTocaElStock(int nuevoStock)
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            var accion = () => inventario.AjustarStock(nuevoStock);
+
+            accion.Should().Throw<ValidacionDominioException>()
+                .WithMessage("*no puede superar*")
+                .Which.Campo.Should().Be("Stock");
+            inventario.CantidadActual.Should().Be(10);
+        }
+
+        // Borde inclusivo: ajustar justo al tope es válido.
+        [Fact]
+        public void AjustarStock_ExactamenteAlTope_SeAcepta()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            inventario.AjustarStock(Inventario.CantidadMaximaStock);
+
+            inventario.CantidadActual.Should().Be(Inventario.CantidadMaximaStock);
+        }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Domian.Common.Enums.EnumsNotificacion;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
+using ProductApp.Domian.Common.Exceptions;
 using ProductApp.Domian.Entitis;
 using Xunit;
 
@@ -319,6 +320,45 @@ namespace ProductApp.Tests.Integration
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("Inventario no encontrado.");
+        }
+
+        // --- AgregarStockAsync: tope máximo de stock ---
+
+        // La cantidad supera el tope por sí sola, así que FluentValidation corta antes de
+        // llegar al dominio: sale un Failure de validación, no una excepción.
+        [Fact]
+        public async Task AgregarStockAsync_ConCantidadSuperiorAlMaximoPermitido_DevuelveFailureDeValidacionYNoTocaElStock()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var resultado = await service.AgregarStockAsync(
+                new MovimientoStockDto { ProductoId = producto.Id, Cantidad = Inventario.CantidadMaximaStock + 1 });
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("Error de validación");
+            resultado.Message.Should().Contain("no puede superar");
+            (await context.Inventario.SingleAsync()).CantidadActual.Should().Be(5);
+        }
+
+        // Caso distinto: la cantidad pasa FluentValidation (no supera el tope por sí sola),
+        // pero la SUMA sí lo cruza. Ahí corta la entidad y la excepción de dominio sale del
+        // servicio sin convertirse en Failure; la API la traduce a 400 en GlobalExceptionHandler.
+        [Fact]
+        public async Task AgregarStockAsync_CuandoLaSumaCruzaElTope_PropagaLaExcepcionDeDominioYNoTocaElStock()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(
+                context, cantidadActual: Inventario.CantidadMaximaStock - 10);
+            var service = IntegrationTestFactory.CrearInventarioService(context);
+
+            var accion = async () => await service.AgregarStockAsync(
+                new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 11 });
+
+            await accion.Should().ThrowAsync<ValidacionDominioException>()
+                .WithMessage("*Stock máximo excedido*");
+            (await context.Inventario.SingleAsync()).CantidadActual.Should().Be(Inventario.CantidadMaximaStock - 10);
         }
     }
 }
