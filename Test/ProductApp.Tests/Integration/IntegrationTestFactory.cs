@@ -11,9 +11,11 @@ using ProductApp.Aplication.Mappers.Modulo_Proveedores;
 using ProductApp.Aplication.Mappers.Modulo_Reportes;
 using ProductApp.Aplication.Mappers.Modulo_Ventas;
 using ProductApp.Aplication.Services;
+using ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator;
 using ProductApp.Aplication.Validators.Modulo_Proveedores.ProveedorValidator;
+using ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator;
 using ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator;
 using ProductApp.Aplication.Validators.Modulo_Ventas.DetalleOrdenValidator;
 using ProductApp.Aplication.Validators.Modulo_Ventas.OrdenValidator;
@@ -97,6 +99,24 @@ namespace ProductApp.Tests.Integration
                 CrearNotificacionService(context),
                 NullLogger<InventarioService>.Instance);
 
+        public static CategoriaServices CrearCategoriaServices(AppDbContext context)
+            => new(
+                new CategoriaRepository(context),
+                new CategoriaMapper(),
+                new CreateCategoriaValidator(),
+                new UpdateCategoriaValidator(),
+                new ValidatorBusinessCategoria(new CategoriaRepository(context)));
+
+        // Orden del constructor verificado contra ClienteServices.cs: el validator de
+        // Update va 3º y el de Create 4º, al revés que en el resto de los servicios.
+        public static ClienteServices CrearClienteServices(AppDbContext context)
+            => new(
+                new ClienteRepository(context),
+                new ClienteMappers(),
+                new UpdateClienteValidator(),
+                new CreateClienteValidator(),
+                new ValidatorBusinessClientes(new ClienteRepository(context)));
+
         public static ProveedorService CrearProveedorService(AppDbContext context)
             => new(
                 new ProveedorRepository(context),
@@ -167,9 +187,31 @@ namespace ProductApp.Tests.Integration
             return (categoria, producto, inventario);
         }
 
-        public static async Task<Cliente> SembrarClienteAsync(AppDbContext context)
+        public static async Task<Cliente> SembrarClienteAsync(
+            AppDbContext context,
+            string nombre = "Cliente Test",
+            string cedula = "001-0000000-1",
+            string correo = "cliente@test.com",
+            string telefono = "809-000-0000")
         {
-            var cliente = new Cliente("Cliente Test", "001-0000000-1", "Calle Falsa 123", "cliente@test.com", "809-000-0000");
+            var cliente = new Cliente(nombre, cedula, "Calle Falsa 123", correo, telefono);
+            context.Clientes.Add(cliente);
+            await context.SaveChangesAsync();
+            return cliente;
+        }
+
+        // Replica exactamente lo que siembra DbInitializer en producción: el reservado se
+        // reconoce por la cédula, así que los datos tienen que salir de las constantes
+        // de la entidad y no de literales escritos a mano en el test.
+        public static async Task<Cliente> SembrarConsumidorFinalAsync(AppDbContext context)
+        {
+            var cliente = new Cliente(
+                Cliente.NombreConsumidorFinal,
+                Cliente.CedulaConsumidorFinal,
+                Cliente.DireccionConsumidorFinal,
+                Cliente.CorreoConsumidorFinal,
+                Cliente.TelefonoConsumidorFinal);
+
             context.Clientes.Add(cliente);
             await context.SaveChangesAsync();
             return cliente;
