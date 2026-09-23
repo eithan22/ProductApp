@@ -22,7 +22,8 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("El email es requerido.")
-                .EmailAddress().WithMessage("El email no es válido.");
+                .EmailAddress().WithMessage("El email no es válido.")
+                .MaximumLength(50).WithMessage("El email no puede exceder los 50 caracteres.");
 
             RuleFor(x => x.UserName)
                 .NotEmpty().WithMessage("El nombre de usuario es requerido.")

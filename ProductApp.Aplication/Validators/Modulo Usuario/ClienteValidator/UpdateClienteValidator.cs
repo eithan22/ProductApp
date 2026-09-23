@@ -21,7 +21,8 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator
 
             RuleFor(x => x.Correo)
                 .NotEmpty().WithMessage("El correo es requerido.")
-                .EmailAddress().WithMessage("El correo no es válido.");
+                .EmailAddress().WithMessage("El correo no es válido.")
+                .MaximumLength(30).WithMessage("El correo no puede excederse de 30 caracteres");
 
             RuleFor(x => x.Telefono)
                 .NotEmpty().WithMessage("El teléfono es requerido.")
@@ -29,11 +30,11 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator
 
             RuleFor(x => x.Cedula)
                 .NotEmpty().WithMessage("La cédula es requerida.")
-                .Matches(@"^\d{10}$").WithMessage("La cédula debe tener 10 dígitos.");
+                .Matches(@"^\d{11}$").WithMessage("La cédula debe tener 11 dígitos.");
 
             RuleFor(x => x.Direccion)
                 .NotEmpty().WithMessage("La dirección es requerida.")
-                .MaximumLength(200).WithMessage("La dirección no puede exceder los 200 caracteres.");
+                .MaximumLength(100).WithMessage("La dirección no puede exceder los 100 caracteres.");
 
         }
     }

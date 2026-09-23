@@ -13,7 +13,7 @@ namespace ProductApp.Tests.Integration
     public class ClienteServiceTests
     {
         // Los formatos vienen de CreateClienteValidator: teléfono de 10 dígitos exactos,
-        // cédula de 11, nombre de máximo 20 caracteres y correo de máximo 30.
+        // cédula de 11, nombre de máximo 100 caracteres y correo de máximo 30.
         private static CreateClienteDto CrearDto(
             string nombre = "Ana Pérez",
             string cedula = "40212345678",
@@ -133,14 +133,11 @@ namespace ProductApp.Tests.Integration
             var reservado = await IntegrationTestFactory.SembrarConsumidorFinalAsync(context);
             var service = IntegrationTestFactory.CrearClienteServices(context);
 
-            // La cédula del DTO va de 10 dígitos porque es lo que exige
-            // UpdateClienteValidator; con los 11 del reservado el DTO ni siquiera
-            // llegaría a la regla de negocio que se quiere probar aquí.
             var resultado = await service.UpdateAsync(new UpdateClienteDto
             {
                 Id = reservado.Id,
                 Nombre = "Nombre Cambiado",
-                Cedula = "4021234567",
+                Cedula = "40212345678",
                 Correo = "otro@test.com",
                 Telefono = "8095551234",
                 Direccion = "Otra dirección"
@@ -205,7 +202,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = cliente.Id,
                 Nombre = "Cliente Editado",
-                Cedula = "4021234567",
+                Cedula = "40212345678",
                 Correo = "editado@test.com",
                 Telefono = "8095551234",
                 Direccion = "Calle Nueva 5"
@@ -215,12 +212,11 @@ namespace ProductApp.Tests.Integration
             resultado.Message.Should().Contain("cliente inactivo");
         }
 
-        // BUG detectado: CreateClienteValidator exige cédula de 11 dígitos y
-        // UpdateClienteValidator de 10. Un cliente creado por la vía normal nunca puede
-        // editarse conservando su propia cédula. El test fija el comportamiento actual
-        // para que se note el día que se corrija el validador.
+        // Regresión del bug de la cédula: CreateClienteValidator exigía 11 dígitos y
+        // UpdateClienteValidator 10, así que ningún cliente creado por la vía normal
+        // podía editarse conservando su propia cédula. Los dos validadores ya piden 11.
         [Fact]
-        public async Task UpdateAsync_ConservandoLaCedulaDeOnceDigitos_FallaEnElValidadorDeUpdate()
+        public async Task UpdateAsync_ConservandoLaCedulaDeOnceDigitos_ActualizaElCliente()
         {
             using var context = IntegrationTestFactory.CrearContexto();
             var service = IntegrationTestFactory.CrearClienteServices(context);
@@ -237,8 +233,8 @@ namespace ProductApp.Tests.Integration
                 Direccion = "Calle Duarte 12"
             });
 
-            resultado.IsSuccess.Should().BeFalse();
-            resultado.Message.Should().Contain("cédula debe tener 10 dígitos");
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            resultado.Data!.Direccion.Should().Be("Calle Duarte 12");
         }
 
         [Fact]

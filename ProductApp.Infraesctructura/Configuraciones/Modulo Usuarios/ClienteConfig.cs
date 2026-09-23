@@ -13,7 +13,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
         {
            builder.Property(c => c.Nombre)
                 .IsRequired()
-                .HasMaxLength(20);
+                .HasMaxLength(100);
 
             builder.Property(c => c.Correo)
                 .IsRequired()

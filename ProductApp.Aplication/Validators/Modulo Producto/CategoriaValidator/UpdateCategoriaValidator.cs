@@ -20,7 +20,7 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator
 
             RuleFor(x => x.Descripcion)
                 .NotEmpty().WithMessage("La descripcion es requerida.")
-            .MaximumLength(200).WithMessage("La descripcion no puede exceder los 200 caracteres.");
+            .MaximumLength(100).WithMessage("La descripcion no puede exceder los 100 caracteres.");
 
 
         }

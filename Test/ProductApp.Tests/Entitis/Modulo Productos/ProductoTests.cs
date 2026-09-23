@@ -33,6 +33,22 @@ namespace ProductApp.Tests.Entitis
             accion.Should().Throw<ValidacionDominioException>();
         }
 
+        [Fact]
+        public void Constructor_ConPrecioSobreElMaximo_LanzaValidacionDominioException()
+        {
+            var accion = () => CrearProducto(precio: Producto.MontoMaximo + 0.01m);
+
+            accion.Should().Throw<ValidacionDominioException>();
+        }
+
+        [Fact]
+        public void Constructor_ConCostoSobreElMaximo_LanzaValidacionDominioException()
+        {
+            var accion = () => CrearProducto(costo: Producto.MontoMaximo + 0.01m);
+
+            accion.Should().Throw<ValidacionDominioException>();
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("   ")]

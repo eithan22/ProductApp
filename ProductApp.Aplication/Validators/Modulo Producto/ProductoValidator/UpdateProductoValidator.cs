@@ -1,5 +1,6 @@
 using FluentValidation;
 using ProductApp.Aplication.Dtos.ProductoDto;
+using ProductApp.Domian.Entitis;
 
 namespace ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator
 {
@@ -19,10 +20,14 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator
                 .MaximumLength(100).WithMessage("La descripción no puede exceder los 100 caracteres.");
 
             RuleFor(x => x.Costo)
-                .GreaterThan(0).WithMessage("El costo debe ser mayor a 0.");
+                .GreaterThan(0).WithMessage("El costo debe ser mayor a 0.")
+                .LessThanOrEqualTo(Producto.MontoMaximo)
+                .WithMessage($"El costo no puede superar los {Producto.MontoMaximo}.");
 
             RuleFor(x => x.Precio)
-                .GreaterThan(0).WithMessage("El precio debe ser mayor a 0.");
+                .GreaterThan(0).WithMessage("El precio debe ser mayor a 0.")
+                .LessThanOrEqualTo(Producto.MontoMaximo)
+                .WithMessage($"El precio no puede superar los {Producto.MontoMaximo}.");
 
             RuleFor(x => x.CategoriaId)
                 .GreaterThan(0).WithMessage("Debe seleccionar una categoría válida.");
