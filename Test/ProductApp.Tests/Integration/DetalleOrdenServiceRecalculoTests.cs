@@ -38,7 +38,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 ProductId = productoA.Id,
                 Cantidad = 2
-            });
+            }, usuario.Id, esAdministrador: false);
             detalleA.IsSuccess.Should().BeTrue(detalleA.Message);
 
             var detalleB = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto
@@ -46,7 +46,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 ProductId = productoB.Id,
                 Cantidad = 4
-            });
+            }, usuario.Id, esAdministrador: false);
             detalleB.IsSuccess.Should().BeTrue(detalleB.Message);
 
             (await context.Ordenes.FindAsync(ordenId))!.Total.Should().Be(60m);
@@ -66,7 +66,9 @@ namespace ProductApp.Tests.Integration
 
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleAId,
-                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 5 });
+                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 5 },
+                escenario.Usuario.Id,
+                esAdministrador: false);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data!.Cantidad.Should().Be(5);
@@ -85,7 +87,9 @@ namespace ProductApp.Tests.Integration
 
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleBId,
-                new UpdateDetalleOrdenDto { id = escenario.DetalleBId, Cantidad = 1 });
+                new UpdateDetalleOrdenDto { id = escenario.DetalleBId, Cantidad = 1 },
+                escenario.Usuario.Id,
+                esAdministrador: false);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
 
@@ -109,7 +113,9 @@ namespace ProductApp.Tests.Integration
 
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleAId,
-                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 3 });
+                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 3 },
+                escenario.Usuario.Id,
+                esAdministrador: false);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data!.PrecioUnitario.Should().Be(20m);
@@ -125,7 +131,7 @@ namespace ProductApp.Tests.Integration
             var escenario = await SembrarOrdenConDosProductosAsync(context);
             var detalleService = IntegrationTestFactory.CrearDetalleOrdenService(context);
 
-            var resultado = await detalleService.EliminarProductoAsync(escenario.DetalleBId);
+            var resultado = await detalleService.EliminarProductoAsync(escenario.DetalleBId, escenario.Usuario.Id, esAdministrador: false);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data.Should().BeTrue();
@@ -144,8 +150,8 @@ namespace ProductApp.Tests.Integration
             var detalleService = IntegrationTestFactory.CrearDetalleOrdenService(context);
             var ordenServices = IntegrationTestFactory.CrearOrdenServices(context);
 
-            (await detalleService.EliminarProductoAsync(escenario.DetalleAId)).IsSuccess.Should().BeTrue();
-            (await detalleService.EliminarProductoAsync(escenario.DetalleBId)).IsSuccess.Should().BeTrue();
+            (await detalleService.EliminarProductoAsync(escenario.DetalleAId, escenario.Usuario.Id, esAdministrador: false)).IsSuccess.Should().BeTrue();
+            (await detalleService.EliminarProductoAsync(escenario.DetalleBId, escenario.Usuario.Id, esAdministrador: false)).IsSuccess.Should().BeTrue();
 
             (await TotalDeAsync(context, escenario.OrdenId)).Should().Be(0m);
             (await context.Ordenes.FindAsync(escenario.OrdenId))!.Estado.Should().Be(EstadoOrden.Pendiente);
@@ -169,7 +175,9 @@ namespace ProductApp.Tests.Integration
 
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleAId,
-                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 9 });
+                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 9 },
+                escenario.Usuario.Id,
+                esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("No se pueden modificar detalles de una orden que no está pendiente");
@@ -189,7 +197,7 @@ namespace ProductApp.Tests.Integration
             (await ordenServices.ConfirmarOrden(escenario.OrdenId, escenario.Usuario.Id, esAdministrador: true))
                 .IsSuccess.Should().BeTrue();
 
-            var resultado = await detalleService.EliminarProductoAsync(escenario.DetalleBId);
+            var resultado = await detalleService.EliminarProductoAsync(escenario.DetalleBId, escenario.Usuario.Id, esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("No se pueden eliminar productos de una orden que no está pendiente");
@@ -214,7 +222,9 @@ namespace ProductApp.Tests.Integration
 
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleAId,
-                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 1 });
+                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 1 },
+                escenario.Usuario.Id,
+                esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("No se pueden modificar detalles de una orden que no está pendiente");
@@ -235,7 +245,7 @@ namespace ProductApp.Tests.Integration
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
             }, escenario.Usuario.Id, esAdministrador: true)).IsSuccess.Should().BeTrue();
 
-            var resultado = await detalleService.EliminarProductoAsync(escenario.DetalleAId);
+            var resultado = await detalleService.EliminarProductoAsync(escenario.DetalleAId, escenario.Usuario.Id, esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("No se pueden eliminar productos de una orden que no está pendiente");
@@ -253,7 +263,9 @@ namespace ProductApp.Tests.Integration
             // ProductoA tiene 20 unidades en inventario.
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleAId,
-                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 21 });
+                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 21 },
+                escenario.Usuario.Id,
+                esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("Cantidad solicitada excede el stock disponible");
@@ -269,7 +281,9 @@ namespace ProductApp.Tests.Integration
 
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleAId,
-                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 0 });
+                new UpdateDetalleOrdenDto { id = escenario.DetalleAId, Cantidad = 0 },
+                escenario.Usuario.Id,
+                esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("La cantidad debe ser mayor que cero.");
@@ -284,7 +298,8 @@ namespace ProductApp.Tests.Integration
             var detalleService = IntegrationTestFactory.CrearDetalleOrdenService(context);
 
             var resultado = await detalleService.ActualizarDetalleOrden(
-                9999, new UpdateDetalleOrdenDto { id = 9999, Cantidad = 1 });
+                9999, new UpdateDetalleOrdenDto { id = 9999, Cantidad = 1 },
+                escenario.Usuario.Id, esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("Detalle de orden no encontrado");
@@ -298,7 +313,7 @@ namespace ProductApp.Tests.Integration
             var escenario = await SembrarOrdenConDosProductosAsync(context);
             var detalleService = IntegrationTestFactory.CrearDetalleOrdenService(context);
 
-            var resultado = await detalleService.EliminarProductoAsync(9999);
+            var resultado = await detalleService.EliminarProductoAsync(9999, escenario.Usuario.Id, esAdministrador: false);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("Detalle de orden no encontrado");

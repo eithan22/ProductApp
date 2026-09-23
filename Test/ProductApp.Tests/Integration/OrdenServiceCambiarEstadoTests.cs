@@ -39,7 +39,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = crear.Data!.Id,
                 ProductId = producto.Id,
                 Cantidad = 2
-            });
+            }, usuario.Id, esAdministrador: false);
             detalle.IsSuccess.Should().BeTrue(detalle.Message);
 
             return new Escenario(crear.Data.Id, usuario, producto);

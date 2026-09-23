@@ -44,7 +44,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = crear.Data!.Id,
                 ProductId = productoId,
                 Cantidad = cantidad
-            });
+            }, usuarioId, esAdministrador: false);
             detalle.IsSuccess.Should().BeTrue(detalle.Message);
 
             return crear.Data.Id;

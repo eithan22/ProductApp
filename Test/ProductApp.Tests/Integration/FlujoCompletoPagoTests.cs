@@ -31,7 +31,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 ProductId = producto.Id,
                 Cantidad = 3
-            });
+            }, usuario.Id, esAdministrador: false);
             detalleResult.IsSuccess.Should().BeTrue(detalleResult.Message);
 
             var confirmarResult = await ordenServices.ConfirmarOrden(ordenId, usuario.Id, esAdministrador: false);

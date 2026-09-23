@@ -10,13 +10,13 @@ namespace ProductApp.Aplication.Interface
     public interface IDetalleOrdenServices 
     {
         //agregar producto a la orden
-        Task<OperationResultD<OrdenDetalleResponseDto>> AgregarProductoAsync(CreateDetalleOrdenDto dto);
+        Task<OperationResultD<OrdenDetalleResponseDto>> AgregarProductoAsync(CreateDetalleOrdenDto dto, int usuarioSolicitanteId, bool esAdministrador);
 
         //modificar cantidad del producto
-        Task<OperationResultD<OrdenDetalleResponseDto>> ActualizarDetalleOrden(int id, UpdateDetalleOrdenDto dto);
+        Task<OperationResultD<OrdenDetalleResponseDto>> ActualizarDetalleOrden(int id, UpdateDetalleOrdenDto dto, int usuarioSolicitanteId, bool esAdministrador);
 
         //eliminar producto de la orden
-        Task<OperationResultD<bool>> EliminarProductoAsync(int id);
+        Task<OperationResultD<bool>> EliminarProductoAsync(int id, int usuarioSolicitanteId, bool esAdministrador);
 
         //consultar detalle de la orden
         Task<OperationResultD<List<OrdenDetalleResponseDto>>> GetOrdenDetalle(int id);

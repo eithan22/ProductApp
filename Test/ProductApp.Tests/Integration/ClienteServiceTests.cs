@@ -257,7 +257,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenA.Data!.Id,
                 ProductId = producto.Id,
                 Cantidad = 3
-            })).IsSuccess.Should().BeTrue();
+            }, usuario.Id, esAdministrador: false)).IsSuccess.Should().BeTrue();
             (await pagoService.RegistrarPagoAsync(new CreatePagoDto
             {
                 OrdenId = ordenA.Data.Id,
@@ -273,7 +273,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenB.Data!.Id,
                 ProductId = producto.Id,
                 Cantidad = 5
-            })).IsSuccess.Should().BeTrue();
+            }, usuario.Id, esAdministrador: false)).IsSuccess.Should().BeTrue();
             (await ordenServices.CancelarOrden(ordenB.Data.Id, usuario.Id, esAdministrador: false)).IsSuccess.Should().BeTrue();
 
             var service = IntegrationTestFactory.CrearClienteServices(context);
@@ -307,7 +307,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenAjena.Data!.Id,
                 ProductId = producto.Id,
                 Cantidad = 7
-            })).IsSuccess.Should().BeTrue();
+            }, usuario.Id, esAdministrador: false)).IsSuccess.Should().BeTrue();
 
             var service = IntegrationTestFactory.CrearClienteServices(context);
 

@@ -30,7 +30,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 ProductId = producto.Id,
                 Cantidad = 2
-            });
+            }, usuario.Id, esAdministrador: false);
 
             detalleResult.IsSuccess.Should().BeFalse();
             context.DetalleOrden.Count(d => d.OrdenId == ordenId).Should().Be(0);

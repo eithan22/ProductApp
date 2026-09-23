@@ -36,12 +36,16 @@ namespace ProductApp.Aplication.Services
             _validatorBusinessDetalleOrden = validatorBusinessDetalleOrden;
         }
 
-        public async Task<OperationResultD<OrdenDetalleResponseDto>> AgregarProductoAsync(CreateDetalleOrdenDto dto)
+        public async Task<OperationResultD<OrdenDetalleResponseDto>> AgregarProductoAsync(CreateDetalleOrdenDto dto, int usuarioSolicitanteId, bool esAdministrador)
         {
             var validatorDto = await _createDetalleOrdenValidator.ValidateAsync(dto);
             if (!validatorDto.IsValid)
                 return OperationResultD<OrdenDetalleResponseDto>.Failure(
                     "Error al validar los datos de entrada: " + string.Join(", ", validatorDto.Errors.Select(e => e.ErrorMessage)));
+
+            var propiedad = await ValidarPropiedadOrdenAsync(dto.OrdenId, usuarioSolicitanteId, esAdministrador);
+            if (!propiedad.IsSuccess)
+                return OperationResultD<OrdenDetalleResponseDto>.Failure(propiedad.Message);
 
             var businessResult = await _validatorBusinessDetalleOrden.ValidarAgregarProductoAsync(dto);
             if (!businessResult.IsSuccess)
@@ -78,22 +82,31 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<OrdenDetalleResponseDto>.Success(response, "Producto agregado al detalle de orden exitosamente");
         }
 
-        public async Task<OperationResultD<OrdenDetalleResponseDto>> ActualizarDetalleOrden(int id, UpdateDetalleOrdenDto dto)
+        public async Task<OperationResultD<OrdenDetalleResponseDto>> ActualizarDetalleOrden(int id, UpdateDetalleOrdenDto dto, int usuarioSolicitanteId, bool esAdministrador)
         {
             var validatorDto = await _updateDetalleOrdenValidator.ValidateAsync(dto);
             if (!validatorDto.IsValid)
                 return OperationResultD<OrdenDetalleResponseDto>.Failure(
                     "Error al validar los datos de entrada: " + string.Join(", ", validatorDto.Errors.Select(e => e.ErrorMessage)));
 
+            // El detalle se carga acá y no después del validator porque el dueño de la orden
+            // solo se conoce a través de él: sin esto no hay contra quién comparar.
+            var detalleOrden = await _detalleOrdenRepository.GetByIdAsync(id);
+            if (detalleOrden == null)
+                return OperationResultD<OrdenDetalleResponseDto>.Failure("Detalle de orden no encontrado");
+
+            var propiedad = await ValidarPropiedadOrdenAsync(detalleOrden.OrdenId, usuarioSolicitanteId, esAdministrador);
+            if (!propiedad.IsSuccess)
+                return OperationResultD<OrdenDetalleResponseDto>.Failure(propiedad.Message);
+
             var businessResult = await _validatorBusinessDetalleOrden.ValidarActualizarDetalleAsync(id, dto);
             if (!businessResult.IsSuccess)
                 return OperationResultD<OrdenDetalleResponseDto>.Failure(businessResult.Message);
 
-            var detalleOrden = await _detalleOrdenRepository.GetByIdAsync(id);
-            _mapperDetalleOrden.MapToUpdateDetalleOrden(dto, detalleOrden!);
-            await _detalleOrdenRepository.UpdateAsync(detalleOrden!);
+            _mapperDetalleOrden.MapToUpdateDetalleOrden(dto, detalleOrden);
+            await _detalleOrdenRepository.UpdateAsync(detalleOrden);
 
-            var recalculo = await RecalcularTotalOrdenAsync(detalleOrden!.OrdenId);
+            var recalculo = await RecalcularTotalOrdenAsync(detalleOrden.OrdenId);
             if (!recalculo.IsSuccess)
                 return OperationResultD<OrdenDetalleResponseDto>.Failure("Error al recalcular el total de la orden: " + recalculo.Message);
 
@@ -105,14 +118,21 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<OrdenDetalleResponseDto>.Success(response, "Detalle de orden actualizado exitosamente");
         }
 
-        public async Task<OperationResultD<bool>> EliminarProductoAsync(int id)
+        public async Task<OperationResultD<bool>> EliminarProductoAsync(int id, int usuarioSolicitanteId, bool esAdministrador)
         {
+            var detalleOrden = await _detalleOrdenRepository.GetByIdAsync(id);
+            if (detalleOrden == null)
+                return OperationResultD<bool>.Failure("Detalle de orden no encontrado");
+
+            var propiedad = await ValidarPropiedadOrdenAsync(detalleOrden.OrdenId, usuarioSolicitanteId, esAdministrador);
+            if (!propiedad.IsSuccess)
+                return OperationResultD<bool>.Failure(propiedad.Message);
+
             var businessResult = await _validatorBusinessDetalleOrden.ValidarEliminarDetalleAsync(id);
             if (!businessResult.IsSuccess)
                 return OperationResultD<bool>.Failure(businessResult.Message);
 
-            var detalleOrden = await _detalleOrdenRepository.GetByIdAsync(id);
-            await _detalleOrdenRepository.DeleteAsync(detalleOrden!.Id);
+            await _detalleOrdenRepository.DeleteAsync(detalleOrden.Id);
 
             var recalculo = await RecalcularTotalOrdenAsync(detalleOrden.OrdenId);
             if (!recalculo.IsSuccess)
@@ -142,6 +162,21 @@ namespace ProductApp.Aplication.Services
             await _ordenRepository.UpdateAsync(orden);
 
             return OperationResultD<bool>.Success(true, "Total recalculado");
+        }
+
+        // Mismo guard que OrdenServices.CancelarOrden y PagoService.RegistrarPagoAsync: el
+        // carrito pendiente de otro vendedor no se toca. Va en el servicio y no en el
+        // validator de negocio porque es una pregunta de permisos, no de reglas de venta.
+        private async Task<OperationResult> ValidarPropiedadOrdenAsync(int ordenId, int usuarioSolicitanteId, bool esAdministrador)
+        {
+            var orden = await _ordenRepository.GetByIdAsync(ordenId);
+            if (orden == null)
+                return OperationResult.Failure("Orden no encontrada");
+
+            if (!esAdministrador && orden.UsuarioId != usuarioSolicitanteId)
+                return OperationResult.Failure("No tiene permiso sobre esta orden");
+
+            return OperationResult.Success();
         }
     }
 }
