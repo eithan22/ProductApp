@@ -42,7 +42,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 Monto = 60,
                 MetodoPago = "Efectivo"
-            }, usuario.Id);
+            }, usuario.Id, esAdministrador: false);
             pagoResult.IsSuccess.Should().BeTrue(pagoResult.Message);
 
             var ordenFinal = await context.Ordenes.FindAsync(ordenId);

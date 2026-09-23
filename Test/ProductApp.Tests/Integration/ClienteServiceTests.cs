@@ -267,7 +267,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenA.Data.Id,
                 Monto = 30,
                 MetodoPago = "Efectivo"
-            }, usuario.Id)).IsSuccess.Should().BeTrue();
+            }, usuario.Id, esAdministrador: false)).IsSuccess.Should().BeTrue();
 
             // Orden B: queda Cancelada. Total = 5 * 10 = 50 y no debe sumar.
             var ordenB = await ordenServices.CrearOrden(new CreateOrdenDto { ClienteId = cliente.Id }, usuario.Id);

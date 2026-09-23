@@ -76,6 +76,7 @@ namespace ProductApp.Tests.Integration
                 new OrdenRepository(context),
                 new DetalleOrdenRepository(context),
                 new InventarioRepository(context),
+                new GestorTransaccionesFake(),
                 new PagoMapper(),
                 new CreatePagoValidator(),
                 new ValidatorBusinessPago(),

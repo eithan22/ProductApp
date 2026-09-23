@@ -58,7 +58,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 Monto = monto,
                 MetodoPago = metodo.ToString()
-            }, usuarioId);
+            }, usuarioId, esAdministrador: false);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
         }

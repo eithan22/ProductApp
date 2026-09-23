@@ -26,7 +26,7 @@ namespace ProductApp.Tests.Integration
             var ordenAId = ordenAResult.Data!.Id;
             var detalleAResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenAId, ProductId = producto.Id, Cantidad = 3 });
             detalleAResult.IsSuccess.Should().BeTrue(detalleAResult.Message);
-            var pagoAResult = await pagoService.RegistrarPagoAsync(new CreatePagoDto { OrdenId = ordenAId, Monto = 30, MetodoPago = "Efectivo" }, usuario.Id);
+            var pagoAResult = await pagoService.RegistrarPagoAsync(new CreatePagoDto { OrdenId = ordenAId, Monto = 30, MetodoPago = "Efectivo" }, usuario.Id, esAdministrador: false);
             pagoAResult.IsSuccess.Should().BeTrue(pagoAResult.Message);
 
             // Orden B: termina Cancelada. Total = 5 * 10 = 50 (no debe contar).

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ProductApp.Domian.Interfaces;
 using ProductApp.Infraesctructura.Persistencia.Contex;
+using ProductApp.Infraesctructura.Persistencia.Transacciones;
 using System.Text;
 
 namespace ProductApp.Extensions
@@ -13,6 +15,11 @@ namespace ProductApp.Extensions
             // Configuración de la base de datos
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+            // Transacciones explícitas sobre el mismo AppDbContext scoped que usan los
+            // repositorios. Va acá y no en la extension de un módulo porque es plomería de
+            // persistencia transversal, igual que el propio DbContext.
+            services.AddScoped<IGestorTransacciones, GestorTransaccionesEfCore>();
 
 
             // Configuración de autenticación JWT

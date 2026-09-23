@@ -20,6 +20,7 @@ namespace ProductApp.Aplication.Services
         private readonly IOrdenRepository _ordenRepository;
         private readonly IDetalleOrdenRepository _detalleOrdenRepository;
         private readonly IInventarioRepository _inventarioRepository;
+        private readonly IGestorTransacciones _gestorTransacciones;
         private readonly IMapperPago _mapperPago;
         private readonly IValidator<CreatePagoDto> _createPagoValidator;
         private readonly IValidatorBusinessPago _validatorBusinessPago;
@@ -32,6 +33,7 @@ namespace ProductApp.Aplication.Services
             IOrdenRepository ordenRepository,
             IDetalleOrdenRepository detalleOrdenRepository,
             IInventarioRepository inventarioRepository,
+            IGestorTransacciones gestorTransacciones,
             IMapperPago mapperPago,
             IValidator<CreatePagoDto> createPagoValidator,
             IValidatorBusinessPago validatorBusinessPago,
@@ -43,6 +45,7 @@ namespace ProductApp.Aplication.Services
             _ordenRepository = ordenRepository;
             _detalleOrdenRepository = detalleOrdenRepository;
             _inventarioRepository = inventarioRepository;
+            _gestorTransacciones = gestorTransacciones;
             _mapperPago = mapperPago;
             _createPagoValidator = createPagoValidator;
             _validatorBusinessPago = validatorBusinessPago;
@@ -51,73 +54,120 @@ namespace ProductApp.Aplication.Services
             _logger = logger;
         }
 
-        public async Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto, int usuarioSolicitanteId)
+        public async Task<OperationResultD<PagoResponseDto>> RegistrarPagoAsync(CreatePagoDto dto, int usuarioSolicitanteId, bool esAdministrador)
         {
+            // La validación de forma del DTO no toca la base de datos: se hace antes de abrir
+            // la transacción para no mantener bloqueos abiertos de gusto.
             var validationResult = await _createPagoValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
                 return OperationResultD<PagoResponseDto>.Failure(
                     string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
 
-            var orden = await _ordenRepository.GetByIdAsync(dto.OrdenId);
-            if (orden == null)
-                return OperationResultD<PagoResponseDto>.Failure("Orden no encontrada");
+            // Datos que se necesitan después del commit, para facturar y notificar.
+            Pago pago;
+            Orden orden;
+            decimal nuevoSaldo;
+            bool pagoCompleto;
+            var avisosStockBajo = new List<string>();
 
-            var totalPagado = await _pagoRepository.ObtenerTotalPagadoPorOrdenAsync(dto.OrdenId);
-            var saldoActual = orden.Total - totalPagado;
-
-            var businessResult = await _validatorBusinessPago.ValidarRegistrarPagoAsync(dto, orden, saldoActual);
-            if (!businessResult.IsSuccess)
-                return OperationResultD<PagoResponseDto>.Failure(businessResult.Message);
-
-            var nuevoSaldo = saldoActual - dto.Monto;
-            var pagoCompleto = nuevoSaldo <= 0;
-
-            var inventariosADescontar = new List<(Inventario inventario, int cantidad)>();
-            if (pagoCompleto)
+            try
             {
-                var detalles = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(dto.OrdenId);
-                foreach (var detalle in detalles)
+                // Serializable a propósito: leer el saldo y escribir el pago tienen que ser una
+                // sola unidad. Con el nivel por defecto, dos peticiones simultáneas (doble clic,
+                // reintento del navegador) leen el mismo saldo, ambas pasan la validación de
+                // negocio y ambas cobran. Acá la segunda espera a que la primera confirme, relee
+                // el saldo real y ValidatorBusinessPago la rechaza sola.
+                await using var transaccion = await _gestorTransacciones.IniciarSerializableAsync();
+
+                // Todas las lecturas van dentro de la transacción. Cualquier return temprano de
+                // acá para abajo sale del "await using" sin commit y la transacción se revierte.
+                var ordenAPagar = await _ordenRepository.GetByIdAsync(dto.OrdenId);
+                if (ordenAPagar == null)
+                    return OperationResultD<PagoResponseDto>.Failure("Orden no encontrada");
+
+                if (!esAdministrador && ordenAPagar.UsuarioId != usuarioSolicitanteId)
+                    return OperationResultD<PagoResponseDto>.Failure("No tiene permiso sobre esta orden");
+
+                var totalPagado = await _pagoRepository.ObtenerTotalPagadoPorOrdenAsync(dto.OrdenId);
+                var saldoActual = ordenAPagar.Total - totalPagado;
+
+                var businessResult = await _validatorBusinessPago.ValidarRegistrarPagoAsync(dto, ordenAPagar, saldoActual);
+                if (!businessResult.IsSuccess)
+                    return OperationResultD<PagoResponseDto>.Failure(businessResult.Message);
+
+                nuevoSaldo = saldoActual - dto.Monto;
+                pagoCompleto = nuevoSaldo <= 0;
+
+                var inventariosADescontar = new List<(Inventario inventario, int cantidad)>();
+                if (pagoCompleto)
                 {
-                    var inventario = await _inventarioRepository.GetByProductoIdAsync(detalle.ProductId);
-                    if (inventario == null)
-                        return OperationResultD<PagoResponseDto>.Failure(
-                            $"Inventario no encontrado para el producto con Id {detalle.ProductId}");
-
-                    if (detalle.Cantidad > inventario.CantidadActual)
-                        return OperationResultD<PagoResponseDto>.Failure(
-                            $"Stock insuficiente para el producto con Id {detalle.ProductId}. " +
-                            $"Disponible: {inventario.CantidadActual}, requerido: {detalle.Cantidad}");
-
-                    inventariosADescontar.Add((inventario, detalle.Cantidad));
-                }
-            }
-
-            var pago = _mapperPago.MapToCreatePago(dto);
-            await _pagoRepository.CreateAsync(pago);
-
-            if (pagoCompleto)
-            {
-                pago.MarcarComoCompletado();
-                await _pagoRepository.UpdateAsync(pago);
-
-                orden.CambiarEstado(EstadoOrden.Pagada);
-                await _ordenRepository.UpdateAsync(orden);
-
-                foreach (var (inventario, cantidad) in inventariosADescontar)
-                {
-                    var estabaBajo = inventario.EsStockBajo();
-
-                    inventario.RegistrarSalidaStock(cantidad);
-                    await _inventarioRepository.UpdateAsync(inventario);
-
-                    if (!estabaBajo && inventario.EsStockBajo())
+                    var detalles = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(dto.OrdenId);
+                    foreach (var detalle in detalles)
                     {
-                        await _notificacionServices.NotificarAdministradoresAsync(
-                            TipoNotificacion.StockBajo,
-                            $"Stock bajo: \"{inventario.Producto.Nombre}\" quedó en {inventario.CantidadActual} unidades (mínimo {inventario.CantidadMinima}).");
+                        var inventario = await _inventarioRepository.GetByProductoIdAsync(detalle.ProductId);
+                        if (inventario == null)
+                            return OperationResultD<PagoResponseDto>.Failure(
+                                $"Inventario no encontrado para el producto con Id {detalle.ProductId}");
+
+                        if (detalle.Cantidad > inventario.CantidadActual)
+                            return OperationResultD<PagoResponseDto>.Failure(
+                                $"Stock insuficiente para el producto con Id {detalle.ProductId}. " +
+                                $"Disponible: {inventario.CantidadActual}, requerido: {detalle.Cantidad}");
+
+                        inventariosADescontar.Add((inventario, detalle.Cantidad));
                     }
                 }
 
+                pago = _mapperPago.MapToCreatePago(dto);
+                await _pagoRepository.CreateAsync(pago);
+
+                if (pagoCompleto)
+                {
+                    pago.MarcarComoCompletado();
+                    await _pagoRepository.UpdateAsync(pago);
+
+                    ordenAPagar.CambiarEstado(EstadoOrden.Pagada);
+                    await _ordenRepository.UpdateAsync(ordenAPagar);
+
+                    foreach (var (inventario, cantidad) in inventariosADescontar)
+                    {
+                        var estabaBajo = inventario.EsStockBajo();
+
+                        inventario.RegistrarSalidaStock(cantidad);
+                        await _inventarioRepository.UpdateAsync(inventario);
+
+                        // El aviso se acumula y se envía después del commit: notificar un stock
+                        // que todavía puede revertirse sería avisar de algo que no pasó.
+                        if (!estabaBajo && inventario.EsStockBajo())
+                        {
+                            avisosStockBajo.Add(
+                                $"Stock bajo: \"{inventario.Producto.Nombre}\" quedó en {inventario.CantidadActual} unidades (mínimo {inventario.CantidadMinima}).");
+                        }
+                    }
+                }
+
+                await transaccion.CommitAsync();
+                orden = ordenAPagar;
+            }
+            catch (Exception ex) when (_gestorTransacciones.EsConflictoDeConcurrencia(ex))
+            {
+                // La transacción perdedora ya fue revertida por el motor: no quedó pago ni
+                // descuento de stock a medias. Se responde con un mensaje de negocio, no un 500.
+                _logger.LogWarning(ex,
+                    "Conflicto de concurrencia al registrar el pago de la orden {OrdenId} por el usuario {UsuarioSolicitanteId}. No se registró nada.",
+                    dto.OrdenId, usuarioSolicitanteId);
+
+                return OperationResultD<PagoResponseDto>.Failure(
+                    "La orden está siendo procesada por otra operación. Verifique el saldo pendiente antes de volver a intentarlo.");
+            }
+
+            // A partir de acá el cobro ya está confirmado en base de datos. Lo que sigue son
+            // efectos externos (subida a Blob Storage y notificaciones): van fuera de la
+            // transacción a propósito, porque mantener bloqueos de base de datos abiertos
+            // durante una subida por red convierte un cobro en un cuello de botella. Si algo
+            // de esto falla, el cobro sigue siendo válido.
+            if (pagoCompleto)
+            {
                 // La factura se emite en el mismo flujo en que la orden queda Pagada (RF-3.2.2):
                 // una sola vez y archivada en Blob Storage, no regenerada en cada descarga.
                 var factura = await _facturaPdfService.GenerarYAlmacenarAsync(orden.Id);
@@ -128,6 +178,11 @@ namespace ProductApp.Aplication.Services
                     _logger.LogError(
                         "El pago de la orden {OrdenId} se registró correctamente, pero la factura PDF no pudo emitirse: {Motivo}",
                         orden.Id, factura.Message);
+                }
+
+                foreach (var aviso in avisosStockBajo)
+                {
+                    await _notificacionServices.NotificarAdministradoresAsync(TipoNotificacion.StockBajo, aviso);
                 }
             }
 

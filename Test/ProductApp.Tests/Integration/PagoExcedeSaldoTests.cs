@@ -39,7 +39,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 Monto = 100,
                 MetodoPago = "Efectivo"
-            }, usuario.Id);
+            }, usuario.Id, esAdministrador: false);
 
             pagoResult.IsSuccess.Should().BeFalse();
 

@@ -109,7 +109,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = escenario.OrdenId,
                 Monto = 40m,
                 MetodoPago = nameof(MetodoPago.Efectivo)
-            }, escenario.Usuario.Id);
+            }, escenario.Usuario.Id, esAdministrador: false);
             pago.IsSuccess.Should().BeTrue(pago.Message);
 
             var resultado = await ordenServices.CambiarEstadoOrden(new CambiarEstadoOrdenDto
