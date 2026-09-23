@@ -130,7 +130,9 @@ namespace ProductApp.Tests.Integration
 
         // Orden del constructor verificado contra ProductoServices.cs: inventarioRepository va
         // 7º (después del business validator), aunque el campo se declare 2º.
-        public static ProductoServices CrearProductoServices(AppDbContext context)
+        public static ProductoServices CrearProductoServices(
+            AppDbContext context,
+            AlmacenamientoImagenesFake? almacenamientoImagenes = null)
             => new(
                 new ProductoRepository(context),
                 new ProductoMapper(),
@@ -143,7 +145,7 @@ namespace ProductApp.Tests.Integration
                     new ProveedorRepository(context)),
                 new InventarioRepository(context),
                 new ConfiguracionSistemaRepository(context),
-                new AlmacenamientoImagenesFake(),
+                almacenamientoImagenes ?? new AlmacenamientoImagenesFake(),
                 NullLogger<ProductoServices>.Instance);
 
         // Orden del constructor verificado contra UsuarioService.cs: validatorBusinessUsuarios

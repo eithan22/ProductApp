@@ -8,7 +8,6 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator
         public const long TamanoMaximoBytes = 5 * 1024 * 1024;
 
         private static readonly string[] ExtensionesPermitidas = { ".jpg", ".jpeg", ".png", ".webp" };
-        private static readonly string[] ContentTypesPermitidos = { "image/jpeg", "image/png", "image/webp" };
 
         public SubirImagenProductoValidator()
         {
@@ -23,10 +22,9 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator
                 .Must(TieneExtensionPermitida)
                 .WithMessage($"La extensión del archivo no está permitida. Permitidas: {string.Join(", ", ExtensionesPermitidas)}.");
 
-            RuleFor(x => x.ContentType)
-                .NotEmpty().WithMessage("No se pudo determinar el tipo del archivo.")
-                .Must(ct => ContentTypesPermitidos.Contains(ct.ToLowerInvariant()))
-                .WithMessage($"El tipo de archivo no está permitido. Permitidos: {string.Join(", ", ContentTypesPermitidos)}.");
+            // El Content-Type declarado por el cliente ya no se valida acá: no es confiable y
+            // rechazaba clientes legítimos que envían application/octet-stream. Quien decide el
+            // tipo real es DetectorFormatoImagen, sobre la firma binaria, en el servicio.
 
             RuleFor(x => x.TamanoBytes)
                 .GreaterThan(0).WithMessage("El archivo está vacío.")

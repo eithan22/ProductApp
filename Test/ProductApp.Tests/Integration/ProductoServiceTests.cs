@@ -61,11 +61,12 @@ namespace ProductApp.Tests.Integration
             int productoId,
             string nombreArchivo = "foto.png",
             string contentType = "image/png",
-            long tamanoBytes = 1024)
+            long tamanoBytes = 1024,
+            byte[]? contenido = null)
             => new()
             {
                 ProductoId = productoId,
-                Contenido = new MemoryStream(new byte[] { 1, 2, 3 }),
+                Contenido = new MemoryStream(contenido ?? ImagenesDePrueba.Png()),
                 NombreArchivo = nombreArchivo,
                 ContentType = contentType,
                 TamanoBytes = tamanoBytes
@@ -675,7 +676,8 @@ namespace ProductApp.Tests.Integration
             var service = IntegrationTestFactory.CrearProductoServices(context);
             await service.SubirImagenAsync(ImagenDto(producto.Id, "vieja.png"));
 
-            var resultado = await service.SubirImagenAsync(ImagenDto(producto.Id, "nueva.webp", "image/webp"));
+            var resultado = await service.SubirImagenAsync(
+                ImagenDto(producto.Id, "nueva.webp", "image/webp", contenido: ImagenesDePrueba.Webp()));
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             context.ChangeTracker.Clear();
@@ -712,6 +714,67 @@ namespace ProductApp.Tests.Integration
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("Producto no encontrado");
+        }
+
+        // El caso del hallazgo: un ejecutable renombrado a .jpg, con el Content-Type
+        // de imagen que el cliente quiera. Antes de validar la firma, esto se subía.
+        [Theory]
+        [InlineData("foto.jpg", "image/jpeg")]
+        [InlineData("foto.png", "image/png")]
+        public async Task SubirImagenAsync_ConExtensionDeImagenPeroContenidoQueNoLoEs_DevuelveFailure(
+            string nombreArchivo, string contentType)
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var categoria = await SembrarCategoriaAsync(context);
+            var producto = await SembrarProductoAsync(context, categoria.Id);
+            var almacenamiento = new AlmacenamientoImagenesFake();
+            var service = IntegrationTestFactory.CrearProductoServices(context, almacenamiento);
+
+            var resultado = await service.SubirImagenAsync(ImagenDto(
+                producto.Id, nombreArchivo, contentType, contenido: ImagenesDePrueba.NoEsImagen()));
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("no es una imagen válida");
+            almacenamiento.UltimoNombreArchivo.Should().BeNull("no se debe subir nada al storage");
+            (await context.Productos.FindAsync(producto.Id))!.ImagenUrl.Should().BeNull();
+        }
+
+        // Content-Type y extensión falsificados, contenido real: se acepta, pero el blob
+        // se guarda con el tipo y la extensión que dijo la firma, no los que dijo el cliente.
+        [Fact]
+        public async Task SubirImagenAsync_ConContentTypeYExtensionFalsos_SubeConLosRealesDeLaFirma()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var categoria = await SembrarCategoriaAsync(context);
+            var producto = await SembrarProductoAsync(context, categoria.Id);
+            var almacenamiento = new AlmacenamientoImagenesFake();
+            var service = IntegrationTestFactory.CrearProductoServices(context, almacenamiento);
+
+            var resultado = await service.SubirImagenAsync(ImagenDto(
+                producto.Id, "foto.png", "image/png", contenido: ImagenesDePrueba.Jpeg()));
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            almacenamiento.UltimoContentType.Should().Be("image/jpeg");
+            almacenamiento.UltimoNombreArchivo.Should().Be("foto.jpg");
+            resultado.Data!.ImagenUrl.Should().Be("https://fake-blob/imagenes/foto.jpg");
+        }
+
+        // Un PNG real anunciado como binario genérico: el Content-Type declarado no decide
+        // nada, solo el contenido.
+        [Fact]
+        public async Task SubirImagenAsync_ConContentTypeGenericoYContenidoReal_SeAcepta()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var categoria = await SembrarCategoriaAsync(context);
+            var producto = await SembrarProductoAsync(context, categoria.Id);
+            var almacenamiento = new AlmacenamientoImagenesFake();
+            var service = IntegrationTestFactory.CrearProductoServices(context, almacenamiento);
+
+            var resultado = await service.SubirImagenAsync(ImagenDto(
+                producto.Id, "foto.png", "application/octet-stream", contenido: ImagenesDePrueba.Png()));
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            almacenamiento.UltimoContentType.Should().Be("image/png");
         }
     }
 }

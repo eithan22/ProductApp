@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Configuracion;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Configuracion;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Configuracion;
@@ -79,13 +80,29 @@ namespace ProductApp.Aplication.Services.Modulo_Configuracion
                 return OperationResultD<ConfiguracionSistemaDto>.Failure($"Validación fallida: {errors}");
             }
 
+            // Mismo criterio que la imagen de producto: manda la firma del archivo, no lo que
+            // declaró el cliente en el nombre o el Content-Type.
+            var formato = await DetectorFormatoImagen.DetectarAsync(dto.Contenido);
+
+            if (formato is null)
+            {
+                _logger.LogWarning(
+                    "Se rechazó el logo {NombreArchivo}: el contenido no corresponde a JPEG, PNG ni WEBP",
+                    dto.NombreArchivo);
+
+                return OperationResultD<ConfiguracionSistemaDto>.Failure(
+                    "El contenido del archivo no es una imagen válida. Se aceptan JPEG, PNG y WEBP.");
+            }
+
             var configuracion = await _configuracionSistemaRepository.ObtenerAsync();
             if (configuracion == null)
                 return OperationResultD<ConfiguracionSistemaDto>.Failure("Configuración no encontrada");
 
             var logoAnterior = configuracion.LogoUrl;
 
-            var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, dto.NombreArchivo, dto.ContentType);
+            var nombreNormalizado = Path.ChangeExtension(dto.NombreArchivo, formato.Extension);
+
+            var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, nombreNormalizado, formato.ContentType);
 
             configuracion.AsignarLogo(nuevaUrl);
 

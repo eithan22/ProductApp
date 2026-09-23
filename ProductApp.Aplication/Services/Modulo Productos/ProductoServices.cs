@@ -343,6 +343,20 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ProductoResponseDto>.Failure($"Error de validación: {errors}");
             }
 
+            // La extensión y el Content-Type del request no prueban nada: cualquiera puede
+            // llamar "foto.jpg" a un ejecutable. Lo único confiable es la firma del contenido.
+            var formato = await DetectorFormatoImagen.DetectarAsync(dto.Contenido);
+
+            if (formato is null)
+            {
+                _logger.LogWarning(
+                    "Se rechazó la imagen {NombreArchivo} del producto {ProductoId}: el contenido no corresponde a JPEG, PNG ni WEBP",
+                    dto.NombreArchivo, dto.ProductoId);
+
+                return OperationResultD<ProductoResponseDto>.Failure(
+                    "El contenido del archivo no es una imagen válida. Se aceptan JPEG, PNG y WEBP.");
+            }
+
             var producto = await _productorepository.GetProductoConCategoriaByIdAsync(dto.ProductoId);
 
             if (producto == null)
@@ -352,7 +366,11 @@ namespace ProductApp.Aplication.Services
 
             var imagenAnterior = producto.ImagenUrl;
 
-            var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, dto.NombreArchivo, dto.ContentType);
+            // Se sube con la extensión y el Content-Type que salieron de la firma real, no con los
+            // declarados: el contenedor es de lectura pública y el blob debe servirse como imagen.
+            var nombreNormalizado = Path.ChangeExtension(dto.NombreArchivo, formato.Extension);
+
+            var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, nombreNormalizado, formato.ContentType);
 
             producto.AsignarImagen(nuevaUrl);
 
