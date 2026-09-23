@@ -150,6 +150,10 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Rol actualizado correctamente");
         }
 
+        // Baja definitiva por soft delete: marca EstaEliminado y conserva la fila. El borrado
+        // fisico esta prohibido aqui porque las FK de Orden y Notificacion estan en cascada, y
+        // eliminar la fila arrastraria las ordenes, sus detalles y sus pagos: el historial
+        // financiero y los reportes de ventas cambiarian retroactivamente.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -163,7 +167,9 @@ namespace ProductApp.Aplication.Services
             if (!validatorBusinessResult.IsSuccess)
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
 
-            await _usuarioRepository.DeleteAsync(id);
+            usuario.Eliminar();
+            await _usuarioRepository.UpdateAsync(usuario);
+
             return OperationResultD<bool>.Success(true, "Usuario Eliminado Correctamente");
         }
 

@@ -49,8 +49,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success();
         }
 
-        // Borrado físico: la fila desaparece de la base, así que la protección del último
-        // administrador aplica igual que en la desactivación, solo cambia el verbo del mensaje.
+        // Baja definitiva (soft delete): la fila se conserva pero el usuario deja de existir para
+        // la aplicación, así que la protección del último administrador aplica igual que en la
+        // desactivación, solo cambia el verbo del mensaje.
         public async Task<OperationResult> ValidarBorradoFisicoUsuarioAsync(Usuario usuario)
         {
             if (usuario == null)
