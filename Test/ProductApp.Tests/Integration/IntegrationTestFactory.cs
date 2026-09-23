@@ -68,7 +68,8 @@ namespace ProductApp.Tests.Integration
                 new ValidatorBusinessDetalleOrden(
                     new OrdenRepository(context),
                     new DetalleOrdenRepository(context),
-                    new ProductoRepository(context)));
+                    new ProductoRepository(context),
+                    new PagoRepository(context)));
 
         public static PagoService CrearPagoService(AppDbContext context)
             => new(

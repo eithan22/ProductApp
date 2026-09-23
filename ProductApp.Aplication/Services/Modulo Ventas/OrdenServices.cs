@@ -199,21 +199,5 @@ namespace ProductApp.Aplication.Services
             var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
         }
-
-        public async Task<OperationResultD<bool>> RecalcularTotalAsync(int id)
-        {
-            var orden = await _ordenRepository.GetByIdAsync(id);
-            if (orden == null)
-                return OperationResultD<bool>.Failure("Orden no encontrada");
-
-            var detallesOrden = await _detalleOrdenRepository.ObtenerPorOrdenIdAsync(id);
-            if (detallesOrden == null || detallesOrden.Count == 0)
-                return OperationResultD<bool>.Failure("No se encontraron detalles para la orden");
-
-            orden.ActualizarTotal(detallesOrden.Sum(d => d.Subtotal));
-            await _ordenRepository.UpdateAsync(orden);
-
-            return OperationResultD<bool>.Success(true, "Total de la orden recalculado exitosamente");
-        }
     }
 }
