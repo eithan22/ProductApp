@@ -39,5 +39,17 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
 
             return Task.FromResult(OperationResult.Success());
         }
+
+        // Un pago parcial deja la orden en Pendiente, así que la máquina de estados no impide
+        // cancelarla y el dinero ya cobrado se queda sin contraparte. Esa decisión solo la puede
+        // tomar un administrador; el servicio la deja auditada.
+        public Task<OperationResult> ValidarCancelarOrdenAsync(decimal totalPagado, bool esAdministrador)
+        {
+            if (totalPagado > 0 && !esAdministrador)
+                return Task.FromResult(OperationResult.Failure(
+                    "Esta orden tiene pagos registrados; solicite a un administrador la cancelación."));
+
+            return Task.FromResult(OperationResult.Success());
+        }
     }
 }

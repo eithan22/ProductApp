@@ -16,6 +16,7 @@ namespace ProductApp.Aplication.Services
     {
         private readonly IOrdenRepository _ordenRepository;
         private readonly IDetalleOrdenRepository _detalleOrdenRepository;
+        private readonly IPagoRepository _pagoRepository;
         private readonly IClienteRepository _clienteRepository;
         private readonly IMapperOrden _mapperOrden;
         private readonly IValidator<CreateOrdenDto> _createOrdenValidator;
@@ -29,6 +30,7 @@ namespace ProductApp.Aplication.Services
             IClienteRepository clienteRepository,
             IMapperOrden mapperOrden,
             IDetalleOrdenRepository detalleOrdenRepository,
+            IPagoRepository pagoRepository,
             IValidator<CreateOrdenDto> createOrdenValidator,
             IValidator<CambiarEstadoOrdenDto> cambiarEstadoValidator,
             IValidatorBusinessOrden validatorBusinessOrden,
@@ -39,6 +41,7 @@ namespace ProductApp.Aplication.Services
             _clienteRepository = clienteRepository;
             _mapperOrden = mapperOrden;
             _detalleOrdenRepository = detalleOrdenRepository;
+            _pagoRepository = pagoRepository;
             _createOrdenValidator = createOrdenValidator;
             _cambiarEstadoValidator = cambiarEstadoValidator;
             _validatorBusinessOrden = validatorBusinessOrden;
@@ -85,10 +88,23 @@ namespace ProductApp.Aplication.Services
             if (!businessResult.IsSuccess)
                 return OperationResultD<bool>.Failure(businessResult.Message);
 
+            // Esta es la segunda puerta a la cancelación: sin este guard, lo que CancelarOrden
+            // bloquea se lograría igual mandando NuevoEstado = "Cancelada" por acá.
+            var totalPagado = 0m;
+            if (nuevoEstado == EstadoOrden.Cancelada)
+            {
+                var cancelacionResult = await ValidarCancelacionAsync(orden.Id, esAdministrador);
+                if (!cancelacionResult.IsSuccess)
+                    return OperationResultD<bool>.Failure(cancelacionResult.Message);
+
+                totalPagado = cancelacionResult.Data;
+            }
+
             orden.CambiarEstado(nuevoEstado);
             await _ordenRepository.UpdateAsync(orden);
 
             _logger.LogInformation("Orden {OrdenId} cambiada a estado {NuevoEstado} por el usuario {UsuarioSolicitanteId}", orden.Id, nuevoEstado, usuarioSolicitanteId);
+            AuditarCancelacionConPagos(orden.Id, totalPagado, usuarioSolicitanteId);
 
             await _notificacionServices.NotificarUsuarioAsync(
                 orden.UsuarioId,
@@ -107,10 +123,15 @@ namespace ProductApp.Aplication.Services
             if (!esAdministrador && orden.UsuarioId != usuarioSolicitanteId)
                 return OperationResultD<bool>.Failure("No tiene permiso sobre esta orden");
 
+            var cancelacionResult = await ValidarCancelacionAsync(id, esAdministrador);
+            if (!cancelacionResult.IsSuccess)
+                return OperationResultD<bool>.Failure(cancelacionResult.Message);
+
             orden.CancelarOrden();
             await _ordenRepository.UpdateAsync(orden);
 
             _logger.LogInformation("Orden {OrdenId} cancelada por el usuario {UsuarioSolicitanteId}", id, usuarioSolicitanteId);
+            AuditarCancelacionConPagos(id, cancelacionResult.Data, usuarioSolicitanteId);
 
             await _notificacionServices.NotificarUsuarioAsync(
                 orden.UsuarioId,
@@ -198,6 +219,30 @@ namespace ProductApp.Aplication.Services
 
             var ordenesResponse = ordenes.Select(o => _mapperOrden.MapToOrdenResponseDto(o)).ToList();
             return OperationResultD<List<OrdenResponseDto>>.Success(ordenesResponse, "Órdenes obtenidas exitosamente");
+        }
+
+        // CancelarOrden y CambiarEstadoOrden(Cancelada) son dos puertas a la misma operación,
+        // así que la regla vive en un solo lugar. Devuelve el total ya cobrado para que quien
+        // llama lo audite DESPUÉS de que la cancelación se haya persistido de verdad.
+        private async Task<OperationResultD<decimal>> ValidarCancelacionAsync(int ordenId, bool esAdministrador)
+        {
+            var totalPagado = await _pagoRepository.ObtenerTotalPagadoPorOrdenAsync(ordenId);
+
+            var businessResult = await _validatorBusinessOrden.ValidarCancelarOrdenAsync(totalPagado, esAdministrador);
+            if (!businessResult.IsSuccess)
+                return OperationResultD<decimal>.Failure(businessResult.Message);
+
+            return OperationResultD<decimal>.Success(totalPagado);
+        }
+
+        // Cancelar una orden con dinero ya cobrado es la excepción que solo un administrador
+        // puede autorizar: queda registrada junto al monto que se quedó sin contraparte.
+        private void AuditarCancelacionConPagos(int ordenId, decimal totalPagado, int usuarioSolicitanteId)
+        {
+            if (totalPagado <= 0)
+                return;
+
+            _logger.LogWarning("Orden {OrdenId} cancelada con pagos registrados por {TotalPagado}, por el administrador {UsuarioSolicitanteId}", ordenId, totalPagado, usuarioSolicitanteId);
         }
     }
 }

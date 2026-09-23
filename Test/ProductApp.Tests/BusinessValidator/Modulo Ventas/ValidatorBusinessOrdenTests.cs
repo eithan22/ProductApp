@@ -82,5 +82,36 @@ namespace ProductApp.Tests.BusinessValidator.Modulo_Ventas
 
             resultado.IsSuccess.Should().BeTrue();
         }
+
+        [Fact]
+        public async Task ValidarCancelarOrdenAsync_ConPagosYSinSerAdministrador_DevuelveFailure()
+        {
+            var validator = new ValidatorBusinessOrden(new Mock<IClienteRepository>().Object);
+
+            var resultado = await validator.ValidarCancelarOrdenAsync(totalPagado: 30m, esAdministrador: false);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Be("Esta orden tiene pagos registrados; solicite a un administrador la cancelación.");
+        }
+
+        [Fact]
+        public async Task ValidarCancelarOrdenAsync_ConPagosSiendoAdministrador_DevuelveSuccess()
+        {
+            var validator = new ValidatorBusinessOrden(new Mock<IClienteRepository>().Object);
+
+            var resultado = await validator.ValidarCancelarOrdenAsync(totalPagado: 30m, esAdministrador: true);
+
+            resultado.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ValidarCancelarOrdenAsync_SinPagos_DevuelveSuccessParaElVendedor()
+        {
+            var validator = new ValidatorBusinessOrden(new Mock<IClienteRepository>().Object);
+
+            var resultado = await validator.ValidarCancelarOrdenAsync(totalPagado: 0m, esAdministrador: false);
+
+            resultado.IsSuccess.Should().BeTrue();
+        }
     }
 }

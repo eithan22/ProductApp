@@ -51,6 +51,7 @@ namespace ProductApp.Tests.Integration
                 new ClienteRepository(context),
                 new OrdenMapper(),
                 new DetalleOrdenRepository(context),
+                new PagoRepository(context),
                 new CreateOrdenValidator(),
                 new CambiarEstadoOrdenValidator(),
                 new ValidatorBusinessOrden(new ClienteRepository(context)),
