@@ -210,7 +210,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            })).IsSuccess.Should().BeTrue();
+            }, escenario.Usuario.Id, esAdministrador: true)).IsSuccess.Should().BeTrue();
 
             var resultado = await detalleService.ActualizarDetalleOrden(
                 escenario.DetalleAId,
@@ -233,7 +233,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            })).IsSuccess.Should().BeTrue();
+            }, escenario.Usuario.Id, esAdministrador: true)).IsSuccess.Should().BeTrue();
 
             var resultado = await detalleService.EliminarProductoAsync(escenario.DetalleAId);
 

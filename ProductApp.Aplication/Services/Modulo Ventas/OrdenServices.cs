@@ -65,7 +65,7 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<OrdenResponseDto>.Success(ordenResponse, "Orden creada exitosamente");
         }
 
-        public async Task<OperationResultD<bool>> CambiarEstadoOrden(CambiarEstadoOrdenDto dto)
+        public async Task<OperationResultD<bool>> CambiarEstadoOrden(CambiarEstadoOrdenDto dto, int usuarioSolicitanteId, bool esAdministrador)
         {
             var dtoResult = await _cambiarEstadoValidator.ValidateAsync(dto);
             if (!dtoResult.IsValid)
@@ -76,6 +76,9 @@ namespace ProductApp.Aplication.Services
             if (orden == null)
                 return OperationResultD<bool>.Failure("Orden no encontrada");
 
+            if (!esAdministrador && orden.UsuarioId != usuarioSolicitanteId)
+                return OperationResultD<bool>.Failure("No tiene permiso sobre esta orden");
+
             var nuevoEstado = Enum.Parse<EstadoOrden>(dto.NuevoEstado, true);
 
             var businessResult = await _validatorBusinessOrden.ValidarCambiarEstadoAsync(nuevoEstado);
@@ -84,6 +87,8 @@ namespace ProductApp.Aplication.Services
 
             orden.CambiarEstado(nuevoEstado);
             await _ordenRepository.UpdateAsync(orden);
+
+            _logger.LogInformation("Orden {OrdenId} cambiada a estado {NuevoEstado} por el usuario {UsuarioSolicitanteId}", orden.Id, nuevoEstado, usuarioSolicitanteId);
 
             await _notificacionServices.NotificarUsuarioAsync(
                 orden.UsuarioId,

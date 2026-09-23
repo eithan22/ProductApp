@@ -56,7 +56,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data.Should().BeTrue();
@@ -84,7 +84,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Ordenes.FindAsync(escenario.OrdenId))!.Estado.Should().Be(EstadoOrden.Cancelada);
@@ -116,7 +116,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Entregada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Ordenes.FindAsync(escenario.OrdenId))!.Estado.Should().Be(EstadoOrden.Entregada);
@@ -140,7 +140,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = "cancelada"
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Ordenes.FindAsync(escenario.OrdenId))!.Estado.Should().Be(EstadoOrden.Cancelada);
@@ -162,7 +162,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Entregada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             (await accion.Should().ThrowAsync<EstadoInvalidoException>())
                 .WithMessage("No se puede ejecutar 'cambiar a Entregada' en 'Orden' con estado 'Pendiente'.");
@@ -182,13 +182,13 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            })).IsSuccess.Should().BeTrue();
+            }, escenario.Usuario.Id, esAdministrador: true)).IsSuccess.Should().BeTrue();
 
             var accion = async () => await ordenServices.CambiarEstadoOrden(new CambiarEstadoOrdenDto
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             (await accion.Should().ThrowAsync<EstadoInvalidoException>())
                 .WithMessage("No se puede ejecutar 'cambiar a Cancelada' en 'Orden' con estado 'Cancelada'.");
@@ -209,7 +209,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Pagada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be(
@@ -230,7 +230,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = nameof(EstadoOrden.Procesada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be(
@@ -244,14 +244,14 @@ namespace ProductApp.Tests.Integration
         public async Task CambiarEstadoOrden_ConOrdenInexistente_DevuelveFailureSinNotificar()
         {
             using var context = IntegrationTestFactory.CrearContexto();
-            await SembrarOrdenPendienteAsync(context);
+            var escenario = await SembrarOrdenPendienteAsync(context);
             var ordenServices = IntegrationTestFactory.CrearOrdenServices(context);
 
             var resultado = await ordenServices.CambiarEstadoOrden(new CambiarEstadoOrdenDto
             {
                 Id = 9999,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("Orden no encontrada");
@@ -271,7 +271,7 @@ namespace ProductApp.Tests.Integration
             {
                 Id = escenario.OrdenId,
                 NuevoEstado = "Despachada"
-            });
+            }, escenario.Usuario.Id, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("El estado debe ser uno de:");
@@ -284,14 +284,65 @@ namespace ProductApp.Tests.Integration
             using var context = IntegrationTestFactory.CrearContexto();
             var ordenServices = IntegrationTestFactory.CrearOrdenServices(context);
 
+            // No hay nada sembrado: la llamada muere en el validator del DTO, mucho antes del
+            // guard de propiedad, así que el usuario solicitante da igual.
             var resultado = await ordenServices.CambiarEstadoOrden(new CambiarEstadoOrdenDto
             {
                 Id = 0,
                 NuevoEstado = nameof(EstadoOrden.Cancelada)
-            });
+            }, usuarioSolicitanteId: 1, esAdministrador: true);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("El Id de la orden debe ser mayor que cero.");
+        }
+
+        // Regresión del IDOR: CambiarEstadoOrden era la puerta trasera que permitía lograr por
+        // este endpoint lo que CancelarOrden y ConfirmarOrden ya bloqueaban por dueño.
+        [Fact]
+        public async Task CambiarEstadoOrden_DeOtroUsuarioSinSerAdministrador_DevuelveFailureSinTocarLaOrdenNiNotificar()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var escenario = await SembrarOrdenPendienteAsync(context);
+            var ordenServices = IntegrationTestFactory.CrearOrdenServices(context);
+
+            var otroUsuario = await IntegrationTestFactory.SembrarUsuarioAsync(
+                context, "Usuario Ajeno", "ajeno@test.com", "usuario.ajeno");
+
+            var resultado = await ordenServices.CambiarEstadoOrden(new CambiarEstadoOrdenDto
+            {
+                Id = escenario.OrdenId,
+                NuevoEstado = nameof(EstadoOrden.Cancelada)
+            }, otroUsuario.Id, esAdministrador: false);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Be("No tiene permiso sobre esta orden");
+
+            (await context.Ordenes.FindAsync(escenario.OrdenId))!.Estado.Should().Be(EstadoOrden.Pendiente);
+            (await context.Notificaciones.CountAsync()).Should().Be(0);
+        }
+
+        // La otra rama del guard: el administrador sí puede operar sobre órdenes ajenas.
+        [Fact]
+        public async Task CambiarEstadoOrden_DeOtroUsuarioSiendoAdministrador_PersisteElEstado()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var escenario = await SembrarOrdenPendienteAsync(context);
+            var ordenServices = IntegrationTestFactory.CrearOrdenServices(context);
+
+            var administrador = await IntegrationTestFactory.SembrarUsuarioAsync(
+                context, "Usuario Admin", "admin@test.com", "usuario.admin");
+
+            var resultado = await ordenServices.CambiarEstadoOrden(new CambiarEstadoOrdenDto
+            {
+                Id = escenario.OrdenId,
+                NuevoEstado = nameof(EstadoOrden.Cancelada)
+            }, administrador.Id, esAdministrador: true);
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            (await context.Ordenes.FindAsync(escenario.OrdenId))!.Estado.Should().Be(EstadoOrden.Cancelada);
+
+            // La notificación sigue yendo al dueño de la orden, no a quien ejecutó el cambio.
+            (await context.Notificaciones.SingleAsync()).UsuarioId.Should().Be(escenario.Usuario.Id);
         }
     }
 }

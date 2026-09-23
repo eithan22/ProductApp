@@ -60,7 +60,7 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<InventarioResponseDto>.Success(response, "Inventario obtenido exitosamente.");
         }
 
-        public async Task<OperationResultD<InventarioResponseDto>> AgregarStockAsync(MovimientoStockDto dto)
+        public async Task<OperationResultD<InventarioResponseDto>> AgregarStockAsync(MovimientoStockDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _movimientoStockValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -82,11 +82,13 @@ namespace ProductApp.Aplication.Services
 
             await NotificarSiCruzoAStockBajoAsync(estabaBajo, inventario);
 
+            _logger.LogInformation("Entrada de stock para el producto {ProductoId}: {Cantidad} unidades, por el usuario {UsuarioSolicitanteId}", dto.ProductoId, dto.Cantidad, usuarioSolicitanteId);
+
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock agregado exitosamente.");
         }
 
-        public async Task<OperationResultD<InventarioResponseDto>> DescontarStockAsync(MovimientoStockDto dto)
+        public async Task<OperationResultD<InventarioResponseDto>> DescontarStockAsync(MovimientoStockDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _movimientoStockValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -107,6 +109,8 @@ namespace ProductApp.Aplication.Services
             await _inventarioRepository.UpdateAsync(inventario);
 
             await NotificarSiCruzoAStockBajoAsync(estabaBajo, inventario);
+
+            _logger.LogInformation("Salida de stock para el producto {ProductoId}: {Cantidad} unidades, por el usuario {UsuarioSolicitanteId}", dto.ProductoId, dto.Cantidad, usuarioSolicitanteId);
 
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock descontado exitosamente.");

@@ -220,9 +220,13 @@ namespace ProductApp.Tests.Integration
             return cliente;
         }
 
-        public static async Task<Usuario> SembrarUsuarioAsync(AppDbContext context)
+        public static async Task<Usuario> SembrarUsuarioAsync(
+            AppDbContext context,
+            string nombre = "Usuario Test",
+            string correo = "usuario@test.com",
+            string nombreUsuario = "usuario.test")
         {
-            var usuario = new Usuario("Usuario Test", "usuario@test.com", "usuario.test", RolUsuario.Vendedor);
+            var usuario = new Usuario(nombre, correo, nombreUsuario, RolUsuario.Vendedor);
             context.Usuarios.Add(usuario);
             await context.SaveChangesAsync();
             return usuario;

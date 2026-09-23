@@ -9,9 +9,11 @@ namespace ProductApp.Aplication.Interface
 {
     public interface IInventarioServices
     {
-        Task<OperationResultD<InventarioResponseDto>> AgregarStockAsync(MovimientoStockDto agregarStockDto);
+        // Entrada y salida de stock son operaciones de solo-Administrador y quedan auditadas:
+        // por eso reciben el id del usuario que las ejecuta, igual que AjustarStockAsync.
+        Task<OperationResultD<InventarioResponseDto>> AgregarStockAsync(MovimientoStockDto agregarStockDto, int usuarioSolicitanteId);
 
-        Task<OperationResultD<InventarioResponseDto>> DescontarStockAsync(MovimientoStockDto descontarStockDto);
+        Task<OperationResultD<InventarioResponseDto>> DescontarStockAsync(MovimientoStockDto descontarStockDto, int usuarioSolicitanteId);
 
         // El método AjustarStockAsync se utiliza para ajustar el stock de un producto a una cantidad específica, independientemente de la cantidad actual. Esto es útil para corregir errores de inventario o para sincronizar el stock con una cantidad real después de una auditoría.
         Task<OperationResultD<InventarioResponseDto>> AjustarStockAsync(AjustarStockDto ajustarStockDto, int usuarioSolicitanteId);

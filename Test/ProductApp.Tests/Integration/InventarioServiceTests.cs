@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
 using ProductApp.Domian.Common.Enums.EnumsNotificacion;
@@ -27,7 +27,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 4 });
+            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 4 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Notificaciones.CountAsync()).Should().Be(1);
@@ -46,7 +46,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 1);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 1 });
+            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 1 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Notificaciones.CountAsync()).Should().Be(0);
@@ -59,7 +59,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 4 });
+            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 4 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Notificaciones.CountAsync()).Should().Be(0);
@@ -72,7 +72,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 });
+            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("Stock insuficiente");
@@ -88,7 +88,7 @@ namespace ProductApp.Tests.Integration
             await context.SaveChangesAsync();
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 1 });
+            var resultado = await service.DescontarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 1 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("producto inactivo");
@@ -101,7 +101,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 0 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 0 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("Error de validación");
@@ -113,7 +113,7 @@ namespace ProductApp.Tests.Integration
             using var context = IntegrationTestFactory.CrearContexto();
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = 999, Cantidad = 5 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = 999, Cantidad = 5 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("Inventario no encontrado.");
@@ -186,7 +186,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 7 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 7 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Message.Should().Be("Stock agregado exitosamente.");
@@ -200,7 +200,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 3 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 3 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data.Should().NotBeNull();
@@ -217,8 +217,8 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 0);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 4 });
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 6 });
+            await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 4 }, usuarioSolicitanteId: 1);
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 6 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data!.StockActual.Should().Be(10);
@@ -236,7 +236,7 @@ namespace ProductApp.Tests.Integration
             var service = IntegrationTestFactory.CrearInventarioService(context);
             await Task.Delay(10);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 2 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 2 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Inventario.SingleAsync()).UltimaActualizacion.Should().BeAfter(fechaPrevia);
@@ -253,7 +253,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 1);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             var inventario = await context.Inventario.SingleAsync();
@@ -273,7 +273,7 @@ namespace ProductApp.Tests.Integration
             await context.SaveChangesAsync();
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 10 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("No se puede agregar stock a un producto inactivo.");
@@ -287,7 +287,7 @@ namespace ProductApp.Tests.Integration
             var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 5);
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = -3 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = -3 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("Error de validación");
@@ -300,7 +300,7 @@ namespace ProductApp.Tests.Integration
             using var context = IntegrationTestFactory.CrearContexto();
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = 0, Cantidad = 5 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = 0, Cantidad = 5 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("Error de validación");
@@ -316,7 +316,7 @@ namespace ProductApp.Tests.Integration
             await context.SaveChangesAsync();
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
-            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 5 });
+            var resultado = await service.AgregarStockAsync(new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 5 }, usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Be("Inventario no encontrado.");
@@ -334,7 +334,8 @@ namespace ProductApp.Tests.Integration
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
             var resultado = await service.AgregarStockAsync(
-                new MovimientoStockDto { ProductoId = producto.Id, Cantidad = Inventario.CantidadMaximaStock + 1 });
+                new MovimientoStockDto { ProductoId = producto.Id, Cantidad = Inventario.CantidadMaximaStock + 1 },
+                usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("Error de validación");
@@ -354,7 +355,8 @@ namespace ProductApp.Tests.Integration
             var service = IntegrationTestFactory.CrearInventarioService(context);
 
             var accion = async () => await service.AgregarStockAsync(
-                new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 11 });
+                new MovimientoStockDto { ProductoId = producto.Id, Cantidad = 11 },
+                usuarioSolicitanteId: 1);
 
             await accion.Should().ThrowAsync<ValidacionDominioException>()
                 .WithMessage("*Stock máximo excedido*");

@@ -100,7 +100,9 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> CambiarEstadoOrden(CambiarEstadoOrdenDto dto)
         {
-            var result = await _ordenServices.CambiarEstadoOrden(dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var esAdministrador = User.IsInRole("Administrador");
+            var result = await _ordenServices.CambiarEstadoOrden(dto, usuarioSolicitanteId, esAdministrador);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
