@@ -50,6 +50,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         {
             return await _context.Productos
                 .Include(p => p.Categoria)
+                .Include(p => p.Inventario)
                 .Include(p => p.Proveedor)
                 .FirstOrDefaultAsync(p => !p.EstaEliminado && p.Id == id);
         }

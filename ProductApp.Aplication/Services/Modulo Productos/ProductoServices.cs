@@ -167,7 +167,12 @@ namespace ProductApp.Aplication.Services
 
             await _inventarioRepository.CreateAsync(inventario);
 
-            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(producto);
+            // Mismo criterio que el update: se recarga con Categoria, Inventario y Proveedor para
+            // que la respuesta del POST traiga el stock recién creado y el nombre de la categoría,
+            // en vez de los null que deja la entidad construida a mano por el mapper.
+            var productoCreado = await _productorepository.GetProductoConCategoriaByIdAsync(producto.Id) ?? producto;
+
+            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(productoCreado);
 
             return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto creado correctamente");
 
@@ -262,7 +267,13 @@ namespace ProductApp.Aplication.Services
 
             await _productorepository.UpdateAsync(producto);
 
-            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(producto);
+            // Se recarga con Categoria, Inventario y Proveedor para que la respuesta del PUT
+            // traiga los mismos campos que el listado (nombre de categoría y stock). Recargar
+            // DESPUÉS de guardar y no antes es lo que hace que el nombre de la categoría sea
+            // el nuevo cuando el update cambió de categoría.
+            var productoActualizado = await _productorepository.GetProductoConCategoriaByIdAsync(dto.Id) ?? producto;
+
+            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(productoActualizado);
 
             return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto actualizado correctamente");
         }

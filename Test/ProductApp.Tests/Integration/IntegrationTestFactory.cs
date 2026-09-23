@@ -134,7 +134,10 @@ namespace ProductApp.Tests.Integration
                 new CreateProductoValidator(),
                 new UpdateProductoValidator(),
                 new SubirImagenProductoValidator(),
-                new ValidatorBusinessProducto(new ProductoRepository(context)),
+                new ValidatorBusinessProducto(
+                    new ProductoRepository(context),
+                    new CategoriaRepository(context),
+                    new ProveedorRepository(context)),
                 new InventarioRepository(context),
                 new ConfiguracionSistemaRepository(context),
                 new AlmacenamientoImagenesFake(),

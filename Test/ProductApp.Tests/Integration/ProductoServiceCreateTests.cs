@@ -34,6 +34,11 @@ namespace ProductApp.Tests.Integration
             var inventario = await context.Inventario.SingleAsync();
             inventario.CantidadMinima.Should().Be(12);
             inventario.CantidadActual.Should().Be(0);
+            // La respuesta del POST se arma recargando el producto, así que ya trae el
+            // inventario recién creado y el nombre de la categoría.
+            resultado.Data!.StockActual.Should().Be(0);
+            resultado.Data.StockMinimo.Should().Be(12);
+            resultado.Data.Categoria.Should().Be("Categoria Test");
         }
 
         [Fact]
@@ -93,6 +98,23 @@ namespace ProductApp.Tests.Integration
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Productos.SingleAsync()).ProveedorId.Should().Be(proveedor.Id);
+        }
+
+        [Fact]
+        public async Task CreateAsync_ConImagenUrl_LaGuardaEnElProducto()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var categoria = await SembrarCategoriaAsync(context);
+            var service = IntegrationTestFactory.CrearProductoServices(context);
+            var dto = Dto(categoria.Id);
+            dto.ImagenUrl = "https://fake-blob/imagenes/inicial.png";
+
+            var resultado = await service.CreateAsync(dto);
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            resultado.Data!.ImagenUrl.Should().Be("https://fake-blob/imagenes/inicial.png");
+            context.ChangeTracker.Clear();
+            (await context.Productos.SingleAsync()).ImagenUrl.Should().Be("https://fake-blob/imagenes/inicial.png");
         }
     }
 }

@@ -26,6 +26,11 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator
 
             RuleFor(x => x.CategoriaId)
                 .GreaterThan(0).WithMessage("Debe seleccionar una categoría válida.");
+
+            // Solo si viene un valor: null es válido y significa "quitarle el proveedor".
+            RuleFor(x => x.ProveedorId)
+                .GreaterThan(0).WithMessage("Debe seleccionar un proveedor válido.")
+                .When(x => x.ProveedorId.HasValue);
         }
     }
 }
