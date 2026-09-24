@@ -12,7 +12,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
         {
             builder.Property(o => o.Fecha)
                 .IsRequired()
-                .HasColumnType("Date");
+                .HasColumnType("datetime2");
 
             builder.Property(o => o.Total)
                 .IsRequired()

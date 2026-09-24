@@ -219,10 +219,13 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<byte[]>.Success(csv, "Reporte exportado exitosamente");
         }
 
+        // Los filtros llegan de <input type="date">: sin hora. Se normaliza el rango al día
+        // calendario completo porque Orden.Fecha y Pago.FechaPago guardan la hora real:
+        // comparar contra un 'hasta' a medianoche dejaría fuera todo el último día del rango.
         private static (DateTime Desde, DateTime Hasta) ResolverRango(DateTime? desde, DateTime? hasta)
         {
-            var hastaResuelto = hasta ?? DateTime.UtcNow;
-            var desdeResuelto = desde ?? hastaResuelto.AddDays(-30);
+            var hastaResuelto = (hasta ?? DateTime.UtcNow).Date.AddDays(1).AddTicks(-1);
+            var desdeResuelto = (desde ?? hastaResuelto.AddDays(-29)).Date;
             return (desdeResuelto, hastaResuelto);
         }
     }
