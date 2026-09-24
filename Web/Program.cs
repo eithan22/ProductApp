@@ -28,10 +28,19 @@ namespace Web
 
             var app = builder.Build();
 
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            // Debe ir antes que cualquier middleware que dependa del esquema o de la IP del
+            // cliente (UseHttpsRedirection, las cookies de sesión y antiforgery). Restringido a
+            // loopback a propósito, igual que la API: la app solo confía en X-Forwarded-Proto y
+            // X-Forwarded-For si la petición llega directo desde localhost, así nadie externo
+            // puede declararse "ya vengo por https" y saltarse la redirección.
+            // TODO: cuando se agregue el balanceador de Azure, sumar su IP/red real acá con
+            // fhOptions.KnownProxies.Add(IPAddress.Parse("<ip-del-balanceador>")).
+            var fhOptions = new ForwardedHeadersOptions
             {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                ForwardLimit = 1
+            };
+            app.UseForwardedHeaders(fhOptions);
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
