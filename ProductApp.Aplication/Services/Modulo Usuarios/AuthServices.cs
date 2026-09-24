@@ -56,7 +56,7 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             var validatorBusiness = await _validatorBusinessAuth.ValidarLoginAsync(dto);
             if (!validatorBusiness.IsSuccess)
             {
-                _logger.LogWarning("Intento de login fallido para el usuario {Username} desde {Motivo}", dto.Username, validatorBusiness.Message);
+                _logger.LogWarning("Intento de login fallido para el usuario {Username}. Motivo: {Motivo}", dto.Username, validatorBusiness.MotivoInterno);
                 return OperationResultD<AuthResponseDto>.Failure(validatorBusiness.Message);
             }
 
