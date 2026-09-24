@@ -37,6 +37,21 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success();
         }
 
+        // Misma regla de email único que la actualización administrativa, con dos diferencias
+        // deliberadas: el id no viene del DTO sino del token (en "mi perfil" el usuario solo
+        // puede editarse a sí mismo, aceptar un id del cuerpo abriría la puerta a editar el
+        // perfil de otro), y no se valida el Username porque el perfil propio no lo puede
+        // cambiar: ActualizarMiPerfilDto no lo expone.
+        public async Task<OperationResult> ValidarActualizarMiPerfilAsync(ActualizarMiPerfilDto dto, int usuarioId)
+        {
+            var existe = await _usuarioRepository.ExisteAsync(
+                x => x.Email == dto.Email && x.Id != usuarioId);
+            if (existe)
+                return OperationResult.Failure("El email ya está en uso por otro usuario.");
+
+            return OperationResult.Success();
+        }
+
         // Delete lógico (desactivación): es la baja real que usa la aplicación.
         public async Task<OperationResult> ValidarDeleteUsuarioAsync(Usuario usuario)
         {

@@ -301,6 +301,10 @@ namespace ProductApp.Aplication.Services
             if (usuario == null)
                 return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
 
+            var businessValidationResult = await _validatorBusinessUsuarios.ValidarActualizarMiPerfilAsync(dto, usuarioId);
+            if (!businessValidationResult.IsSuccess)
+                return OperationResultD<UsuarioResponseDto>.Failure(businessValidationResult.Message);
+
             usuario.CambiarNombre(dto.Nombre);
             usuario.CambiarEmail(dto.Email);
             usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
