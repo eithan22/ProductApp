@@ -36,6 +36,14 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
                 .HasForeignKey(e => e.ProveedorId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Único por categoría, no global: así lo trata la importación masiva
+            // (ImportacionProductosService) y así queda alineado el validator (ver
+            // ValidatorBusinessProducto). "Camiseta" puede existir en Ropa y en Promociones.
+            builder.HasIndex(e => new { e.Nombre, e.CategoriaId })
+                .IsUnique()
+                .HasDatabaseName("UX_Productos_Nombre_CategoriaId")
+                .HasFilter("[EstaEliminado] = 0");
         }
     }
 }

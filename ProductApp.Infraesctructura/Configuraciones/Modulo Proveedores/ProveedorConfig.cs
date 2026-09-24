@@ -27,6 +27,17 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
             builder.Property(p => p.Estado)
                 .IsRequired()
                 .HasConversion<string>();
+
+            // Mismo criterio que Categoria/Cliente/Usuario: filtrado por EstaEliminado.
+            builder.HasIndex(p => p.Nombre)
+                .IsUnique()
+                .HasDatabaseName("UX_Proveedores_Nombre")
+                .HasFilter("[EstaEliminado] = 0");
+
+            builder.HasIndex(p => p.Correo)
+                .IsUnique()
+                .HasDatabaseName("UX_Proveedores_Correo")
+                .HasFilter("[EstaEliminado] = 0");
         }
     }
 }

@@ -386,8 +386,12 @@ namespace ProductApp.Tests.Integration
         // Nombre+Categoría, pero ValidatorBusinessProducto bloquea por Nombre global. Una fila
         // con nombre repetido en OTRA categoría no cae como "omitida" sino como error general.
         [Fact]
-        public async Task ImportarAsync_ConNombreRepetidoEnOtraCategoria_CaeComoErrorGeneralYNoComoDuplicado()
+        public async Task ImportarAsync_ConNombreRepetidoEnOtraCategoria_SeImportaSinError()
         {
+            // ValidatorBusinessProducto compara Nombre+CategoriaId desde M8 (auditoría de
+            // seguridad, índice único UX_Productos_Nombre_CategoriaId), igual que
+            // ClaveCatalogo acá abajo — antes el validator comparaba solo por nombre y esto
+            // caía como "error general" pese a que la importación lo consideraba válido.
             using var context = IntegrationTestFactory.CrearContexto();
             var categoriaA = await SembrarCategoriaAsync(context, "Herramientas");
             var categoriaB = await SembrarCategoriaAsync(context, "Ferretería");
@@ -408,8 +412,8 @@ namespace ProductApp.Tests.Integration
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data!.FilasOmitidas.Should().Be(0);
-            resultado.Data.FilasConError.Should().Be(1);
-            resultado.Data.Errores[0].Columna.Should().Be("General");
+            resultado.Data.FilasConError.Should().Be(0);
+            resultado.Data.FilasCreadas.Should().Be(1);
         }
 
         [Fact]

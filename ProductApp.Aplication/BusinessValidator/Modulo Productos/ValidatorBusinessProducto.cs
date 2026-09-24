@@ -26,16 +26,16 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
 
         public async Task<OperationResult> ValidarCreateProductoAsync(CreateProductoDto dto)
         {
-            if (await _productoRepository.ExisteAsync(p => p.Nombre == dto.Nombre))
-                return OperationResult.Failure("Ya existe un producto con ese nombre.");
+            if (await _productoRepository.ExisteAsync(p => p.Nombre == dto.Nombre && p.CategoriaId == dto.CategoriaId))
+                return OperationResult.Failure("Ya existe un producto con ese nombre en esa categoría.");
 
             return await ValidarReferenciasAsync(dto.CategoriaId, dto.ProveedorId);
         }
 
         public async Task<OperationResult> ValidarUpdateProductoAsync(UpdateProductoDto dto, Producto producto)
         {
-            if (await _productoRepository.ExisteAsync(p => p.Nombre == dto.Nombre && p.Id != dto.Id))
-                return OperationResult.Failure("Ya existe otro producto con ese nombre.");
+            if (await _productoRepository.ExisteAsync(p => p.Nombre == dto.Nombre && p.CategoriaId == dto.CategoriaId && p.Id != dto.Id))
+                return OperationResult.Failure("Ya existe otro producto con ese nombre en esa categoría.");
 
             return await ValidarReferenciasAsync(dto.CategoriaId, dto.ProveedorId);
         }

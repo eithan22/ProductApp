@@ -43,10 +43,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
             // !EstaEliminado). Índice y validador dicen lo mismo.
             //
             // El nombre se fija a mano (UX_) en vez de dejarlo en la convención (IX_) porque
-            // GlobalExceptionHandler lo usa como clave para traducir el error 2601 de SQL
-            // Server al mensaje de negocio correcto, y el prefijo UX_ es lo que permite al
-            // detector reconocerlo dentro del mensaje sin depender del idioma del motor.
-            // Renombrar un índice acá obliga a renombrarlo allá.
+            // AppDbContext.SaveChangesAsync lo usa como clave para traducir el error 2601/2627
+            // de SQL Server al mensaje de negocio correcto (ver MensajesPorIndice). Renombrar
+            // un índice acá obliga a renombrarlo allá.
             builder.HasIndex(u => u.Email)
                 .IsUnique()
                 .HasDatabaseName("UX_Usuarios_Email")

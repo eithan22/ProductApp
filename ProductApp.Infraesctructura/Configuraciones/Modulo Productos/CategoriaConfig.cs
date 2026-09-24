@@ -18,6 +18,15 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
 
              builder.Property(c => c.Descripcion)
                  .HasMaxLength(100);
+
+            // Filtrado por EstaEliminado: ValidatorBusinessCategoria ya descarta las
+            // categorías dadas de baja al comprobar el nombre (ExisteAsync filtra
+            // !EstaEliminado). Sin el filtro, el nombre de una categoría eliminada
+            // quedaría reservado para siempre.
+            builder.HasIndex(c => c.Nombre)
+                .IsUnique()
+                .HasDatabaseName("UX_Categorias_Nombre")
+                .HasFilter("[EstaEliminado] = 0");
         }
     }
 }
