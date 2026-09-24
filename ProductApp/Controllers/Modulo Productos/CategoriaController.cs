@@ -73,7 +73,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("DisableCategoria/{id}")]
 
         public async Task<IActionResult> DisableCategoria(int id)
@@ -85,7 +85,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("EnableCategoria/{id}")]
 
         public async Task<IActionResult> EnableCategoria(int id)

@@ -68,7 +68,7 @@ namespace ProductApp.Api.Controllers.Modulo_Proveedores
             return Ok(ApiResponseT<ProveedorResponseDto>.SuccessResponse(result.Data, result.Message));
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("DisableProveedor/{id}")]
         public async Task<IActionResult> DisableProveedor(int id)
         {
@@ -80,7 +80,7 @@ namespace ProductApp.Api.Controllers.Modulo_Proveedores
             return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("EnableProveedor/{id}")]
         public async Task<IActionResult> EnableProveedor(int id)
         {

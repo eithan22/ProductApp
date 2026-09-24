@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Proveedores";
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
 
     string Iniciales(string nombre)
     {
@@ -91,9 +92,12 @@ else
 
                         @if (item.Activo)
                         {
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Dar de baja a @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                            @if (esAdministrador)
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Dar de baja a @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                            }
                         }
-                        else
+                        else if (esAdministrador)
                         {
                             <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
                                 <button type="submit" class="icon-btn" title="Reactivar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>

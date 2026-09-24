@@ -64,7 +64,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
             return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(resut.Data, resut.Message));
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
 
         [HttpPatch("DisableCliente/{id}")]
         public async Task<IActionResult> DisableClientes(int id)
@@ -78,7 +78,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
 
         [HttpPatch("EnableCliente/{id}")]
         public async Task<IActionResult> EnableCliente(int id)

@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Clientes";
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
     var reservados = Model.Items.Count(c => c.EsReservado);
 
     string Iniciales(string nombre)
@@ -118,9 +119,12 @@ else
 
                             @if (activo)
                             {
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                                @if (esAdministrador)
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                                }
                             }
-                            else
+                            else if (esAdministrador)
                             {
                                 <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
                                     <button type="submit" class="icon-btn" title="Activar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>

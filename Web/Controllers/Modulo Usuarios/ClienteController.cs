@@ -20,6 +20,7 @@ namespace Web.Controllers.Modulo_Usuarios
         {
             var result = await _clienteHttpServices.GetClientesAsync(incluirInactivos, pageNumber);
             ViewBag.IncluirInactivos = incluirInactivos;
+            ViewBag.EsAdministrador = EsAdministrador();
             return View(result);
 
         }
@@ -155,6 +156,9 @@ namespace Web.Controllers.Modulo_Usuarios
         // GET: ClienteController/Delete/5
         public async Task <ActionResult>Delete(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             try
             {
                 var cliente = await _clienteHttpServices.GetClienteByIdAsync(id);
@@ -184,6 +188,9 @@ namespace Web.Controllers.Modulo_Usuarios
         [ValidateAntiForgeryToken]
         public async Task <ActionResult> DeleteConfimated(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             try
             {
                 await _clienteHttpServices.DeleteClienteAsync(id);
@@ -207,7 +214,19 @@ namespace Web.Controllers.Modulo_Usuarios
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Enable(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             await _clienteHttpServices.EnableClienteAsync(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool EsAdministrador() =>
+            HttpContext.Session.GetString("ROL") == "Administrador";
+
+        private ActionResult SinPermiso()
+        {
+            TempData["Error"] = "No tenés permisos para realizar esta acción.";
             return RedirectToAction(nameof(Index));
         }
     }

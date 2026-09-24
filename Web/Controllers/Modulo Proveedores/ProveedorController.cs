@@ -18,6 +18,7 @@ namespace Web.Controllers.Modulo_Proveedores
         {
             var result = await _proveedorHttpServices.GetProveedoresAsync(incluirInactivos, pageNumber);
             ViewBag.IncluirInactivos = incluirInactivos;
+            ViewBag.EsAdministrador = EsAdministrador();
             return View(result);
         }
 
@@ -116,6 +117,9 @@ namespace Web.Controllers.Modulo_Proveedores
 
         public async Task<ActionResult> Delete(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             try
             {
                 var proveedor = await _proveedorHttpServices.GetProveedorByIdAsync(id);
@@ -135,6 +139,9 @@ namespace Web.Controllers.Modulo_Proveedores
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmado(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             try
             {
                 await _proveedorHttpServices.DisableProveedorAsync(id);
@@ -153,7 +160,19 @@ namespace Web.Controllers.Modulo_Proveedores
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Enable(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             await _proveedorHttpServices.EnableProveedorAsync(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool EsAdministrador() =>
+            HttpContext.Session.GetString("ROL") == "Administrador";
+
+        private ActionResult SinPermiso()
+        {
+            TempData["Error"] = "No tenés permisos para realizar esta acción.";
             return RedirectToAction(nameof(Index));
         }
     }

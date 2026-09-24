@@ -59,6 +59,7 @@ namespace Web.Controllers.Modulo_Productos
         public async Task<ActionResult> Details(int id)
         {
             var result = await _productoHttpServices.GetProductoByIdAsync(id);
+            ViewBag.EsAdministrador = EsAdministrador();
             return View(result);
         }
 
@@ -160,6 +161,9 @@ namespace Web.Controllers.Modulo_Productos
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Disable(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             await _productoHttpServices.DisableProductoAsync(id);
             return RedirectToAction(nameof(Index));
         }
@@ -168,6 +172,9 @@ namespace Web.Controllers.Modulo_Productos
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Enable(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             await _productoHttpServices.EnableProductoAsync(id);
             return RedirectToAction(nameof(Index));
         }
@@ -286,9 +293,9 @@ namespace Web.Controllers.Modulo_Productos
         private bool EsAdministrador() =>
             HttpContext.Session.GetString("ROL") == "Administrador";
 
-        private ActionResult SinPermiso()
+        private ActionResult SinPermiso(string mensaje = "No tenés permisos para realizar esta acción.")
         {
-            TempData["Error"] = "No tenés permisos para importar productos.";
+            TempData["Error"] = mensaje;
             return RedirectToAction(nameof(Index));
         }
 

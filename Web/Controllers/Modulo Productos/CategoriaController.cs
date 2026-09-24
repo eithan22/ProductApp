@@ -17,6 +17,7 @@ namespace Web.Controllers.Modulo_Productos
         {
             var result = await _categoriaHttpServices.GetCategoriasPagedAsync(incluirInactivos, pageNumber);
             ViewBag.IncluirInactivos = incluirInactivos;
+            ViewBag.EsAdministrador = EsAdministrador();
             return View(result);
         }
 
@@ -94,6 +95,9 @@ namespace Web.Controllers.Modulo_Productos
 
         public async Task<ActionResult> Delete(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             try
             {
                 var categoria = await _categoriaHttpServices.GetCategoriaByIdAsync(id);
@@ -112,6 +116,9 @@ namespace Web.Controllers.Modulo_Productos
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             try
             {
                 await _categoriaHttpServices.DeleteCategoriaAsync(id);
@@ -129,7 +136,19 @@ namespace Web.Controllers.Modulo_Productos
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Enable(int id)
         {
+            if (!EsAdministrador())
+                return SinPermiso();
+
             await _categoriaHttpServices.EnableCategoriaAsync(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool EsAdministrador() =>
+            HttpContext.Session.GetString("ROL") == "Administrador";
+
+        private ActionResult SinPermiso()
+        {
+            TempData["Error"] = "No tenés permisos para realizar esta acción.";
             return RedirectToAction(nameof(Index));
         }
     }
