@@ -11,6 +11,7 @@ using ProductApp.Aplication.Mappers.Modulo_Proveedores;
 using ProductApp.Aplication.Mappers.Modulo_Reportes;
 using ProductApp.Aplication.Mappers.Modulo_Ventas;
 using ProductApp.Aplication.Services;
+using ProductApp.Aplication.Services.Modulo_Usuarios;
 using ProductApp.Aplication.Validators.Modulo_Producto.CategoriaValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator;
 using ProductApp.Aplication.Validators.Modulo_Producto.ProductoValidator;
@@ -174,6 +175,9 @@ namespace ProductApp.Tests.Integration
                 new CambiarRolUsuarioValidator(),
                 new ActualizarMiPerfilValidator(),
                 NullLogger<UsuarioService>.Instance);
+
+        public static VerificadorSesionService CrearVerificadorSesionService(AppDbContext context)
+            => new(new UsuarioRepository(context));
 
         public static ImportacionProductosService CrearImportacionProductosService(
             AppDbContext context,

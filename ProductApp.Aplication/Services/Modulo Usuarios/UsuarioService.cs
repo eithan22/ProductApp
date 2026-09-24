@@ -173,7 +173,13 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Usuario Eliminado Correctamente");
         }
 
-        public async Task<OperationResultD<bool>> DisableAsync(int id)
+        // Igual que GetAllAsync: la firma de IBaseServices delega en la sobrecarga con
+        // solicitante. El 0 significa "sin solicitante identificado" y en la práctica no
+        // ocurre: el único que llama es el controller, que siempre pasa el id del token.
+        public Task<OperationResultD<bool>> DisableAsync(int id)
+            => DisableAsync(id, usuarioSolicitanteId: 0);
+
+        public async Task<OperationResultD<bool>> DisableAsync(int id, int usuarioSolicitanteId)
         {
             if (id <= 0)
                 return OperationResultD<bool>.Failure("Id no valido");
@@ -188,6 +194,8 @@ namespace ProductApp.Aplication.Services
 
             usuario.Desactivar();
             await _usuarioRepository.UpdateAsync(usuario);
+
+            _logger.LogInformation("Usuario {UsuarioId} deshabilitado, por el usuario {UsuarioSolicitanteId}", usuario.Id, usuarioSolicitanteId);
 
             return OperationResultD<bool>.Success(true, "Usuario Deshabilitado Correctamente");
         }

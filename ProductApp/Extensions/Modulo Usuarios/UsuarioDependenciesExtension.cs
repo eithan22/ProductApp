@@ -36,6 +36,7 @@ namespace ProductApp.Extensions.Modulo_Usuarios
             services.AddScoped<IUsuarioService, UsuarioService>();
             services.AddScoped<IClienteServices, ClienteServices>();
             services.AddScoped<IAuthService, AuthServices>();
+            services.AddScoped<IVerificadorSesionService, VerificadorSesionService>();
 
             // Reglas de negocio
             services.AddScoped<IValidatorBusinessUsuario, ValidatorBusinessUsuarios>();

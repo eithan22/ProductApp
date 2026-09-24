@@ -62,6 +62,11 @@ namespace ProductApp
 
             builder.Services.AddControllers(options =>
             {
+                // El orden importa: primero se comprueba que la sesión siga siendo válida
+                // (usuario activo, no eliminado y con el mismo rol que dice su token) y solo
+                // después si tiene un cambio de contraseña pendiente. No tiene sentido pedirle
+                // cambiar la contraseña a una cuenta que ya fue desactivada.
+                options.Filters.Add<VerificarSesionVigenteFilter>();
                 options.Filters.Add<RequiereCambioPasswordFilter>();
             });
             builder.Services.AddEndpointsApiExplorer();

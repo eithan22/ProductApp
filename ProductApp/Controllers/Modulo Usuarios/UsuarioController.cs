@@ -102,7 +102,8 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Disable(int id)
         {
-            var result = await _usuarioService.DisableAsync(id);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _usuarioService.DisableAsync(id, usuarioSolicitanteId);
             if (!result.IsSuccess)
             {
                 return BadRequest(ApiResponse.FailureResponse(result.Message));

@@ -18,6 +18,11 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<bool>> CambiarRol(CambiarRolDto dto, int usuarioSolicitanteId);
 
+        // Sobrecarga propia de Usuario (la firma de IBaseServices no lleva solicitante):
+        // desactivar una cuenta es una acción administrativa sensible y tiene que quedar
+        // registrada con el id de quien la ejecutó, igual que CambiarRol y ResetearPassword.
+        Task<OperationResultD<bool>> DisableAsync(int id, int usuarioSolicitanteId);
+
         Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
         Task<OperationResultD<bool>> EnableUsuario(int id);

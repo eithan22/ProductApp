@@ -11,7 +11,7 @@ namespace ProductApp.Aplication.Validators.Modulo_Configuracion
                 .GreaterThanOrEqualTo(0).WithMessage("La cantidad mínima de inventario por defecto no puede ser negativa.");
 
             RuleFor(x => x.DuracionTokenMinutos)
-                .InclusiveBetween(5, 480).WithMessage("La duración del token debe estar entre 5 y 480 minutos (8 horas).");
+                .InclusiveBetween(5, 120).WithMessage("La duración del token debe estar entre 5 y 120 minutos (2 horas).");
 
             RuleFor(x => x.NombreEmpresa)
                 .NotEmpty().WithMessage("El nombre de la empresa es requerido.")
