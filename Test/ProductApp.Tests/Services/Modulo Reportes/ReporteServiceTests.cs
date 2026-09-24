@@ -99,23 +99,26 @@ namespace ProductApp.Tests.Services.Modulo_Reportes
         {
             var (service, repo, _) = Crear();
             repo.Setup(r => r.ObtenerIngresosTotalesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .ReturnsAsync((0m, 0));
+                .ReturnsAsync((0m, 0, 0));
 
             var resultado = await service.ObtenerIngresosTotalesAsync(null, null);
 
             resultado.Data!.TicketPromedio.Should().Be(0);
         }
 
+        // M14 (auditoría de seguridad): el ticket promedio se calcula por ORDEN, no por pago —
+        // 4 pagos repartidos en solo 2 órdenes (dos abonos parciales cada una) dan un ticket
+        // promedio de 500, no de 250 como daría dividir entre la cantidad de pagos.
         [Fact]
-        public async Task ObtenerIngresosTotalesAsync_ConPagos_CalculaElTicketPromedio()
+        public async Task ObtenerIngresosTotalesAsync_ConPagosParciales_CalculaElTicketPromedioPorOrdenNoPorPago()
         {
             var (service, repo, _) = Crear();
             repo.Setup(r => r.ObtenerIngresosTotalesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .ReturnsAsync((1000m, 4));
+                .ReturnsAsync((1000m, 4, 2));
 
             var resultado = await service.ObtenerIngresosTotalesAsync(null, null);
 
-            resultado.Data!.TicketPromedio.Should().Be(250m);
+            resultado.Data!.TicketPromedio.Should().Be(500m);
         }
 
         [Fact]
@@ -185,7 +188,7 @@ namespace ProductApp.Tests.Services.Modulo_Reportes
         {
             var (service, repo, _) = Crear();
             repo.Setup(r => r.ObtenerIngresosTotalesAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .ReturnsAsync((500m, 2));
+                .ReturnsAsync((500m, 2, 2));
 
             var resultado = await service.ExportarIngresosTotalesCsvAsync(null, null);
 

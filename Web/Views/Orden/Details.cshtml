@@ -23,6 +23,12 @@
     string TextoMetodo(string valor) =>
         metodosPago.FirstOrDefault(m => m.Valor == valor).Texto ?? valor;
 
+    // "Pendiente" en Pago.EstadoPago no significa "sin confirmar": el dinero ya entró,
+    // solo indica que ese pago no saldó la orden todavía (ver M14). Mismo criterio de
+    // lenguaje que ya usa Pago/Index.cshtml, para no mostrar el enum crudo acá.
+    string TextoEstadoPago(string estado) =>
+        string.Equals(estado, "Completado", StringComparison.OrdinalIgnoreCase) ? "Saldó la orden" : "Abono registrado";
+
     var transiciones = new Dictionary<string, string[]>
     {
         ["Pendiente"] = Array.Empty<string>(),
@@ -297,7 +303,7 @@ else
                     <div class="pay-row">
                         <div>
                             <div class="m">@TextoMetodo(p.MetodoPago)</div>
-                            <div class="d">@p.FechaPago.ToString("dd/MM/yyyy HH:mm") &middot; @p.EstadoPago</div>
+                            <div class="d">@p.FechaPago.ToString("dd/MM/yyyy HH:mm") &middot; @TextoEstadoPago(p.EstadoPago)</div>
                         </div>
                         <div class="amt">@Html.Moneda(p.Monto)</div>
                     </div>

@@ -87,8 +87,8 @@ namespace ProductApp.Aplication.Services
             if (desdeResuelto > hastaResuelto)
                 return OperationResultD<IngresosTotalesDto>.Failure("La fecha 'desde' no puede ser mayor a la fecha 'hasta'");
 
-            var (total, cantidadPagos) = await _reporteRepository.ObtenerIngresosTotalesAsync(desdeResuelto, hastaResuelto);
-            var ticketPromedio = cantidadPagos > 0 ? total / cantidadPagos : 0;
+            var (total, cantidadPagos, cantidadOrdenes) = await _reporteRepository.ObtenerIngresosTotalesAsync(desdeResuelto, hastaResuelto);
+            var ticketPromedio = cantidadOrdenes > 0 ? total / cantidadOrdenes : 0;
 
             var response = _mapperReporte.MapToIngresosTotalesDto(desdeResuelto, hastaResuelto, total, cantidadPagos, ticketPromedio);
 

@@ -42,6 +42,8 @@ namespace ProductApp.Domian.Entitis
             ActualizarFechaModificacion();
         }
 
+        // Código muerto en producción (ver comentario en EstadoPago): sin pasarela de pago,
+        // nada en el sistema llama a este método hoy.
         public void MarcarComoFallido()
         {
             if (Estado != EstadoPago.Pendiente)
