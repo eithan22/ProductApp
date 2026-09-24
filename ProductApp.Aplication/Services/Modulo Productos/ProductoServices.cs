@@ -26,6 +26,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<SubirImagenProductoDto> _validatorSubirImagenProductoDto;
         private readonly IValidatorBusinessProducto _validatorBusinessProducto;
         private readonly IAlmacenamientoImagenes _almacenamientoImagenes;
+        private readonly IGestorTransacciones _gestorTransacciones;
         private readonly ILogger<ProductoServices> _logger;
 
         public ProductoServices
@@ -38,6 +39,7 @@ namespace ProductApp.Aplication.Services
             IInventarioRepository inventarioRepository,
             IConfiguracionSistemaRepository configuracionSistemaRepository,
             IAlmacenamientoImagenes almacenamientoImagenes,
+            IGestorTransacciones gestorTransacciones,
             ILogger<ProductoServices> logger
             )
         {
@@ -50,6 +52,7 @@ namespace ProductApp.Aplication.Services
             _configuracionSistemaRepository = configuracionSistemaRepository;
             _validatorSubirImagenProductoDto = validatorSubirImagenProductoDto;
             _almacenamientoImagenes = almacenamientoImagenes;
+            _gestorTransacciones = gestorTransacciones;
             _logger = logger;
 
         }
@@ -131,7 +134,8 @@ namespace ProductApp.Aplication.Services
 
          public async Task<OperationResultD<ProductoResponseDto>> CreateAsync(CreateProductoDto dto)
         {
-
+            // La validación de forma del DTO no toca la base de datos: se hace antes de abrir
+            // la transacción para no mantener bloqueos abiertos de gusto.
             var dtoValidator = await _validatorCreateProductoDto.ValidateAsync(dto);
 
             if (!dtoValidator.IsValid)
@@ -140,36 +144,61 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ProductoResponseDto>.Failure($"Error de validación: {errors}");
             }
 
+            Producto producto;
 
-            var validatorBusiness = await _validatorBusinessProducto.ValidarCreateProductoAsync(dto);
-
-            if (!validatorBusiness.IsSuccess)
+            try
             {
-                return OperationResultD<ProductoResponseDto>.Failure(validatorBusiness.Message);
+                // Un producto sin inventario no se puede vender ni ajustar: las dos filas entran
+                // juntas o no entra ninguna. Serializable, además, impide que dos peticiones
+                // simultáneas con el mismo nombre lean las dos "no existe" y creen dos productos
+                // iguales (mismo caso del saldo en PagoService.RegistrarPagoAsync).
+                await using var transaccion = await _gestorTransacciones.IniciarSerializableAsync();
+
+                // El duplicado de nombre se comprueba DENTRO de la transacción a propósito: es una
+                // lectura de la misma tabla que estamos por escribir. Cualquier return temprano de
+                // acá para abajo sale del "await using" sin commit y la transacción se revierte.
+                var validatorBusiness = await _validatorBusinessProducto.ValidarCreateProductoAsync(dto);
+
+                if (!validatorBusiness.IsSuccess)
+                {
+                    return OperationResultD<ProductoResponseDto>.Failure(validatorBusiness.Message);
+                }
+
+                producto = _mapperProductoMapper.MapToCreateProducto(dto);
+
+                await _productorepository.CreateAsync(producto);
+
+                //crear un inventario para el producto creado con cantidad actual 0 y la cantidad minima configurada por defecto
+
+                var configuracion = await _configuracionSistemaRepository.ObtenerAsync();
+
+                var inventario = new Inventario(
+                 0,
+                 configuracion?.CantidadMinimaInventarioDefecto ?? CantidadMinimaDefectoRespaldo,
+                 producto.Id
+                 );
+
+                await _inventarioRepository.CreateAsync(inventario);
+
+                await transaccion.CommitAsync();
             }
+            catch (Exception ex) when (_gestorTransacciones.EsConflictoDeConcurrencia(ex))
+            {
+                // La transacción perdedora ya fue revertida por el motor: no quedó producto sin
+                // inventario. Se responde con un mensaje de negocio, no un 500.
+                _logger.LogWarning(ex,
+                    "Conflicto de concurrencia al crear el producto {NombreProducto}. No se creó nada.",
+                    dto.Nombre);
 
-            var producto = _mapperProductoMapper.MapToCreateProducto(dto);
-
-            
-
-            await _productorepository.CreateAsync(producto);
-
-
-            //crear un inventario para el producto creado con cantidad actual 0 y la cantidad minima configurada por defecto
-
-            var configuracion = await _configuracionSistemaRepository.ObtenerAsync();
-
-            var inventario = new Inventario(
-             0,
-             configuracion?.CantidadMinimaInventarioDefecto ?? CantidadMinimaDefectoRespaldo,
-             producto.Id
-             );
-
-            await _inventarioRepository.CreateAsync(inventario);
+                return OperationResultD<ProductoResponseDto>.Failure(
+                    "El producto está siendo creado por otra operación. Verifique el listado antes de volver a intentarlo.");
+            }
 
             // Mismo criterio que el update: se recarga con Categoria, Inventario y Proveedor para
             // que la respuesta del POST traiga el stock recién creado y el nombre de la categoría,
             // en vez de los null que deja la entidad construida a mano por el mapper.
+            // La recarga va DESPUÉS del commit: es una lectura de lo ya confirmado y no tiene
+            // sentido tener bloqueos serializables abiertos para armar un DTO.
             var productoCreado = await _productorepository.GetProductoConCategoriaByIdAsync(producto.Id) ?? producto;
 
             var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(productoCreado);

@@ -58,10 +58,16 @@ namespace ProductApp.Tests.Integration
                 CrearNotificacionService(context),
                 NullLogger<OrdenServices>.Instance);
 
-        public static DetalleOrdenService CrearDetalleOrdenService(AppDbContext context)
+        // gestorTransacciones y ordenRepository son opcionales (mismo patrón que
+        // almacenamientoImagenes en CrearProductoServices): los tests de transacción pasan un
+        // espía o un repositorio que falla a propósito, el resto sigue llamando con (context).
+        public static DetalleOrdenService CrearDetalleOrdenService(
+            AppDbContext context,
+            GestorTransaccionesFake? gestorTransacciones = null,
+            IOrdenRepository? ordenRepository = null)
             => new(
                 new DetalleOrdenRepository(context),
-                new OrdenRepository(context),
+                ordenRepository ?? new OrdenRepository(context),
                 new ProductoRepository(context),
                 new OrdenDetalleMapper(),
                 new CreateDetalleOrdenValidator(),
@@ -70,7 +76,9 @@ namespace ProductApp.Tests.Integration
                     new OrdenRepository(context),
                     new DetalleOrdenRepository(context),
                     new ProductoRepository(context),
-                    new PagoRepository(context)));
+                    new PagoRepository(context)),
+                gestorTransacciones ?? new GestorTransaccionesFake(),
+                NullLogger<DetalleOrdenService>.Instance);
 
         public static PagoService CrearPagoService(AppDbContext context)
             => new(
@@ -129,10 +137,13 @@ namespace ProductApp.Tests.Integration
                 new ValidatorBusinessProveedor(new ProveedorRepository(context)));
 
         // Orden del constructor verificado contra ProductoServices.cs: inventarioRepository va
-        // 7º (después del business validator), aunque el campo se declare 2º.
+        // 7º (después del business validator), aunque el campo se declare 2º, y
+        // gestorTransacciones va 10º, entre almacenamientoImagenes y el logger.
         public static ProductoServices CrearProductoServices(
             AppDbContext context,
-            AlmacenamientoImagenesFake? almacenamientoImagenes = null)
+            AlmacenamientoImagenesFake? almacenamientoImagenes = null,
+            GestorTransaccionesFake? gestorTransacciones = null,
+            IInventarioRepository? inventarioRepository = null)
             => new(
                 new ProductoRepository(context),
                 new ProductoMapper(),
@@ -143,9 +154,10 @@ namespace ProductApp.Tests.Integration
                     new ProductoRepository(context),
                     new CategoriaRepository(context),
                     new ProveedorRepository(context)),
-                new InventarioRepository(context),
+                inventarioRepository ?? new InventarioRepository(context),
                 new ConfiguracionSistemaRepository(context),
                 almacenamientoImagenes ?? new AlmacenamientoImagenesFake(),
+                gestorTransacciones ?? new GestorTransaccionesFake(),
                 NullLogger<ProductoServices>.Instance);
 
         // Orden del constructor verificado contra UsuarioService.cs: validatorBusinessUsuarios
