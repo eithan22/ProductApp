@@ -304,19 +304,21 @@ namespace ProductApp.Tests.Services.Modulo_Notificaciones
             notificacionRepo.Verify(r => r.ObtenerRecientesPorUsuarioAsync(7, 3), Times.Once);
         }
 
-        // El servicio no valida la cantidad: un 0 o un negativo viaja tal cual al repositorio
-        // (EF lo traduce a Take(0) / excepcion segun el proveedor). Se documenta, no se corrige.
+        // El tope de 100 replica el de los listados paginados (pageSize): una cantidad fuera
+        // de rango se rechaza, no se recorta en silencio ni llega al Take() de EF.
         [Theory]
         [InlineData(0)]
         [InlineData(-5)]
-        public async Task ObtenerResumenAsync_ConCantidadNoPositiva_NoValidaYLaPasaIgual(int cantidad)
+        [InlineData(101)]
+        public async Task ObtenerResumenAsync_ConCantidadFueraDeRango_DevuelveFailureYNoConsultaElRepositorio(int cantidad)
         {
             var (service, notificacionRepo, _) = Crear();
 
             var resultado = await service.ObtenerResumenAsync(7, cantidad);
 
-            resultado.IsSuccess.Should().BeTrue();
-            notificacionRepo.Verify(r => r.ObtenerRecientesPorUsuarioAsync(7, cantidad), Times.Once);
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Be("cantidad debe estar entre 1 y 100");
+            notificacionRepo.Verify(r => r.ObtenerRecientesPorUsuarioAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         }
     }
 }

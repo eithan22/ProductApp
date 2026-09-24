@@ -140,9 +140,11 @@
 
             </nav>
 
-            <a asp-controller="Auth" asp-action="Logout" class="logout">
-                @await Html.PartialAsync("_Icon", "logout") Cerrar sesión
-            </a>
+            <form asp-controller="Auth" asp-action="Logout" method="post" class="logout-form">
+                <button type="submit" class="logout">
+                    @await Html.PartialAsync("_Icon", "logout") Cerrar sesión
+                </button>
+            </form>
 
             @* Los documentos legales tienen que ser alcanzables desde dentro de la app,
                no solo desde el pie de la landing: con sesión iniciada la landing no se ve. *@

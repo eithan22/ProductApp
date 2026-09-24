@@ -17,7 +17,9 @@ namespace ProductApp.Aplication.Services
     {
         // Tope duro del SDD 3.1: la importación corre síncrona dentro de la request porque el
         // proyecto no tiene background jobs. Por encima de esto se rechaza el archivo entero
-        // con un mensaje claro, no se trunca en silencio.
+        // con un mensaje claro, no se trunca en silencio. El tope se le pasa al lector para que
+        // corte el parseo en cuanto lo supere: antes leía el archivo completo en memoria para
+        // que el chequeo de abajo lo descartara entero.
         public const int MaximoFilasPorArchivo = 500;
 
         private const string ColumnaGeneral = "General";
@@ -68,7 +70,7 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ImportacionProductosResultadoDto>.Failure($"Error de validación: {errors}");
             }
 
-            var lectura = _lectorArchivoProductos.Leer(dto.Contenido, dto.NombreArchivo);
+            var lectura = _lectorArchivoProductos.Leer(dto.Contenido, dto.NombreArchivo, MaximoFilasPorArchivo);
 
             if (!lectura.FormatoSoportado)
                 return OperationResultD<ImportacionProductosResultadoDto>.Failure(
@@ -85,7 +87,7 @@ namespace ProductApp.Aplication.Services
 
             if (lectura.Filas.Count > MaximoFilasPorArchivo)
                 return OperationResultD<ImportacionProductosResultadoDto>.Failure(
-                    $"El archivo tiene {lectura.Filas.Count} filas y el máximo permitido es {MaximoFilasPorArchivo}. " +
+                    $"El archivo tiene más de {MaximoFilasPorArchivo} filas y ese es el máximo permitido. " +
                     "Divide el archivo en partes más pequeñas.");
 
             // Los tres catálogos se traen UNA vez y se comparan en memoria. Consultarlos por

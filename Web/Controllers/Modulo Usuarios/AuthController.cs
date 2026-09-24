@@ -50,6 +50,12 @@ namespace Web.Controllers.Modulo_Usuarios
             {
                 var result = await _authHttpServices.Login(model);
 
+                // Se descarta lo que hubiera en la sesión antes de escribir el token nuevo: si
+                // alguien logró dejar datos plantados ahí antes del login, no sobreviven al
+                // inicio de sesión. No rota el id de sesión (el middleware de ASP.NET Core no
+                // lo permite); eso queda como deuda documentada.
+                HttpContext.Session.Clear();
+
                 // Guardar el token y el rol en la sesión
                 HttpContext.Session.SetString("TOKEN", result.Token);
                 HttpContext.Session.SetString("ROL", result.Usuario.RolUsuario);
@@ -82,9 +88,13 @@ namespace Web.Controllers.Modulo_Usuarios
         }
 
 
+        // POST y con token antifalsificación: por GET, un tercero podía cerrarle la sesión a
+        // cualquiera con solo hacerle abrir un enlace a esta ruta desde otro sitio.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear(); // 🔐 elimina el token
+            HttpContext.Session.Clear(); // elimina el token
 
             return RedirectToAction("Login", "Auth");
         }

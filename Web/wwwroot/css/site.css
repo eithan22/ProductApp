@@ -155,7 +155,8 @@ h1, h2, h3, h4, h5, h6 {
   color: #8B939C;               /* 5.7:1 sobre --color-ink, cumple AA */
 }
 
-.app-sidebar a {
+.app-sidebar a,
+.app-sidebar .logout {
   color: #A9AEB5;
   display: flex;
   align-items: center;
@@ -166,7 +167,8 @@ h1, h2, h3, h4, h5, h6 {
   border-left: 3px solid transparent;
 }
 
-.app-sidebar a:hover {
+.app-sidebar a:hover,
+.app-sidebar .logout:hover {
   background: rgba(255,255,255,.04);
   color: #fff;
 }
@@ -177,9 +179,21 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(20,80,63,.25);
 }
 
-.app-sidebar .logout {
-  color: #D48A7C;
+/* "Cerrar sesión" dejó de ser un <a> y pasó a ser el botón de un <form> POST (por GET
+   se podía disparar desde otro sitio). El margin-top va en el form, que es el hijo flex
+   del sidebar; los resets dejan al botón con el mismo aspecto que un ítem de navegación. */
+.app-sidebar .logout-form {
   margin-top: auto;
+}
+
+.app-sidebar .logout {
+  width: 100%;
+  background: none;
+  border: 0;
+  border-left: 3px solid transparent;
+  font-family: inherit;
+  cursor: pointer;
+  color: #D48A7C;
 }
 
 /* ---------- Shell: contenido + topbar ---------- */
@@ -1606,6 +1620,7 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
 /* En el sidebar el anillo va por dentro para no sobresalir del panel */
 .app-sidebar a:focus-visible,
+.app-sidebar .logout:focus-visible,
 .app-sidebar .brand:focus-visible {
   outline: 2px solid #FFFFFF;
   outline-offset: -2px;
@@ -2801,7 +2816,8 @@ html:has(.landing-page) { scroll-behavior: smooth; }
   .app-sidebar .brand { padding-right: 56px; }
 
   /* objetivo táctil más holgado */
-  .app-sidebar a { padding: 12px 22px; }
+  .app-sidebar a,
+  .app-sidebar .logout { padding: 12px 22px; }
 
   /* ---------- Contenido a ancho completo ---------- */
 

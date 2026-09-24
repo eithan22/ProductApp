@@ -15,6 +15,8 @@ namespace ProductApp.Tests.Integration
         public static LectorArchivoProductosFake ConFilas(params FilaArchivoProductos[] filas)
             => new(ResultadoLecturaArchivoProductos.Leido(filas));
 
-        public ResultadoLecturaArchivoProductos Leer(Stream contenido, string nombreArchivo) => _resultado;
+        // maximoFilas se ignora: el fake inyecta el resultado ya armado, el corte real se
+        // prueba en el lector de verdad, no acá.
+        public ResultadoLecturaArchivoProductos Leer(Stream contenido, string nombreArchivo, int maximoFilas) => _resultado;
     }
 }

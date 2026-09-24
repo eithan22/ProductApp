@@ -25,12 +25,10 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
                 return OperationResult.Failure("Este Nombre ya existe.");
             }
 
-            if(await _categoriaRepository.ExisteAsync(c => c.Descripcion == dto.Descripcion))
-            {
-                return OperationResult.Failure("Esta Descripcion ya existe.");
-            }
-
-          
+            // La descripcion NO se valida como unica: dos categorias distintas pueden
+            // compartir un texto descriptivo ("Productos varios") sin que eso sea un error.
+            // El unico identificador del negocio es el Nombre, que ademas tiene indice
+            // unico filtrado en base (UX_Categorias_Nombre).
 
             return OperationResult.Success();
         }
@@ -61,10 +59,7 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
                 return OperationResult.Failure("Este Nombre ya existe.");
             }
 
-            if (await _categoriaRepository.ExisteAsync(c => c.Descripcion == dto.Descripcion && c.Id != categoria.Id))
-            {
-                return OperationResult.Failure("Esta Descripcion ya existe.");
-            }
+            // Misma razon que en el create: la descripcion puede repetirse entre categorias.
             return OperationResult.Success();
 
         }

@@ -63,8 +63,12 @@ namespace ProductApp.Aplication.Services
             var orden = _mapperOrden.MapTOCreateOrden(dto, usuarioId);
             await _ordenRepository.CreateAsync(orden);
 
-            var ordenConCliente = await _ordenRepository.GetByIdConClienteAsync(orden.Id);
-            var ordenResponse = _mapperOrden.MapToOrdenResponseDto(ordenConCliente!);
+            // Se recarga con el Cliente para que la respuesta traiga su nombre. Si la recarga
+            // no devuelve nada (la orden ya está creada, así que solo pasaría en un caso raro
+            // de carrera), se responde con la orden recién creada en vez de dejar pasar un null
+            // que reventaría en el mapper como 500. Mismo criterio que ProductoServices.CreateAsync.
+            var ordenConCliente = await _ordenRepository.GetByIdConClienteAsync(orden.Id) ?? orden;
+            var ordenResponse = _mapperOrden.MapToOrdenResponseDto(ordenConCliente);
             return OperationResultD<OrdenResponseDto>.Success(ordenResponse, "Orden creada exitosamente");
         }
 

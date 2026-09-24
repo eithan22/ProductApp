@@ -30,7 +30,11 @@ namespace ProductApp.Aplication.Mappers.Modulo_Ventas
             var response = new OrdenResponseDto
             {
                 Id = orden.Id,
-                NombreCliente = orden.Cliente.Nombre,   
+                // Con '?.' por la misma razón que ProductoMapper: todas las consultas de
+                // Orden hacen Include(Cliente), pero una orden recién construida por
+                // MapTOCreateOrden todavía no lo tiene cargado y el mapper no debe reventar
+                // por eso. Se responde sin el nombre, no con un 500.
+                NombreCliente = orden.Cliente?.Nombre ?? string.Empty,
                 Fecha = orden.Fecha,
                 Estado = orden.Estado.ToString(),
                 Total = orden.Total

@@ -71,7 +71,12 @@ namespace ProductApp.Aplication.Services
 
 
 
-        //no se usara por ahora
+        // DEUDA TÉCNICA — no exponer este método en el controller sin agregarle antes un
+        // validador de negocio. Es borrado FÍSICO y las FK Inventarios→Productos y
+        // DetalleOrden→Productos están en cascada: borrar un producto se lleva su inventario
+        // y las líneas de las órdenes donde se vendió, alterando ventas ya cerradas. Es la
+        // misma razón por la que A5 convirtió el borrado de Usuario en lógico. Hoy no es
+        // alcanzable: ProductoController solo publica DisableProducto/EnableProducto.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)

@@ -12,9 +12,25 @@ namespace ProductApp.Api.Seed
         {
             if (!await context.Usuarios.AnyAsync())
             {
-                var username = configuration["Seed:AdminUsername"]!;
-                var email = configuration["Seed:AdminEmail"]!;
-                var password = configuration["Seed:AdminPassword"]!;
+                var username = configuration["Seed:AdminUsername"];
+                var email = configuration["Seed:AdminEmail"];
+                var password = configuration["Seed:AdminPassword"];
+
+                // Mismo criterio que Jwt:Key en Program.cs: si falta un valor obligatorio se
+                // corta el arranque diciendo qué configurar y dónde. Sin esto el null viajaba
+                // hasta el constructor de Usuario o hasta BCrypt, y la app moría con una
+                // excepción que no menciona la configuración. La comprobación va acá y no en
+                // Program.cs a propósito: estas tres claves solo se necesitan la primera vez,
+                // cuando todavía no hay ningún usuario. Exigirlas en cada arranque rompería
+                // los despliegues ya sembrados.
+                if (string.IsNullOrWhiteSpace(username) ||
+                    string.IsNullOrWhiteSpace(email) ||
+                    string.IsNullOrWhiteSpace(password))
+                    throw new InvalidOperationException(
+                        "Falta configurar Seed:AdminUsername, Seed:AdminEmail y Seed:AdminPassword " +
+                        "para crear el usuario administrador inicial. En desarrollo, usa " +
+                        "dotnet user-secrets. En producción, configura las variables de entorno " +
+                        "Seed__AdminUsername, Seed__AdminEmail y Seed__AdminPassword.");
 
                 var admin = new Usuario("Administrador", email, username, RolUsuario.Administrador);
                 admin.EstablecerPasswordHash(PasswordHelper.Hash(password));

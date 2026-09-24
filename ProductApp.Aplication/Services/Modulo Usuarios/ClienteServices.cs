@@ -101,7 +101,13 @@ namespace ProductApp.Aplication.Services
         }
 
 
-        //delete fisico
+        // DEUDA TÉCNICA — no exponer este método en el controller sin agregarle antes un
+        // validador de negocio que compruebe si el cliente tiene órdenes. Lo único que valida
+        // hoy es que no sea el cliente reservado; el borrado es FÍSICO y la FK
+        // Ordenes→Clientes está en cascada, así que arrastra las órdenes del cliente, sus
+        // detalles y sus pagos: se perdería historial financiero. Es la misma razón por la
+        // que A5 convirtió el borrado de Usuario en lógico. Hoy no es alcanzable:
+        // ClienteController solo publica DisableCliente/EnableCliente.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)

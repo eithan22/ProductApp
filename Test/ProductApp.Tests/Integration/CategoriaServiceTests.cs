@@ -53,10 +53,10 @@ namespace ProductApp.Tests.Integration
             (await context.Categorias.CountAsync()).Should().Be(1);
         }
 
-        // La descripción también es única por regla de negocio, aunque nada en la UI lo
-        // sugiera: dos categorías distintas no pueden compartir texto descriptivo.
+        // B9 (auditoría de seguridad): la descripción NO se valida como única — dos
+        // categorías distintas pueden compartir texto descriptivo ("Productos varios").
         [Fact]
-        public async Task CreateAsync_ConDescripcionDuplicada_DevuelveFailure()
+        public async Task CreateAsync_ConDescripcionDuplicada_LoPermite()
         {
             using var context = IntegrationTestFactory.CrearContexto();
             await SembrarCategoriaAsync(context, "Otro nombre", "Herramientas y tornillería");
@@ -64,9 +64,8 @@ namespace ProductApp.Tests.Integration
 
             var resultado = await service.CreateAsync(CrearDto());
 
-            resultado.IsSuccess.Should().BeFalse();
-            resultado.Message.Should().Contain("Descripcion ya existe");
-            (await context.Categorias.CountAsync()).Should().Be(1);
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            (await context.Categorias.CountAsync()).Should().Be(2);
         }
 
         // Al revés que en Proveedor: la baja de Categoría es soft delete (EstaEliminado),
@@ -141,8 +140,9 @@ namespace ProductApp.Tests.Integration
             (await context.Categorias.FindAsync(pinturas.Id))!.Nombre.Should().Be("Pinturas");
         }
 
+        // B9 (auditoría de seguridad): igual que en el create, la descripción no es única.
         [Fact]
-        public async Task UpdateAsync_ConLaDescripcionDeOtraCategoria_DevuelveFailure()
+        public async Task UpdateAsync_ConLaDescripcionDeOtraCategoria_LoPermite()
         {
             using var context = IntegrationTestFactory.CrearContexto();
             await SembrarCategoriaAsync(context, "Ferretería", "Herramientas y tornillería");
@@ -156,8 +156,8 @@ namespace ProductApp.Tests.Integration
                 Descripcion = "Herramientas y tornillería"
             });
 
-            resultado.IsSuccess.Should().BeFalse();
-            resultado.Message.Should().Contain("Descripcion ya existe");
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            (await context.Categorias.FindAsync(pinturas.Id))!.Descripcion.Should().Be("Herramientas y tornillería");
         }
 
         [Fact]

@@ -111,8 +111,7 @@ namespace ProductApp.Tests.Integration
             var resultado = await service.ImportarAsync(Dto(), usuarioSolicitanteId: 1);
 
             resultado.IsSuccess.Should().BeFalse();
-            resultado.Message.Should().Contain("501");
-            resultado.Message.Should().Contain("500");
+            resultado.Message.Should().Contain("más de 500");
             (await context.Productos.CountAsync()).Should().Be(0);
         }
 

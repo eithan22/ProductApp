@@ -17,7 +17,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Importacion
 
         public const string ColumnaProveedor = "Proveedor";
 
-        public ResultadoLecturaArchivoProductos Leer(Stream contenido, string nombreArchivo)
+        public ResultadoLecturaArchivoProductos Leer(Stream contenido, string nombreArchivo, int maximoFilas)
         {
             var extension = Path.GetExtension(nombreArchivo ?? string.Empty).ToLowerInvariant();
 
@@ -29,15 +29,15 @@ namespace ProductApp.Infraesctructura.Persistencia.Importacion
 
             return extension switch
             {
-                ".xlsx" => LeerExcel(buffer),
-                ".csv" => LeerCsv(buffer),
+                ".xlsx" => LeerExcel(buffer, maximoFilas),
+                ".csv" => LeerCsv(buffer, maximoFilas),
                 _ => ResultadoLecturaArchivoProductos.FormatoNoSoportado()
             };
         }
 
         // --- .xlsx (ClosedXML) ---
 
-        private static ResultadoLecturaArchivoProductos LeerExcel(Stream contenido)
+        private static ResultadoLecturaArchivoProductos LeerExcel(Stream contenido, int maximoFilas)
         {
             using var libro = new XLWorkbook(contenido);
 
@@ -63,6 +63,11 @@ namespace ProductApp.Infraesctructura.Persistencia.Importacion
             {
                 if (fila.IsEmpty())
                     continue;
+
+                // Con una fila por encima del tope, Application ya tiene lo que necesita para
+                // rechazar el archivo. Seguir parseando el resto para tirarlo es desperdicio.
+                if (filas.Count > maximoFilas)
+                    break;
 
                 filas.Add(new FilaArchivoProductos
                 {
@@ -99,7 +104,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Importacion
 
         // --- .csv (CsvHelper) ---
 
-        private static ResultadoLecturaArchivoProductos LeerCsv(Stream contenido)
+        private static ResultadoLecturaArchivoProductos LeerCsv(Stream contenido, int maximoFilas)
         {
             // detectEncodingFromByteOrderMarks: los CSV que exporta este mismo sistema
             // (GeneradorCsv) llevan BOM UTF-8; sin esto las tildes y la 'ñ' se corromperían.
@@ -141,6 +146,11 @@ namespace ProductApp.Infraesctructura.Persistencia.Importacion
                 var registro = csv.Parser.Record;
                 if (registro == null || registro.All(string.IsNullOrWhiteSpace))
                     continue;
+
+                // Mismo corte que en .xlsx. Acá pesa más: CsvHelper lee en streaming, así que
+                // sin esto un .csv de 5 MB materializa ~100.000 filas para descartarlas enteras.
+                if (filas.Count > maximoFilas)
+                    break;
 
                 filas.Add(new FilaArchivoProductos
                 {
