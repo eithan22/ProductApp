@@ -30,7 +30,16 @@ namespace ProductApp.Extensions.Modulo_Productos
             var storageConnectionString = configuration.GetConnectionString("AzureStorage")!;
             var contenedorImagenes = configuration["AzureStorage:ContenedorImagenes"] ?? ContenedorImagenesPorDefecto;
 
-            services.AddSingleton(_ => new BlobServiceClient(storageConnectionString));
+            // Reintentos acotados: sin esto, con Azurite/Storage caído el SDK reintenta hasta 6
+            // veces con backoff exponencial (hasta ~40s) en CADA petición, porque el servicio es
+            // Singleton y su guard de "contenedor verificado" nunca queda en true si el intento
+            // falla. Con esto, un storage caído falla rápido (unos segundos) en vez de colgar la
+            // petición del usuario.
+            var opcionesBlob = new BlobClientOptions();
+            opcionesBlob.Retry.MaxRetries = 1;
+            opcionesBlob.Retry.NetworkTimeout = TimeSpan.FromSeconds(5);
+
+            services.AddSingleton(_ => new BlobServiceClient(storageConnectionString, opcionesBlob));
             services.AddSingleton<IAlmacenamientoImagenes>(sp =>
                 new AlmacenamientoImagenesBlob(sp.GetRequiredService<BlobServiceClient>(), contenedorImagenes));
 

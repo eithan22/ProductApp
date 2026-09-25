@@ -90,11 +90,21 @@ namespace ProductApp.Aplication.Services
             if (orden.Estado != EstadoOrden.Pagada && orden.Estado != EstadoOrden.Entregada)
                 return OperationResultD<byte[]>.Failure("La factura solo está disponible para órdenes pagadas");
 
-            var contenido = await _almacenamientoFacturas.DescargarAsync(NombreBlob(ordenId));
-            if (contenido == null || contenido.Length == 0)
-                return OperationResultD<byte[]>.Failure("Esta orden no tiene una factura generada");
+            try
+            {
+                var contenido = await _almacenamientoFacturas.DescargarAsync(NombreBlob(ordenId));
+                if (contenido == null || contenido.Length == 0)
+                    return OperationResultD<byte[]>.Failure("Esta orden no tiene una factura generada");
 
-            return OperationResultD<byte[]>.Success(contenido, "Factura obtenida exitosamente");
+                return OperationResultD<byte[]>.Success(contenido, "Factura obtenida exitosamente");
+            }
+            catch (Exception ex)
+            {
+                // Mismo criterio que GenerarYAlmacenarAsync: un fallo de storage no debe salir
+                // como 500 genérico, sino como un mensaje de negocio claro.
+                _logger.LogError(ex, "No se pudo descargar la factura PDF de la orden {OrdenId}", ordenId);
+                return OperationResultD<byte[]>.Failure("No se pudo obtener la factura de esta orden. Intente nuevamente en unos minutos.");
+            }
         }
     }
 }
