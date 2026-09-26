@@ -59,6 +59,14 @@ namespace Web.Services.Mappers.Modulo_Usuarios
             };
         }
 
+        public static AceptarDocumentosLegalesDto MapAceptarDocumentosLegalesDto(AceptarDocumentosLegalesModel model)
+        {
+            return new AceptarDocumentosLegalesDto
+            {
+                Version = model.Version
+            };
+        }
+
         public static ActualizarMiPerfilDto MapMiPerfilDto(UsuarioModel model)
         {
             return new ActualizarMiPerfilDto

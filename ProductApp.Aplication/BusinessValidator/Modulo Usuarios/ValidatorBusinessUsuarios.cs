@@ -4,6 +4,7 @@ using ProductApp.Aplication.Helper;
 using ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario;
 using ProductApp.Aplication.Result.OperationResult;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
+using ProductApp.Domian.Common.Legal;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 
@@ -118,6 +119,19 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             }
 
             return OperationResult.Success("Usuario encontrado para cambiar rol.");
+        }
+
+        // La única regla de la aceptación: lo que el usuario dice haber aceptado tiene que ser
+        // la versión que hoy rige. Si no coincide, leyó un texto que ya no es el vigente (la
+        // pantalla quedó abierta durante un despliegue) y esa aceptación no probaría nada.
+        // Task.FromResult en vez de async sin await: no hay nada que esperar acá.
+        public Task<OperationResult> ValidarAceptacionDocumentosLegales(AceptarDocumentosLegalesDto dto)
+        {
+            if (!string.Equals(dto.Version, DocumentosLegales.VersionVigente, StringComparison.Ordinal))
+                return Task.FromResult(OperationResult.Failure(
+                    "Los documentos legales cambiaron mientras los leías. Recargá la página y volvé a revisarlos."));
+
+            return Task.FromResult(OperationResult.Success());
         }
 
         // El sistema siempre debe conservar al menos un administrador activo: si se queda sin

@@ -174,9 +174,13 @@ namespace ProductApp.Tests.Integration
                 new ResetearPasswordUsuarioValidator(),
                 new CambiarRolUsuarioValidator(),
                 new ActualizarMiPerfilValidator(),
+                new AceptarDocumentosLegalesValidator(),
                 NullLogger<UsuarioService>.Instance);
 
         public static VerificadorSesionService CrearVerificadorSesionService(AppDbContext context)
+            => new(new UsuarioRepository(context));
+
+        public static VerificadorAceptacionDocumentosLegalesService CrearVerificadorAceptacionDocumentosLegalesService(AppDbContext context)
             => new(new UsuarioRepository(context));
 
         public static ImportacionProductosService CrearImportacionProductosService(

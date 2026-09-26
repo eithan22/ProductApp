@@ -93,6 +93,11 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             {
                 Token = tokenString,
                 DebeCambiarPassword = usuario.DebeCambiarPassword,
+                // No hay claim equivalente en el token a propósito: la aceptación se verifica
+                // contra la base en cada petición, así que un claim quedaría obsoleto en cuanto
+                // el usuario aceptara y obligaría a cerrarle la sesión. Este flag existe solo
+                // para que la capa Web sepa a qué pantalla mandarlo justo después del login.
+                DebeAceptarDocumentosLegales = usuario.DebeAceptarDocumentosLegales,
                 Usuario = _mapperUsuario.ToDto(usuario)
             }, "Login exitoso");
         }

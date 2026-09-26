@@ -10,6 +10,7 @@ using ProductApp.Aplication.Services.Modulo_Usuarios;
 using ProductApp.Aplication.Validators.Modulo_Usuario.AuthValidator;
 using ProductApp.Domian.Common.Base;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
+using ProductApp.Domian.Common.Legal;
 using ProductApp.Domian.Entitis;
 using ProductApp.Domian.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
@@ -70,12 +71,16 @@ namespace ProductApp.Tests.Services.Modulo_Usuarios
             int id = 7,
             string username = "ana.torres",
             RolUsuario rol = RolUsuario.Administrador,
-            bool debeCambiarPassword = false)
+            bool debeCambiarPassword = false,
+            string? versionDocumentosLegalesAceptada = null)
         {
             var usuario = new Usuario("Ana Torres", "ana@productapp.com", username, rol);
 
             if (debeCambiarPassword)
                 usuario.MarcarPasswordComoTemporal();
+
+            if (versionDocumentosLegalesAceptada != null)
+                usuario.RegistrarAceptacionDocumentosLegales(versionDocumentosLegalesAceptada);
 
             // El Id lo asigna la base de datos; en un test unitario hay que forzarlo para poder
             // afirmar sobre el claim NameIdentifier. La propiedad se declara en BaseEntity, asi
@@ -132,6 +137,49 @@ namespace ProductApp.Tests.Services.Modulo_Usuarios
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             resultado.Data!.DebeCambiarPassword.Should().BeFalse();
+        }
+
+        // El flag existe solo para que la capa Web sepa si tiene que intercalar la pantalla de
+        // aceptación justo después del login.
+        [Fact]
+        public async Task Login_ConUsuarioQueNoAceptoLosDocumentosLegales_DevuelveDebeAceptarEnTrue()
+        {
+            var (service, usuarioRepo, _, _) = Crear();
+            DevolverUsuario(usuarioRepo, CrearUsuario());
+
+            var resultado = await service.Login(CrearDto());
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            resultado.Data!.DebeAceptarDocumentosLegales.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task Login_ConUsuarioQueYaAceptoLaVersionVigente_DevuelveDebeAceptarEnFalse()
+        {
+            var (service, usuarioRepo, _, _) = Crear();
+            DevolverUsuario(usuarioRepo, CrearUsuario(
+                versionDocumentosLegalesAceptada: DocumentosLegales.VersionVigente));
+
+            var resultado = await service.Login(CrearDto());
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            resultado.Data!.DebeAceptarDocumentosLegales.Should().BeFalse();
+        }
+
+        // Decisión explícita, no olvido: la aceptación NO viaja como claim porque el estado cambia
+        // dentro de la sesión y un claim obligaría a cerrarla para refrescarlo. El gate de la API
+        // consulta la base. Si alguien agrega el claim, este test lo avisa.
+        [Fact]
+        public async Task Login_NoIncluyeLaAceptacionDeDocumentosLegalesComoClaim()
+        {
+            var (service, usuarioRepo, _, _) = Crear();
+            DevolverUsuario(usuarioRepo, CrearUsuario());
+
+            var resultado = await service.Login(CrearDto());
+
+            var token = Leer(resultado.Data!.Token);
+
+            token.Claims.Should().NotContain(c => c.Type == "DebeAceptarDocumentosLegales");
         }
 
         [Fact]

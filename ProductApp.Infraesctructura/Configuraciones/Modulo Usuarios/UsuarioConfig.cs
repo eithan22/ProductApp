@@ -22,7 +22,15 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
 
             builder.Property(u => u.FechaNacimiento);
 
+            builder.Property(u => u.VersionDocumentosLegalesAceptada)
+                .HasMaxLength(Usuario.LargoMaximoVersionDocumentosLegales);
+
+            builder.Property(u => u.FechaAceptacionDocumentosLegales);
+
             builder.Ignore(u => u.Edad);
+
+            // Calculada contra una constante del código, igual que Edad: no es una columna.
+            builder.Ignore(u => u.DebeAceptarDocumentosLegales);
 
             builder.Property(u => u.Email)
                 .IsRequired()

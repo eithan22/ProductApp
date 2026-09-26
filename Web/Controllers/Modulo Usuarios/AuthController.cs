@@ -72,6 +72,20 @@ namespace Web.Controllers.Modulo_Usuarios
                     // La configuración es informativa; si falla, seguimos con los valores por defecto.
                 }
 
+                // El orden es el mismo que el de los filtros de la API y no es intercambiable: si
+                // se mandara primero a cambiar la contraseña, ese POST volvería con 403 pidiendo
+                // aceptar los documentos.
+                if (result.DebeAceptarDocumentosLegales)
+                {
+                    // Un usuario nuevo tiene las dos cosas pendientes. Se anota acá porque después
+                    // de aceptar la Web no tiene otra forma de saberlo: MiPerfil no expone la
+                    // bandera y el token no se vuelve a emitir.
+                    HttpContext.Session.SetString("DEBE_CAMBIAR_PASSWORD", result.DebeCambiarPassword.ToString());
+
+                    TempData["Aviso"] = "Antes de continuar, revisá y aceptá los Términos de Servicio y la Política de Privacidad.";
+                    return RedirectToAction("AceptarDocumentosLegales", "Usuario");
+                }
+
                 if (result.DebeCambiarPassword)
                 {
                     TempData["Aviso"] = "Debes cambiar tu contraseña antes de continuar.";

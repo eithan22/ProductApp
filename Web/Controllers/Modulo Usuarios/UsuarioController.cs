@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
+using ProductApp.Domian.Common.Legal;
 using Web.Models.Modelo_Usuarios.UsuarioModels;
+using Web.Services.Interfaces.ServicesHttp.Modulo_Configuracion;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Usuarios;
 
 namespace Web.Controllers.Modulo_Usuarios
@@ -11,10 +13,15 @@ namespace Web.Controllers.Modulo_Usuarios
     public class UsuarioController : Controller
     {
         private readonly IUsuarioHttpServices _usuarioHttpServices;
+        private readonly IConfiguracionHttpServices _configuracionHttpServices;
 
-        public UsuarioController(IUsuarioHttpServices usuarioHttpServices)
+        // IConfiguracionHttpServices entra solo por el POST de aceptación: ver el comentario ahí.
+        public UsuarioController(
+            IUsuarioHttpServices usuarioHttpServices,
+            IConfiguracionHttpServices configuracionHttpServices)
         {
             _usuarioHttpServices = usuarioHttpServices;
+            _configuracionHttpServices = configuracionHttpServices;
         }
 
         // GET: UsuarioControlle
@@ -284,6 +291,67 @@ namespace Web.Controllers.Modulo_Usuarios
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+
+        // GET: UsuarioController/AceptarDocumentosLegales
+        // Mismo lugar del flujo que CambiarPassword: la pantalla que el login intercala antes de
+        // dejar entrar. No llama a la API (el texto de los documentos es estático), así que no
+        // puede entrar en bucle con HandleApiErrorsFilter.
+        public ActionResult AceptarDocumentosLegales()
+        {
+            return View(new AceptarDocumentosLegalesModel { Version = DocumentosLegales.VersionVigente });
+        }
+
+        // POST: UsuarioController/AceptarDocumentosLegales
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AceptarDocumentosLegales(AceptarDocumentosLegalesModel model)
+        {
+            if (!model.Acepto)
+            {
+                ModelState.AddModelError(nameof(model.Acepto), "Tenés que marcar la casilla para poder continuar.");
+                model.Version = DocumentosLegales.VersionVigente;
+                return View(model);
+            }
+
+            try
+            {
+                await _usuarioHttpServices.AceptarDocumentosLegalesAsync(model);
+
+                // La sesión NO se cierra, a diferencia del cambio de contraseña: el token sigue
+                // siendo válido porque la API verifica la aceptación contra la base, no contra un
+                // claim. Lo único que hay que rehacer es la configuración: el login la pidió con
+                // la aceptación todavía pendiente y la API la rechazó con 403, así que empresa y
+                // moneda quedaron sin cargar en sesión.
+                try
+                {
+                    var configuracion = await _configuracionHttpServices.ObtenerAsync();
+                    HttpContext.Session.SetString("EMPRESA", configuracion.NombreEmpresa);
+                    HttpContext.Session.SetString("MONEDA", configuracion.Moneda);
+                }
+                catch
+                {
+                    // Igual que en el login: la configuración es informativa.
+                }
+
+                bool.TryParse(HttpContext.Session.GetString("DEBE_CAMBIAR_PASSWORD"), out var debeCambiarPassword);
+                HttpContext.Session.Remove("DEBE_CAMBIAR_PASSWORD");
+
+                if (debeCambiarPassword)
+                {
+                    TempData["Aviso"] = "Gracias. Ahora cambiá tu contraseña temporal.";
+                    return RedirectToAction(nameof(CambiarPassword));
+                }
+
+                TempData["Mensaje"] = "Aceptaste los Términos de Servicio y la Política de Privacidad.";
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", MensajeAmigable(ex));
+                model.Version = DocumentosLegales.VersionVigente;
                 return View(model);
             }
         }

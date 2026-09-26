@@ -25,6 +25,9 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         // cuenta ya desactivada, VerificarSesionVigenteFilter lo cortaría con 401 antes de
         // llegar acá, impidiendo el nuevo login. El propio login no necesita esa verificación.
         [PermitirSinVerificarEstado]
+        // Mismo motivo que el atributo de arriba: un token viejo con la aceptación pendiente no
+        // debe impedir un login nuevo.
+        [PermitirSinAceptarDocumentosLegales]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var result = await _authService.Login(dto);

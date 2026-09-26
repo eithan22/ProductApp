@@ -23,6 +23,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<ResetearPasswordDto> _resetPasswordValidator;
         private readonly IValidator<CambiarRolDto> _cambiarRolValidator;
         private readonly IValidator<ActualizarMiPerfilDto> _actualizarMiPerfilValidator;
+        private readonly IValidator<AceptarDocumentosLegalesDto> _aceptarDocumentosLegalesValidator;
         private readonly IValidatorBusinessUsuario _validatorBusinessUsuarios;
         private readonly ILogger<UsuarioService> _logger;
 
@@ -36,6 +37,7 @@ namespace ProductApp.Aplication.Services
             IValidator<ResetearPasswordDto> resetPasswordValidator,
             IValidator<CambiarRolDto> cambiarRolValidator,
             IValidator<ActualizarMiPerfilDto> actualizarMiPerfilValidator,
+            IValidator<AceptarDocumentosLegalesDto> aceptarDocumentosLegalesValidator,
             ILogger<UsuarioService> logger)
         {
             _usuarioRepository = usuarioRepository;
@@ -47,6 +49,7 @@ namespace ProductApp.Aplication.Services
             _resetPasswordValidator = resetPasswordValidator;
             _cambiarRolValidator = cambiarRolValidator;
             _actualizarMiPerfilValidator = actualizarMiPerfilValidator;
+            _aceptarDocumentosLegalesValidator = aceptarDocumentosLegalesValidator;
             _logger = logger;
         }
 
@@ -312,6 +315,35 @@ namespace ProductApp.Aplication.Services
 
             var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
             return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto, "Perfil actualizado correctamente");
+        }
+
+        public async Task<OperationResultD<bool>> RegistrarAceptacionDocumentosLegalesAsync(int usuarioId, AceptarDocumentosLegalesDto dto)
+        {
+            var validationResult = await _aceptarDocumentosLegalesValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<bool>.Failure($"Validación fallida: {errors}");
+            }
+
+            var usuario = await _usuarioRepository.GetByIdAsync(usuarioId);
+            if (usuario == null)
+                return OperationResultD<bool>.Failure("Usuario no encontrado");
+
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarAceptacionDocumentosLegales(dto);
+            if (!validatorBusinessResult.IsSuccess)
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+
+            usuario.RegistrarAceptacionDocumentosLegales(dto.Version);
+            await _usuarioRepository.UpdateAsync(usuario);
+
+            // Auditoría: junto con las dos columnas, es el único rastro del acto. Mismo criterio
+            // que el reseteo de contraseña y el cambio de rol.
+            _logger.LogInformation(
+                "Aceptación de documentos legales registrada para el usuario {UsuarioId}: versión {Version} el {FechaAceptacion}",
+                usuario.Id, usuario.VersionDocumentosLegalesAceptada, usuario.FechaAceptacionDocumentosLegales);
+
+            return OperationResultD<bool>.Success(true, "Documentos legales aceptados correctamente");
         }
     }
 }

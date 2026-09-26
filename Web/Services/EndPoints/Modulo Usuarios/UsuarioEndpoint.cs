@@ -23,5 +23,7 @@ namespace Web.Services.EndPoints.Modulo_Usuarios
         public string ResetPassword => "Usuario/ResetearPassword";
 
         public string MiPerfil => "Usuario/MiPerfil";
+
+        public string AceptarDocumentosLegales => "Usuario/AceptarDocumentosLegales";
     }
 }

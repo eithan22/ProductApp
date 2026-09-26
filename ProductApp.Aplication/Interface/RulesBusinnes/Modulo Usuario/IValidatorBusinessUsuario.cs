@@ -21,5 +21,7 @@ namespace ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario
 
         Task<OperationResult> ValidarCambiarRol (CambiarRolDto dto);
 
+        Task<OperationResult> ValidarAceptacionDocumentosLegales(AceptarDocumentosLegalesDto dto);
+
     }
 }

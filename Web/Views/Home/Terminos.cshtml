@@ -1,4 +1,5 @@
 @using Microsoft.AspNetCore.Http
+@using ProductApp.Domian.Common.Legal
 
 @{
     ViewData["Title"] = "Términos de Servicio";
@@ -37,7 +38,7 @@
         <h1 class="legal-title">Términos de Servicio</h1>
     }
 
-    <p class="legal-meta">Versión 2.1 &middot; Última actualización: 25 de septiembre de 2026</p>
+    <p class="legal-meta">Versión @DocumentosLegales.VersionVigente &middot; Última actualización: @DocumentosLegales.FechaUltimaActualizacion</p>
 
     <article class="surface-card legal-doc">
 
@@ -86,10 +87,14 @@
         <h2>2. Aceptación</h2>
         <p>
             Estos términos rigen desde que el Cliente acepta la Orden de Servicio o comienza a usar
-            la Instancia, lo que ocurra primero. Los Usuarios Autorizados los aceptan al iniciar
-            sesión. No hay registro público: las cuentas las crea un administrador del Cliente. La
-            contratación por medios electrónicos es válida conforme a la Ley No. 126-02 sobre
-            Comercio Electrónico, Documentos y Firmas Digitales.
+            la Instancia, lo que ocurra primero. Los Usuarios Autorizados los aceptan de forma
+            expresa la primera vez que inician sesión: el sistema les presenta estos términos y la
+            Política de Privacidad, y no les da acceso hasta que marquen la casilla de aceptación.
+            El sistema registra la versión aceptada junto con la fecha y la hora, y vuelve a pedir
+            la aceptación cada vez que se publica una versión nueva. No hay registro público: las
+            cuentas las crea un administrador del Cliente. La contratación por medios electrónicos
+            es válida conforme a la Ley No. 126-02 sobre Comercio Electrónico, Documentos y Firmas
+            Digitales.
         </p>
 
         <h2>3. Qué incluye el servicio</h2>

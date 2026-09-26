@@ -19,5 +19,6 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Usuarios
         Task<bool> ResetPasswordAsync(ResetearPasswordModel model);
         Task<UsuarioModel> ObtenerMiPerfilAsync();
         Task<UsuarioModel> ActualizarMiPerfilAsync(UsuarioModel model);
+        Task<bool> AceptarDocumentosLegalesAsync(AceptarDocumentosLegalesModel model);
     }
 }

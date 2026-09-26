@@ -62,11 +62,15 @@ namespace ProductApp
 
             builder.Services.AddControllers(options =>
             {
-                // El orden importa: primero se comprueba que la sesión siga siendo válida
-                // (usuario activo, no eliminado y con el mismo rol que dice su token) y solo
-                // después si tiene un cambio de contraseña pendiente. No tiene sentido pedirle
-                // cambiar la contraseña a una cuenta que ya fue desactivada.
+                // El orden importa y va de lo más fundamental a lo más específico:
+                //   1. ¿La cuenta sigue existiendo y siendo la que dice el token? (401)
+                //   2. ¿Aceptó el contrato que rige el uso del sistema? (403)
+                //   3. ¿Su credencial es propia y no la temporal que le dio el administrador? (403)
+                // No tiene sentido pedirle nada a una cuenta ya desactivada, y no tiene sentido
+                // dejar que una cuenta opere —ni que cambie su propia contraseña— antes de aceptar
+                // los términos: es justo lo que la aceptación tiene que preceder.
                 options.Filters.Add<VerificarSesionVigenteFilter>();
+                options.Filters.Add<RequiereAceptacionDocumentosLegalesFilter>();
                 options.Filters.Add<RequiereCambioPasswordFilter>();
             });
             builder.Services.AddEndpointsApiExplorer();

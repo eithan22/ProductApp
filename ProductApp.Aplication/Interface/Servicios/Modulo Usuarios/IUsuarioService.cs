@@ -30,5 +30,8 @@ namespace ProductApp.Aplication.Interface
         Task<OperationResultD<UsuarioResponseDto>> ObtenerMiPerfilAsync(int usuarioId);
 
         Task<OperationResultD<UsuarioResponseDto>> ActualizarMiPerfilAsync(int usuarioId, ActualizarMiPerfilDto dto);
+
+        // El id sale del token, igual que en MiPerfil: nadie acepta en nombre de otro.
+        Task<OperationResultD<bool>> RegistrarAceptacionDocumentosLegalesAsync(int usuarioId, AceptarDocumentosLegalesDto dto);
     }
 }
