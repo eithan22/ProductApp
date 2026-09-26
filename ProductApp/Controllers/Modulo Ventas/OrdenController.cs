@@ -178,6 +178,22 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
             return File(result.Data!, "application/pdf", $"factura-orden-{id}.pdf");
         }
 
+        // Borra la factura PDF archivada de una orden. Existe para cumplir la promesa de la
+        // Política de Privacidad: un cliente puede solicitar la eliminación de su factura y el
+        // Administrador la ejecuta manualmente. Sin pantalla en la Web todavía, solo Api.
+
+        [Authorize(Roles = "Administrador")]
+        [HttpDelete("DeleteFactura/{id}")]
+        public async Task<IActionResult> DeleteFactura(int id)
+        {
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _facturaPdfService.EliminarAsync(id, usuarioSolicitanteId);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponse.SuccessResponse(result.Message));
+        }
+
         private bool TryParseEstadoFiltro(string? estado, out EstadoOrden? estadoFiltro, out IActionResult? error)
         {
             estadoFiltro = null;

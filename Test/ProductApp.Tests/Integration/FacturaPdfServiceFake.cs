@@ -13,5 +13,8 @@ namespace ProductApp.Tests.Integration
 
         public Task<OperationResultD<byte[]>> ObtenerAsync(int ordenId)
             => Task.FromResult(OperationResultD<byte[]>.Failure("Fake: sin factura generada"));
+
+        public Task<OperationResult> EliminarAsync(int ordenId, int usuarioSolicitanteId)
+            => Task.FromResult(OperationResult.Success("Factura eliminada exitosamente"));
     }
 }

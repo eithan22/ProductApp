@@ -8,5 +8,10 @@ namespace ProductApp.Domian.Interfaces
         Task<string> SubirAsync(byte[] contenido, string nombreBlob, CancellationToken cancellationToken = default);
 
         Task<byte[]?> DescargarAsync(string nombreBlob, CancellationToken cancellationToken = default);
+
+        // Existe para poder cumplir la promesa de la Política de Privacidad: el cliente puede
+        // pedir que se borre la factura de una orden. Es idempotente: borrar una factura que ya
+        // no está no es un error.
+        Task EliminarAsync(string nombreBlob, CancellationToken cancellationToken = default);
     }
 }

@@ -254,5 +254,58 @@ namespace ProductApp.Tests.Services.Modulo_Ventas
             resultado.IsSuccess.Should().BeFalse();
             resultado.Message.Should().Contain("no tiene una factura generada");
         }
+
+        [Fact]
+        public async Task EliminarAsync_OrdenInexistente_DevuelveFailureYNoTocaElStorage()
+        {
+            var (service, ordenRepo, _, _, _, _, almacenamiento) = Crear();
+            ordenRepo.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Orden?)null);
+
+            var resultado = await service.EliminarAsync(7, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Be("Orden no encontrada");
+            almacenamiento.Verify(a => a.EliminarAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task EliminarAsync_OrdenExistente_BorraElBlobDeEsaOrden()
+        {
+            var (service, ordenRepo, _, _, _, _, almacenamiento) = Crear();
+            ordenRepo.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(OrdenPagada());
+
+            var resultado = await service.EliminarAsync(7, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            almacenamiento.Verify(a => a.EliminarAsync("orden-7.pdf", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        // El borrado no filtra por estado a propósito: si el cliente pide que se elimine su
+        // factura, hay que poder borrarla sea cual sea el estado actual de la orden.
+        [Fact]
+        public async Task EliminarAsync_OrdenNoPagada_TambienBorraLaFactura()
+        {
+            var (service, ordenRepo, _, _, _, _, almacenamiento) = Crear();
+            ordenRepo.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(new Orden(clienteId: 1, usuarioId: 1));
+
+            var resultado = await service.EliminarAsync(7, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            almacenamiento.Verify(a => a.EliminarAsync("orden-7.pdf", It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task EliminarAsync_SiElStorageLanza_DevuelveFailureSinPropagar()
+        {
+            var (service, ordenRepo, _, _, _, _, almacenamiento) = Crear();
+            ordenRepo.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(OrdenPagada());
+            almacenamiento.Setup(a => a.EliminarAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("azurite caído"));
+
+            var resultado = await service.EliminarAsync(7, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("No se pudo eliminar la factura");
+        }
     }
 }

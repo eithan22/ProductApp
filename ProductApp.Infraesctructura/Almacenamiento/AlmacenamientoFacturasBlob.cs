@@ -1,3 +1,4 @@
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using ProductApp.Domian.Interfaces;
@@ -49,6 +50,24 @@ namespace ProductApp.Infraesctructura.Persistencia.Almacenamiento
             await blob.DownloadToAsync(memoria, cancellationToken);
 
             return memoria.ToArray();
+        }
+
+        public async Task EliminarAsync(string nombreBlob, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(nombreBlob))
+                return;
+
+            // A propósito no se llama a AsegurarContenedorAsync: crear el contenedor solo para
+            // borrar dentro de él no tiene sentido. Si el contenedor todavía no existe, no hay
+            // ninguna factura que borrar y la operación ya está cumplida.
+            try
+            {
+                await _contenedor.DeleteBlobIfExistsAsync(nombreBlob, cancellationToken: cancellationToken);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.ContainerNotFound)
+            {
+                // Contenedor inexistente: mismo caso que blob inexistente, borrar es idempotente.
+            }
         }
 
         private async Task AsegurarContenedorAsync(CancellationToken cancellationToken)

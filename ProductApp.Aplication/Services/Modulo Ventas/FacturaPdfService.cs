@@ -106,5 +106,34 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<byte[]>.Failure("No se pudo obtener la factura de esta orden. Intente nuevamente en unos minutos.");
             }
         }
+
+        public async Task<OperationResult> EliminarAsync(int ordenId, int usuarioSolicitanteId)
+        {
+            var orden = await _ordenRepository.GetByIdAsync(ordenId);
+            if (orden == null)
+                return OperationResult.Failure("Orden no encontrada");
+
+            // No se filtra por estado a propósito: si el cliente pide que se borre su factura, hay
+            // que poder borrarla sea cual sea el estado actual de la orden. La orden en sí no se
+            // toca, solo el PDF archivado; ObtenerAsync seguirá respondiendo con gracia
+            // ("Esta orden no tiene una factura generada") después del borrado.
+            try
+            {
+                await _almacenamientoFacturas.EliminarAsync(NombreBlob(ordenId));
+
+                _logger.LogInformation(
+                    "Factura PDF eliminada para la orden {OrdenId}, por el usuario {UsuarioSolicitanteId}",
+                    ordenId, usuarioSolicitanteId);
+
+                return OperationResult.Success("Factura eliminada exitosamente");
+            }
+            catch (Exception ex)
+            {
+                // Mismo criterio que los otros dos métodos: un fallo de storage sale como mensaje
+                // de negocio, no como 500 genérico.
+                _logger.LogError(ex, "No se pudo eliminar la factura PDF de la orden {OrdenId}", ordenId);
+                return OperationResult.Failure("No se pudo eliminar la factura de esta orden. Intente nuevamente en unos minutos.");
+            }
+        }
     }
 }
