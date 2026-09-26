@@ -68,6 +68,13 @@ namespace ProductApp.Infraesctructura.Persistencia.Facturacion
                             row.ConstantItem(150).Column(datos =>
                             {
                                 datos.Item().AlignRight().Text("FACTURA").FontSize(16).SemiBold();
+
+                                // Aclaración pegada al título, en el mismo término que usan los
+                                // Términos de Servicio (sección 12): quien recibe este papel en el
+                                // punto de venta no los lee. El descargo completo va en el footer.
+                                datos.Item().AlignRight().Text("Comprobante interno de venta")
+                                    .FontSize(8).FontColor(Colors.Grey.Darken1);
+
                                 datos.Item().AlignRight().Text($"Orden #{orden.Id}").FontSize(9);
                                 datos.Item().AlignRight()
                                     .Text($"Fecha: {fechaEmision.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)}")
@@ -132,7 +139,21 @@ namespace ProductApp.Infraesctructura.Persistencia.Facturacion
                     page.Footer().Column(footer =>
                     {
                         footer.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
-                        footer.Item().PaddingTop(5).Row(row =>
+
+                        // Descargo fiscal. El sistema no emite NCF ni e-CF, no está acreditado como
+                        // emisor electrónico y no calcula ITBIS (ver Términos de Servicio, secc. 12);
+                        // la Ley No. 32-23 hace obligatorio el e-CF para este segmento desde el
+                        // 15/11/2026. Va en el footer y no en el contenido para que se repita en
+                        // todas las páginas del documento, no solo en la última.
+                        footer.Item().PaddingTop(5).Text(texto =>
+                        {
+                            texto.Span("Este documento es un comprobante interno de venta. ")
+                                 .FontSize(8).SemiBold().FontColor(Colors.Grey.Darken1);
+                            texto.Span("No constituye un Comprobante Fiscal Electrónico (e-CF) ni un Número de Comprobante Fiscal (NCF) válido ante la DGII, y no incluye ITBIS ni retenciones.")
+                                 .FontSize(8).FontColor(Colors.Grey.Darken1);
+                        });
+
+                        footer.Item().PaddingTop(3).Row(row =>
                         {
                             row.RelativeItem()
                                 .Text($"Orden #{orden.Id} · {fechaEmision.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)} UTC")
