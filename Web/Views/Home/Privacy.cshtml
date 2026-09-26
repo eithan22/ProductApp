@@ -385,22 +385,22 @@
                 exista en el sistema. No hay borrado automático por antigüedad.
             </li>
             <li>
-                Eliminar un cliente, un usuario o un proveedor desde la aplicación ejecuta un
-                <strong>borrado real en la base de datos</strong>, no una marca de
-                &laquo;eliminado&raquo;: el registro deja de existir.
+                <strong>Eliminar un cliente o un proveedor</strong> no existe como función en la
+                aplicación: solo se puede <strong>desactivar</strong>. El registro permanece en el
+                sistema, marcado como inactivo, junto con todo su historial.
             </li>
             <li>
-                <strong>Atención, porque tiene consecuencias:</strong> al eliminar un cliente, la
-                base de datos elimina también en cascada sus órdenes, y con ellas el detalle y los
-                pagos de esas órdenes. Si lo que se quiere es dejar de operar con esa persona sin
-                perder el historial de ventas, corresponde <strong>desactivarla</strong>, no
-                eliminarla.
+                <strong>Eliminar un usuario</strong> tampoco borra la fila: es un borrado
+                lógico&mdash;se marca como eliminado y conserva intacto su historial de ventas y
+                pagos. Es intencional: un borrado físico arrastraría en cascada las órdenes, los
+                detalles y los pagos de ese vendedor.
             </li>
             <li>El cliente reservado &laquo;Consumidor Final&raquo; no se puede eliminar.</li>
             <li>Las imágenes de producto se eliminan del almacenamiento cuando se elimina el producto.</li>
             <li>
-                <strong>Las facturas en PDF ya generadas no se eliminan desde la aplicación</strong>
-                (ver sección 12): existe un procedimiento manual para hacerlo.
+                <strong>Las facturas en PDF ya generadas se pueden eliminar de forma manual</strong>
+                (ver sección 12): hoy es una operación exclusiva del Administrador, sin pantalla
+                propia en la aplicación.
             </li>
             <li>
                 <strong>Al terminar la suscripción</strong>: el negocio dispone de 30 días
@@ -446,12 +446,6 @@
                 <strong>dentro de los 10 días hábiles</strong> y confirma por escrito que se
                 eliminó. Agregar una pantalla para hacerlo desde la aplicación es parte del plan
                 de trabajo del producto.
-            </li>
-            <li>
-                <strong>El borrado en cascada de las órdenes al eliminar un cliente</strong> es un
-                comportamiento de la base de datos actual. Se documenta acá para que nadie lo
-                descubra después de perder un historial, y está previsto reemplazarlo por una
-                restricción que obligue a elegir entre desactivar o eliminar conscientemente.
             </li>
             <li>
                 <strong>No existe todavía un registro de auditoría consultable desde la
