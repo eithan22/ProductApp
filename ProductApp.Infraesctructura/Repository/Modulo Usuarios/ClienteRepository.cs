@@ -25,7 +25,12 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
 
             var totalCount = await query.CountAsync();
 
+            // Sin OrderBy, SQL Server no garantiza el orden entre páginas: un cliente
+            // podía repetirse o desaparecer al paginar. El reservado va siempre primero
+            // para que quede visible en la página 1 del listado.
             var items = await query
+                .OrderByDescending(c => c.Cedula == Cliente.CedulaConsumidorFinal)
+                .ThenBy(c => c.Nombre)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -54,7 +59,19 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
             {
                 query = query.Where(c => c.Correo.Contains(correo));
             }
-            return query.ToListAsync();
+            return query
+                .OrderByDescending(c => c.Cedula == Cliente.CedulaConsumidorFinal)
+                .ThenBy(c => c.Nombre)
+                .ToListAsync();
+        }
+
+        // Consulta dedicada e independiente de la paginación general: garantiza que el
+        // "Consumidor Final" se encuentre sin importar cuántos clientes existan ni en
+        // qué orden se muestren en el resto del sistema.
+        public Task<Cliente?> ObtenerClienteReservadoAsync()
+        {
+            return _context.Clientes
+                .FirstOrDefaultAsync(c => !c.EstaEliminado && c.Cedula == Cliente.CedulaConsumidorFinal);
         }
 
         public async Task<bool> ExistePorCorreoAsync(string correo)

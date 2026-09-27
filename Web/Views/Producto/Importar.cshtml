@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Importar productos";
+}
+
+<div class="crumb">
+    <a asp-action="Index">Productos</a>
+    <span>›</span>
+    <span>Importar</span>
+</div>
+
+<div class="page-header">
+    <p class="text-muted">Cargá varios productos de una vez desde una hoja de cálculo.</p>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger"><div asp-validation-summary="All"></div></div>
+}
+
+<div class="form-wrap">
+
+    <div class="surface-card p-4 mb-3">
+        <div class="import-paso">
+            <span class="import-paso-num" aria-hidden="true">1</span>
+            <div>
+                <div class="import-paso-titulo">Descargá la plantilla</div>
+                <p class="import-paso-desc">
+                    Trae los encabezados exactos que el sistema espera. Si usás tu propio
+                    archivo, las columnas tienen que llamarse igual.
+                </p>
+            </div>
+        </div>
+
+        <a asp-action="DescargarPlantillaImportacion" class="btn-pa btn-pa-outline">
+            @await Html.PartialAsync("_Icon", "download") Descargar plantilla (.xlsx)
+        </a>
+
+        <div class="import-cols">
+            <div class="import-col-nombre">Nombre<span class="req" aria-hidden="true">*</span></div>
+            <div class="import-col-desc">Obligatorio. Se usa junto a Categoria para detectar duplicados.</div>
+
+            <div class="import-col-nombre">Categoria<span class="req" aria-hidden="true">*</span></div>
+            <div class="import-col-desc">Obligatorio. Tiene que existir ya en el sistema. Si no existe, la fila se rechaza.</div>
+
+            <div class="import-col-nombre">Precio<span class="req" aria-hidden="true">*</span></div>
+            <div class="import-col-desc">Obligatorio. Número sin símbolo de moneda, con punto decimal: 8450.00</div>
+
+            <div class="import-col-nombre">Descripcion<span class="req" aria-hidden="true">*</span></div>
+            <div class="import-col-desc">Obligatorio. Texto libre.</div>
+
+            <div class="import-col-nombre">Costo</div>
+            <div class="import-col-desc">Opcional. Mismo formato que Precio.</div>
+
+            <div class="import-col-nombre">Proveedor</div>
+            <div class="import-col-desc">Opcional. Nombre de un proveedor ya registrado. Si no coincide, el producto se crea igual pero sin proveedor.</div>
+        </div>
+    </div>
+
+    <form asp-action="Importar" method="post" enctype="multipart/form-data" id="form-importar">
+
+        <div class="surface-card p-4 mb-3">
+            <div class="import-paso">
+                <span class="import-paso-num" aria-hidden="true">2</span>
+                <div>
+                    <div class="import-paso-titulo">Subí el archivo</div>
+                    <p class="import-paso-desc">Formatos aceptados: .xlsx y .csv · hasta 5 MB · máximo 500 filas.</p>
+                </div>
+            </div>
+
+            <div class="import-drop">
+                <div class="import-drop-icon" aria-hidden="true">
+                    @await Html.PartialAsync("_Icon", "file")
+                </div>
+                <div class="import-drop-titulo">Elegí el archivo o arrastralo acá</div>
+                <p class="import-drop-desc">La primera fila del archivo tiene que ser la de los encabezados.</p>
+
+                <label class="visually-hidden" for="archivo">Archivo de productos a importar</label>
+                <input type="file" id="archivo" name="archivo" class="form-control"
+                       accept=".xlsx,.csv" required
+                       aria-describedby="archivo-error" />
+                <span class="text-danger small d-block" id="archivo-error" data-archivo-error role="alert"></span>
+            </div>
+
+            <div class="import-file" data-archivo-chip>
+                @await Html.PartialAsync("_Icon", "file")
+                <div>
+                    <div class="import-file-nombre" data-archivo-nombre></div>
+                    <div class="import-file-peso mono" data-archivo-peso></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="surface-card p-4 mb-3">
+            <div class="import-paso">
+                <span class="import-paso-num" aria-hidden="true">3</span>
+                <div>
+                    <div class="import-paso-titulo">Revisá cómo se va a procesar</div>
+                    <p class="import-paso-desc">La importación es parcial: lo que esté bien se crea aunque haya filas con error.</p>
+                </div>
+            </div>
+
+            <div class="import-reglas">
+                <div class="import-regla">
+                    @await Html.PartialAsync("_Icon", "tick")
+                    <div>Las filas <b>válidas se crean</b> de inmediato. No se cancela todo por un error suelto.</div>
+                </div>
+                <div class="import-regla">
+                    @await Html.PartialAsync("_Icon", "tick")
+                    <div>Las filas <b>con error se reportan</b> con su número de fila original y el motivo, en un archivo que podés descargar, corregir y volver a subir.</div>
+                </div>
+                <div class="import-regla">
+                    @await Html.PartialAsync("_Icon", "tick")
+                    <div>Se considera <b>duplicado</b> cuando <b>Nombre + Categoría</b> ya existen en el catálogo. Esas filas se omiten: no se duplican ni se sobrescriben.</div>
+                </div>
+                <div class="import-regla">
+                    @await Html.PartialAsync("_Icon", "tick")
+                    <div>Si un <b>proveedor no existe</b>, el producto igual se crea <b>sin proveedor</b> y queda avisado en el resultado.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="factions">
+            <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Cancelar</a>
+            <button type="submit" class="btn-pa btn-pa-primary">
+                @await Html.PartialAsync("_Icon", "upload") Procesar archivo
+            </button>
+            <span class="text-muted" style="font-size:.78rem;">Suele tardar menos de un minuto. No cierres la pestaña.</span>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Validación propia y no la de site.js: aquel validador es solo para imágenes
+        // (rechaza todo lo que no sea JPG/PNG/WEBP) y acá se suben hojas de cálculo.
+        (function () {
+            var campo = document.getElementById('archivo');
+            if (!campo) { return; }
+
+            var error = document.querySelector('[data-archivo-error]');
+            var chip = document.querySelector('[data-archivo-chip]');
+            var chipNombre = document.querySelector('[data-archivo-nombre]');
+            var chipPeso = document.querySelector('[data-archivo-peso]');
+            var maximoMb = 5;
+
+            function validar() {
+                var archivo = campo.files && campo.files[0];
+                var mensaje = '';
+
+                if (archivo && archivo.size > maximoMb * 1024 * 1024) {
+                    mensaje = 'El archivo supera el máximo de ' + maximoMb + ' MB.';
+                } else if (archivo && !/\.(xlsx|csv)$/i.test(archivo.name)) {
+                    mensaje = 'Formato no admitido. Usá .xlsx o .csv.';
+                }
+
+                if (error) { error.textContent = mensaje; }
+
+                if (chip) {
+                    var mostrar = !!archivo && mensaje === '';
+                    chip.classList.toggle('is-visible', mostrar);
+
+                    if (mostrar) {
+                        chipNombre.textContent = archivo.name;
+                        chipPeso.textContent = Math.max(1, Math.round(archivo.size / 1024)) + ' KB';
+                    }
+                }
+
+                return mensaje === '';
+            }
+
+            campo.addEventListener('change', validar);
+
+            if (campo.form) {
+                campo.form.addEventListener('submit', function (evento) {
+                    if (!validar()) { evento.preventDefault(); }
+                });
+            }
+        })();
+    </script>
+}

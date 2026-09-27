@@ -13,9 +13,14 @@ namespace ProductApp.Tests.BusinessValidator.Modulo_Ventas
         private readonly Mock<IOrdenRepository> _ordenRepositoryMock = new();
         private readonly Mock<IDetalleOrdenRepository> _detalleOrdenRepositoryMock = new();
         private readonly Mock<IProductoRepository> _productoRepositoryMock = new();
+        private readonly Mock<IPagoRepository> _pagoRepositoryMock = new();
 
         private ValidatorBusinessDetalleOrden CrearValidator()
-            => new(_ordenRepositoryMock.Object, _detalleOrdenRepositoryMock.Object, _productoRepositoryMock.Object);
+            => new(
+                _ordenRepositoryMock.Object,
+                _detalleOrdenRepositoryMock.Object,
+                _productoRepositoryMock.Object,
+                _pagoRepositoryMock.Object);
 
         private static Orden CrearOrdenPendiente() => new Orden(clienteId: 1, usuarioId: 1);
 

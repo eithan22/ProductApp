@@ -75,15 +75,23 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
             return query.Select(x => (x.ProductId, x.Nombre, x.CantidadVendida)).ToList();
         }
 
-        public async Task<(decimal Total, int CantidadPagos)> ObtenerIngresosTotalesAsync(DateTime desde, DateTime hasta)
+        public async Task<(decimal Total, int CantidadPagos, int CantidadOrdenes)> ObtenerIngresosTotalesAsync(DateTime desde, DateTime hasta)
         {
+            // Alineado con los otros 5 reportes (Ventas, Productos, Vendedor): un pago de una
+            // orden cancelada no cuenta como ingreso del período, aunque el dinero siga en
+            // caja (M14/A7 — no existe un concepto de devolución en el sistema).
             var query = _context.Pagos
-                .Where(p => !p.EstaEliminado && p.Estado != EstadoPago.Fallido && p.FechaPago >= desde && p.FechaPago <= hasta);
+                .Where(p => !p.EstaEliminado && p.Estado != EstadoPago.Fallido
+                    && p.FechaPago >= desde && p.FechaPago <= hasta
+                    && !p.Orden.EstaEliminado && p.Orden.Estado != EstadoOrden.Cancelada);
 
             var total = await query.SumAsync(p => (decimal?)p.Monto) ?? 0;
             var cantidadPagos = await query.CountAsync();
+            // Ticket promedio por orden, no por pago: dos abonos de la misma orden no deben
+            // contarse como dos ventas distintas.
+            var cantidadOrdenes = await query.Select(p => p.OrdenId).Distinct().CountAsync();
 
-            return (total, cantidadPagos);
+            return (total, cantidadPagos, cantidadOrdenes);
         }
     }
 }

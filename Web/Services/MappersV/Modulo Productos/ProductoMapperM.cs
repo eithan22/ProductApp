@@ -13,7 +13,8 @@ namespace Web.Services.Mappers.Modulo_Productos
                 Descripcion = model.Descripcion,
                 Precio = model.Precio,
                 Costo = model.Costo,
-                CategoriaId = model.CategoriaId
+                CategoriaId = model.CategoriaId,
+                ProveedorId = model.ProveedorId
             };
         }
 
@@ -26,7 +27,8 @@ namespace Web.Services.Mappers.Modulo_Productos
                 Descripcion = model.Descripcion,
                 Precio = model.Precio,
                 Costo = model.Costo,
-                CategoriaId = model.CategoriaId
+                CategoriaId = model.CategoriaId,
+                ProveedorId = model.ProveedorId
             };
         }
     }

@@ -92,12 +92,20 @@
                    class="@Activo("Inventario")" aria-current="@Actual("Inventario")">
                     @await Html.PartialAsync("_Icon", "layers") Inventario
                 </a>
+                <a asp-controller="Proveedor" asp-action="Index"
+                   class="@Activo("Proveedor")" aria-current="@Actual("Proveedor")">
+                    @await Html.PartialAsync("_Icon", "inbox") Proveedores
+                </a>
 
                 <p class="nav-group">Ventas</p>
 
                 <a asp-controller="Orden" asp-action="Index"
                    class="@Activo("Orden")" aria-current="@Actual("Orden")">
                     @await Html.PartialAsync("_Icon", "receipt") Órdenes
+                </a>
+                <a asp-controller="Pago" asp-action="Index"
+                   class="@Activo("Pago")" aria-current="@Actual("Pago")">
+                    @await Html.PartialAsync("_Icon", "cash") Pagos
                 </a>
                 <a asp-controller="Cliente" asp-action="Index"
                    class="@Activo("Cliente")" aria-current="@Actual("Cliente")">
@@ -132,9 +140,19 @@
 
             </nav>
 
-            <a asp-controller="Auth" asp-action="Logout" class="logout">
-                @await Html.PartialAsync("_Icon", "logout") Cerrar sesión
-            </a>
+            <form asp-controller="Auth" asp-action="Logout" method="post" class="logout-form">
+                <button type="submit" class="logout">
+                    @await Html.PartialAsync("_Icon", "logout") Cerrar sesión
+                </button>
+            </form>
+
+            @* Los documentos legales tienen que ser alcanzables desde dentro de la app,
+               no solo desde el pie de la landing: con sesión iniciada la landing no se ve. *@
+            <p class="sidebar-legal">
+                <a asp-controller="Home" asp-action="Privacy">Privacidad</a>
+                <span aria-hidden="true">&middot;</span>
+                <a asp-controller="Home" asp-action="Terminos">Términos</a>
+            </p>
         </aside>
 
         <div class="sidebar-backdrop" data-sidebar-cerrar aria-hidden="true"></div>
@@ -153,19 +171,30 @@
                     <h1>@ViewData["Title"]</h1>
                 </div>
 
-                <form class="topbar-search" id="topbar-search" role="search" method="get"
-                      asp-controller="Producto" asp-action="Buscar">
-                    <label class="visually-hidden" for="busqueda-global">Buscar productos</label>
+                @* Dejó de ser un <form> que navegaba a Producto/Buscar: ahora es el
+                   buscador único del sistema (RF-3.8) y responde en vivo sin recargar.
+                   El filtro por nombre del catálogo sigue vivo dentro de Producto/Index. *@
+                <div class="topbar-search" id="topbar-search" role="search">
+                    <label class="visually-hidden" for="busqueda-global">
+                        Buscar productos, clientes, órdenes y proveedores
+                    </label>
                     @await Html.PartialAsync("_Icon", "search")
-                    <input id="busqueda-global" type="search" name="nombre"
-                           placeholder="Buscar productos..." autocomplete="off" />
-                </form>
+                    <input id="busqueda-global" type="search" name="texto"
+                           placeholder="Buscar productos, clientes, órdenes..."
+                           autocomplete="off" spellcheck="false"
+                           role="combobox" aria-autocomplete="list" aria-expanded="false"
+                           aria-controls="busqueda-panel"
+                           data-busqueda-url="@Url.Action("Buscar", "Busqueda")" />
+                    <span class="busq-esc" aria-hidden="true">esc</span>
+
+                    @await Html.PartialAsync("_BusquedaGlobalDropdown")
+                </div>
 
                 <div class="topbar-actions">
 
                     <button class="topbar-search-toggle" type="button"
                             data-busqueda-toggle aria-controls="topbar-search" aria-expanded="false"
-                            aria-label="Mostrar búsqueda de productos">
+                            aria-label="Mostrar búsqueda">
                         @await Html.PartialAsync("_Icon", "search")
                     </button>
 
@@ -194,6 +223,11 @@
                 </div>
             </header>
 
+            @* Vive fuera del <header> a propósito: el topbar tiene z-index 30 y crea su
+               propio contexto de apilado, así que un velo puesto adentro taparía también
+               el input. Acá queda por debajo del topbar y por encima del contenido. *@
+            <div class="busq-scrim" aria-hidden="true"></div>
+
             @await Html.PartialAsync("_Alerts")
 
             @RenderBody()
@@ -210,8 +244,9 @@
     }
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="~/lib/chart.js/dist/chart.umd.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/busqueda-global.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
 

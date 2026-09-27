@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ClienteDto;
@@ -22,13 +23,14 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<CreateClienteDto> _createValidator;
         private readonly IValidator<UpdateClienteDto> _updateValidator;
         private readonly IValidatorBusinessClientes _validatorBusinessClientes;
+        private readonly ILogger<ClienteServices> _logger;
 
         public ClienteServices(IClienteRepository clienterepository,
             IMapperCliente mapperCliente,
             IValidator<UpdateClienteDto> updateValidator,
             IValidator<CreateClienteDto> createValidator,
-            IValidatorBusinessClientes validatorBusinessClientes
-
+            IValidatorBusinessClientes validatorBusinessClientes,
+            ILogger<ClienteServices> logger
 
             )
         {
@@ -37,6 +39,7 @@ namespace ProductApp.Aplication.Services
             _updateValidator = updateValidator;
             _createValidator = createValidator;
             _validatorBusinessClientes = validatorBusinessClientes;
+            _logger = logger;
         }
 
 
@@ -101,7 +104,13 @@ namespace ProductApp.Aplication.Services
         }
 
 
-        //delete fisico
+        // DEUDA TÉCNICA — no exponer este método en el controller sin agregarle antes un
+        // validador de negocio que compruebe si el cliente tiene órdenes. Lo único que valida
+        // hoy es que no sea el cliente reservado; el borrado es FÍSICO y la FK
+        // Ordenes→Clientes está en cascada, así que arrastra las órdenes del cliente, sus
+        // detalles y sus pagos: se perdería historial financiero. Es la misma razón por la
+        // que A5 convirtió el borrado de Usuario en lógico. Hoy no es alcanzable:
+        // ClienteController solo publica DisableCliente/EnableCliente.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -117,6 +126,11 @@ namespace ProductApp.Aplication.Services
 
             }
 
+            var validationResult = _validatorBusinessClientes.ValidarClienteNoReservado(cliente);
+            if (!validationResult.IsSuccess)
+            {
+                return OperationResultD<bool>.Failure(validationResult.Message);
+            }
 
             await _clienteRepository.DeleteAsync(id);
 
@@ -182,10 +196,10 @@ namespace ProductApp.Aplication.Services
 
 
 
-        public Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
             => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
 
-        public async Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        public async Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<ClienteResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
@@ -295,6 +309,42 @@ namespace ProductApp.Aplication.Services
             };
 
             return OperationResultD<ClienteTotalComprasDto>.Success(dto, "Total de compras obtenido correctamente");
+        }
+
+        public async Task<OperationResultD<bool>> AnonimizarAsync(int id, int usuarioSolicitanteId)
+        {
+            if (id <= 0)
+                return OperationResultD<bool>.Failure("El id no puede ser menor o igual a 0");
+
+            var cliente = await _clienteRepository.GetByIdAsync(id);
+            if (cliente == null)
+                return OperationResultD<bool>.Failure("El cliente no fue encontrado");
+
+            var validationResult = _validatorBusinessClientes.ValidarAnonimizarClienteAsync(cliente);
+            if (!validationResult.IsSuccess)
+                return OperationResultD<bool>.Failure(validationResult.Message);
+
+            cliente.Anonimizar();
+            await _clienteRepository.UpdateAsync(cliente);
+
+            _logger.LogInformation(
+                "Cliente anonimizado: {ClienteId}, por el usuario {UsuarioSolicitanteId}",
+                cliente.Id, usuarioSolicitanteId);
+
+            return OperationResultD<bool>.Success(true, "Cliente anonimizado correctamente");
+        }
+
+        public async Task<OperationResultD<ClienteResponseDto>> ObtenerClienteReservadoAsync()
+        {
+            var cliente = await _clienteRepository.ObtenerClienteReservadoAsync();
+            if (cliente == null)
+            {
+                return OperationResultD<ClienteResponseDto>.Failure("El cliente reservado del sistema todavía no existe.");
+            }
+
+            var clienteResponseDto = _mapperCliente.MapToClienteResponseDto(cliente);
+
+            return OperationResultD<ClienteResponseDto>.Success(clienteResponseDto, "Cliente reservado obtenido correctamente");
         }
 
     }

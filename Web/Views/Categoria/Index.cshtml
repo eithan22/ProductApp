@@ -4,6 +4,7 @@
     ViewData["Title"] = "Categorías";
     string[] tagColors = { "var(--tag-0)", "var(--tag-1)", "var(--tag-2)", "var(--tag-3)", "var(--tag-4)", "var(--tag-5)", "var(--tag-6)", "var(--tag-7)" };
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
 }
 
 <div class="page-header">
@@ -67,9 +68,12 @@ else
                         {
                             <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver @item.Nombre">@await Html.PartialAsync("_Icon", "view")</a>
                             <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar @item.Nombre">@await Html.PartialAsync("_Icon", "edit")</a>
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                            @if (esAdministrador)
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                            }
                         }
-                        else
+                        else if (esAdministrador)
                         {
                             <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
                                 <button type="submit" class="icon-btn" title="Activar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>

@@ -6,6 +6,7 @@ using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
 using ProductApp.Domian.Entitis;
+using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Usuarios
 {
@@ -39,7 +40,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize]
         // get 
         [HttpGet("GetClientes")]
-        public async Task<IActionResult> GetClientes([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetClientes([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _clienteService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
             if (!result.IsSuccess)
@@ -64,7 +65,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
             return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(resut.Data, resut.Message));
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
 
         [HttpPatch("DisableCliente/{id}")]
         public async Task<IActionResult> DisableClientes(int id)
@@ -78,7 +79,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
 
         [HttpPatch("EnableCliente/{id}")]
         public async Task<IActionResult> EnableCliente(int id)
@@ -107,6 +108,19 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
             return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(result.Data, result.Message));//no usamos data porque solo queremos indicar que se actualizo correctamente
         }
 
+        [Authorize(Roles = "Administrador")]
+        [HttpPatch("AnonimizarCliente/{id}")]
+        public async Task<IActionResult> AnonimizarCliente(int id)
+        {
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _clienteService.AnonimizarAsync(id, usuarioSolicitanteId);
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
+
+            return Ok(ApiResponse.SuccessResponse(result.Message));
+        }
+
         [Authorize]
 
         [HttpGet("GetBuscar")]
@@ -130,6 +144,17 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
                 return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
             return Ok(ApiResponseT<ClienteTotalComprasDto>.SuccessResponse(result.Data, result.Message));
+        }
+
+        [Authorize]
+        [HttpGet("GetReservado")]
+        public async Task<IActionResult> GetReservado()
+        {
+            var result = await _clienteService.ObtenerClienteReservadoAsync();
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(result.Data, result.Message));
         }
     }
 

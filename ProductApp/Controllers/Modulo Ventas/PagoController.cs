@@ -23,7 +23,8 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         public async Task<IActionResult> RegistrarPago(CreatePagoDto dto)
         {
             var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var result = await _pagoServices.RegistrarPagoAsync(dto, usuarioSolicitanteId);
+            var esAdministrador = User.IsInRole("Administrador");
+            var result = await _pagoServices.RegistrarPagoAsync(dto, usuarioSolicitanteId, esAdministrador);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
@@ -50,6 +51,17 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
                 return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
 
             return Ok(ApiResponseT<decimal>.SuccessResponse(result.Data, result.Message));
+        }
+
+        [Authorize]
+        [HttpGet("GetAllPagos")]
+        public async Task<IActionResult> GetAllPagos([FromQuery] PagoFiltroDto filtro)
+        {
+            var result = await _pagoServices.ObtenerPagosAsync(filtro);
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<PagoListadoResponseDto>.SuccessResponse(result.Data, result.Message));
         }
     }
 }

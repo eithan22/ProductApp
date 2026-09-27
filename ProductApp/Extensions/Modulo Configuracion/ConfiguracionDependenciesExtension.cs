@@ -18,6 +18,7 @@ namespace ProductApp.Extensions.Modulo_Configuracion
             services.AddScoped<IMapperConfiguracionSistema, ConfiguracionSistemaMapper>();
             services.AddScoped<IConfiguracionSistemaService, ConfiguracionSistemaService>();
             services.AddScoped<IValidator<ActualizarConfiguracionSistemaDto>, ActualizarConfiguracionSistemaValidator>();
+            services.AddScoped<IValidator<SubirLogoEmpresaDto>, SubirLogoEmpresaValidator>();
 
             return services;
         }

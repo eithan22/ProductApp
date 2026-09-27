@@ -22,7 +22,8 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("El email es requerido.")
-                .EmailAddress().WithMessage("El email no es válido.");
+                .EmailAddress().WithMessage("El email no es válido.")
+                .MaximumLength(50).WithMessage("El email no puede exceder los 50 caracteres.");
 
             RuleFor(x => x.UserName)
                 .NotEmpty().WithMessage("El nombre de usuario es requerido.")
@@ -39,7 +40,9 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator
 
             RuleFor(x => x.FechaNacimiento)
                 .Must(f => !f.HasValue || f.Value < DateTime.UtcNow)
-                .WithMessage("La fecha de nacimiento debe ser una fecha pasada.");
+                .WithMessage("La fecha de nacimiento debe ser una fecha pasada.")
+                .Must(f => !f.HasValue || f.Value <= DateTime.UtcNow.AddYears(-18))
+                .WithMessage("El usuario debe ser mayor de edad (18 años o más).");
         }
     }
 }

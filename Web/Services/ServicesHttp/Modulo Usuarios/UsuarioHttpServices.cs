@@ -35,6 +35,18 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
 
         }
 
+        public async Task<bool> AceptarDocumentosLegalesAsync(AceptarDocumentosLegalesModel model)
+        {
+            var dto = UsuarioMapperM.MapAceptarDocumentosLegalesDto(model);
+
+            // El endpoint responde ApiResponse (sin Data), así que se devuelve true explícito en
+            // vez del default del deserializador — mismo criterio que DisableUsuarioAsync.
+            await _baseHttpServices.PostAsync<AceptarDocumentosLegalesDto, bool>(
+                _usuarioEndpoint.AceptarDocumentosLegales, dto);
+
+            return true;
+        }
+
         public async Task<bool> CambiarRolAsync(CambiarRolModel model)
         {
            var dto = UsuarioMapperM.MapCambiarRolDto(model);
@@ -82,7 +94,7 @@ namespace Web.Services.ServicesHttp.Modulo_Usuarios
             return response;
         }
 
-        public async Task<PagedResult<UsuarioModel>> GetUsuariosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<UsuarioModel>> GetUsuariosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var response = await _baseHttpServices.GetAsync<PagedResult<UsuarioModel>>(
                 $"{_usuarioEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");

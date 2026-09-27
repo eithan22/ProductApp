@@ -13,6 +13,6 @@ namespace ProductApp.Domian.Interfaces
 
         Task<List<(int ProductoId, string NombreProducto, int CantidadVendida)>> ObtenerProductosMasVendidosAsync(DateTime desde, DateTime hasta, int top);
 
-        Task<(decimal Total, int CantidadPagos)> ObtenerIngresosTotalesAsync(DateTime desde, DateTime hasta);
+        Task<(decimal Total, int CantidadPagos, int CantidadOrdenes)> ObtenerIngresosTotalesAsync(DateTime desde, DateTime hasta);
     }
 }

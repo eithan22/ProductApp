@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Clientes";
     var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
+    var reservados = Model.Items.Count(c => c.EsReservado);
 
     string Iniciales(string nombre)
     {
@@ -14,7 +16,7 @@
 
 <div class="page-header">
     <p class="text-muted">
-        @Model.TotalCount @(Model.TotalCount == 1 ? "cliente registrado" : "clientes registrados").
+        @Model.TotalCount @(Model.TotalCount == 1 ? "cliente registrado" : "clientes registrados")@(reservados > 0 ? $" · {reservados} reservado por el sistema" : "").
     </p>
     <a asp-action="Create" class="btn-pa btn-pa-primary">
         @await Html.PartialAsync("_Icon", "add") Nuevo cliente
@@ -71,8 +73,18 @@ else
                 <div class="avatar-lista" aria-hidden="true">@Iniciales(item.Nombre)</div>
 
                 <div class="ledger-body">
-                    <div class="ledger-name">@item.Nombre</div>
-                    <div class="ledger-desc">@item.Email</div>
+                    <div class="ledger-name">
+                        @item.Nombre
+                        @if (item.EsReservado)
+                        {
+                            <span class="lockpill">@await Html.PartialAsync("_Icon", "lock") Reservado</span>
+                        }
+                    </div>
+                    <div class="ledger-desc">
+                        @(item.EsReservado
+                            ? "Cliente genérico de las ventas de mostrador · no se puede desactivar ni eliminar"
+                            : item.Email)
+                    </div>
                 </div>
 
                 <div class="ledger-meta">
@@ -92,17 +104,32 @@ else
 
                     <div class="ledger-actions">
                         <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver @item.Nombre">@await Html.PartialAsync("_Icon", "view")</a>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar @item.Nombre">@await Html.PartialAsync("_Icon", "edit")</a>
 
-                        @if (activo)
+                        @if (item.EsReservado)
                         {
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                            @* El registro del sistema no se edita ni se desactiva: en vez de botones
+                               deshabilitados que confunden, se muestra el candado con el motivo. *@
+                            <span class="icon-btn locked" title="Cliente reservado del sistema: no se puede editar ni desactivar">
+                                @await Html.PartialAsync("_Icon", "lock")
+                            </span>
                         }
                         else
                         {
-                            <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
-                                <button type="submit" class="icon-btn" title="Activar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>
-                            </form>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar @item.Nombre">@await Html.PartialAsync("_Icon", "edit")</a>
+
+                            @if (activo)
+                            {
+                                @if (esAdministrador)
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Desactivar @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                                }
+                            }
+                            else if (esAdministrador)
+                            {
+                                <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    <button type="submit" class="icon-btn" title="Activar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>
+                                </form>
+                            }
                         }
                     </div>
                 </div>

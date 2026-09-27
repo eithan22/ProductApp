@@ -36,7 +36,17 @@
 
     <div class="d-flex justify-content-between mt-2">
         <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "edit") Editar</a>
+        @if (Model.EsReservado)
+        {
+            <span class="text-muted small d-inline-flex align-items-center gap-2">
+                @await Html.PartialAsync("_Icon", "lock")
+                Cliente reservado del sistema: no se puede editar ni desactivar.
+            </span>
+        }
+        else
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-pa btn-pa-primary">@await Html.PartialAsync("_Icon", "edit") Editar</a>
+        }
     </div>
 </div>
 

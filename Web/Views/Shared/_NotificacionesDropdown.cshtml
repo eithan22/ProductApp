@@ -1,6 +1,11 @@
 @model Web.Models.Modelo_Notificaciones.NotificacionResumenModel
 
 @{
+    // Página a la que hay que volver después de marcar. Se manda explícita porque el
+    // header Referer llega vacío (Referrer-Policy: no-referrer) y el controller solo
+    // acepta rutas locales.
+    var retorno = $"{Context.Request.Path}{Context.Request.QueryString}";
+
     string IconoPara(string tipo) => tipo switch
     {
         "CambioEstadoOrden" => "receipt",
@@ -16,6 +21,7 @@
         @if (Model.NoLeidas > 0)
         {
             <form asp-controller="Notificacion" asp-action="MarcarTodasLeidas" method="post">
+                <input type="hidden" name="retorno" value="@retorno" />
                 <button type="submit" class="notif-marcar-todas">Marcar todas como leídas</button>
             </form>
         }
@@ -46,6 +52,7 @@
                 else
                 {
                     <form asp-controller="Notificacion" asp-action="MarcarLeida" asp-route-id="@n.Id" method="post">
+                        <input type="hidden" name="retorno" value="@retorno" />
                         <button type="submit" class="notif-item">
                             <span class="notif-item-icon">@await Html.PartialAsync("_Icon", IconoPara(n.Tipo))</span>
                             <span class="notif-item-body">

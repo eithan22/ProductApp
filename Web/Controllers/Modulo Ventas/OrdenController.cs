@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using Web.Models.Modelo_Ventas.DetalleOrdenModels;
 using Web.Models.Modelo_Ventas.OrdenModels;
 using Web.Models.Modelo_Ventas.PagoModels;
+using Web.Services.Base;
 using Web.Services.Interfaces.ServicesHttp;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Productos;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Ventas;
@@ -62,8 +64,20 @@ namespace Web.Controllers.Modulo_Ventas
 
         public async Task<ActionResult> Create()
         {
-            ViewBag.Clientes = (await _clienteHttpServices.GetClientesAsync(pageSize: 100)).Items;
-            return View();
+            var clientes = (await _clienteHttpServices.GetClientesAsync(pageSize: 100)).Items;
+            ViewBag.Clientes = clientes;
+
+            // Se pide el reservado con una consulta dedicada, independiente de la
+            // paginación general de Clientes: así la preselección no depende de cuántos
+            // clientes existan ni de en qué página caiga el registro reservado.
+            var reservado = await _clienteHttpServices.GetClienteReservadoAsync();
+
+            var model = new CreateOrdenModel
+            {
+                ClienteId = reservado?.Id ?? 0
+            };
+
+            return View(model);
         }
 
         [HttpPost]
@@ -230,6 +244,34 @@ namespace Web.Controllers.Modulo_Ventas
                 TempData["Error"] = ex.Message;
             }
             return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // El PDF de la factura está en un contenedor privado: ni la API ni el blob
+        // quedan expuestos al navegador. Acá se pide server-side (el JWT de sesión
+        // viaja solo) y se reenvía el binario al usuario.
+        [HttpGet]
+        public async Task<ActionResult> DescargarFactura(int id)
+        {
+            try
+            {
+                var pdf = await _ordenHttpServices.GetFacturaAsync(id);
+
+                // File(...) con nombre de archivo manda "attachment" y fuerza la
+                // descarga. Poniendo el header a mano el PDF se abre en el visor
+                // del navegador, que es lo que queremos.
+                Response.Headers.ContentDisposition = $"inline; filename=\"factura-orden-{id}.pdf\"";
+                return File(pdf, "application/pdf");
+            }
+            catch (ApiHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                // Se deja propagar para que HandleApiErrorsFilter cierre la sesión.
+                throw;
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Details), new { id });
+            }
         }
     }
 }

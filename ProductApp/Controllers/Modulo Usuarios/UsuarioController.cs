@@ -25,7 +25,7 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [Authorize(Roles = "Administrador")]
         [HttpGet("GetUsuarios")]
-        public async Task<IActionResult> GetUsuarios([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetUsuarios([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _usuarioService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
             if (!result.IsSuccess)
@@ -102,7 +102,8 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Disable(int id)
         {
-            var result = await _usuarioService.DisableAsync(id);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _usuarioService.DisableAsync(id, usuarioSolicitanteId);
             if (!result.IsSuccess)
             {
                 return BadRequest(ApiResponse.FailureResponse(result.Message));
@@ -142,6 +143,31 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
             dto.Id = userId;
 
             var result = await _usuarioService.CambiarPasswordUsuario(dto);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
+            }
+            return Ok(ApiResponse.SuccessResponse(result.Message));
+        }
+
+
+        // POST y no PUT: cada llamada deja constancia de un acto (la aceptación), no reemplaza un
+        // recurso. El id sale del token, igual que en MiPerfil.
+        //
+        // Los dos atributos son necesarios y por motivos distintos:
+        //   [PermitirSinAceptarDocumentosLegales] — es el endpoint que resuelve ese estado.
+        //   [PermitirConPasswordPendiente]        — el gate de aceptación corre ANTES que el de
+        //     contraseña, así que un usuario nuevo llega acá con su contraseña temporal todavía
+        //     sin cambiar y tiene que poder aceptar.
+        [HttpPost("AceptarDocumentosLegales")]
+        [Authorize]
+        [PermitirConPasswordPendiente]
+        [PermitirSinAceptarDocumentosLegales]
+        public async Task<IActionResult> AceptarDocumentosLegales(AceptarDocumentosLegalesDto dto)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var result = await _usuarioService.RegistrarAceptacionDocumentosLegalesAsync(userId, dto);
             if (!result.IsSuccess)
             {
                 return BadRequest(ApiResponse.FailureResponse(result.Message));

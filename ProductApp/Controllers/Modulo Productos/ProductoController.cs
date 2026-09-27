@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Common;
+using ProductApp.Aplication.Dtos.Modulo_Productos.ImportacionDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
+using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Productos
 {
@@ -12,12 +14,16 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
     public class ProductoController : ControllerBase
     {
         private readonly IProductoServices _productoServices;
+        private readonly IImportacionProductosService _importacionProductosService;
 
-        public ProductoController(IProductoServices productoServices) 
+        public ProductoController(
+            IProductoServices productoServices,
+            IImportacionProductosService importacionProductosService)
         {
             _productoServices = productoServices;
+            _importacionProductosService = importacionProductosService;
 
-        
+
         }
 
         [Authorize]
@@ -35,7 +41,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [Authorize]
         [HttpGet("GetAllProductos")]
 
-        public async Task<IActionResult> GetAllProductos([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllProductos([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _productoServices.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 
@@ -143,12 +149,66 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
 
+        // Importación masiva de productos (RF-3.10). Solo Administrador: la historia de usuario
+        // del PRD 3.10 es explícita ("Como Administrador..."), y un alta de 500 productos de
+        // golpe es una operación de catálogo, no de mostrador.
+
+        [Authorize(Roles = "Administrador")]
+        [HttpGet("DescargarPlantillaImportacion")]
+        public IActionResult DescargarPlantillaImportacion()
+        {
+            var result = _importacionProductosService.ObtenerPlantilla();
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+            return File(result.Data!, ContenidoXlsx, "plantilla-importacion-productos.xlsx");
+        }
+
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPost("ImportarMasivo")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
+        public async Task<IActionResult> ImportarMasivo([FromForm] ImportarProductosRequest request)
+        {
+            var archivo = request?.Archivo;
+
+            if (archivo is null || archivo.Length == 0)
+                return BadRequest(ApiResponseT<Object>.FailureResponse("Debe adjuntar un archivo .xlsx o .csv."));
+
+            await using var contenido = archivo.OpenReadStream();
+
+            var dto = new ImportarProductosDto
+            {
+                Contenido = contenido,
+                NombreArchivo = archivo.FileName,
+                TamanoBytes = archivo.Length
+            };
+
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var result = await _importacionProductosService.ImportarAsync(dto, usuarioSolicitanteId);
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<ImportacionProductosResultadoDto>.SuccessResponse(result.Data, result.Message));
+        }
+
+        private const string ContenidoXlsx =
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     }
 
     // Swashbuckle no puede documentar un IFormFile recibido como parámetro suelto de acción
     // (rompe /swagger con 500): hay que envolverlo en una clase para [FromForm].
     public class SubirImagenProductoRequest
+    {
+        public IFormFile Archivo { get; set; } = null!;
+    }
+
+    // Mismo motivo que SubirImagenProductoRequest.
+    public class ImportarProductosRequest
     {
         public IFormFile Archivo { get; set; } = null!;
     }

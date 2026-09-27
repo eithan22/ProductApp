@@ -7,7 +7,7 @@ namespace Web.Services.Interfaces.ServicesHttp
 
       public interface IClienteHttpServices
         {
-            Task<PagedResult<ClienteModel>> GetClientesAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10);
+            Task<PagedResult<ClienteModel>> GetClientesAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
             Task<ClienteModel> GetClienteByIdAsync(int id);
 
@@ -24,6 +24,10 @@ namespace Web.Services.Interfaces.ServicesHttp
             Task<bool> EnableClienteAsync(int id);
 
             Task<ClienteTotalComprasModel> GetTotalComprasAsync(int id);
+
+            // Nullable: puede no existir todavía (por ejemplo, en el primer arranque de
+            // la app antes de que corra el seed). El llamador decide el fallback.
+            Task<ClienteModel?> GetClienteReservadoAsync();
         }
 
 

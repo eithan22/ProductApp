@@ -1,11 +1,12 @@
 using ProductApp.Aplication.Common;
+using Web.Models.Modelo_Productos.ImportacionModels;
 using Web.Models.Modelo_Productos.ProductoModels;
 
 namespace Web.Services.Interfaces.ServicesHttp.Modulo_Productos
 {
     public interface IProductoHttpServices
     {
-        Task<PagedResult<ProductoModel>> GetProductosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10);
+        Task<PagedResult<ProductoModel>> GetProductosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
         Task<ProductoModel> GetProductoByIdAsync(int id);
         Task<ProductoModel> CreateProductoAsync(CreateProductoModel model);
         Task<ProductoModel> UpdateProductoAsync(UpdateProductoModel model);
@@ -13,5 +14,7 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Productos
         Task<bool> EnableProductoAsync(int id);
         Task<List<ProductoModel>> BuscarProductosAsync(string? nombre, string? categoria);
         Task<ProductoModel> SubirImagenAsync(int productoId, Stream contenido, string nombreArchivo, string contentType);
+        Task<(byte[] Contenido, string? NombreArchivo)> DescargarPlantillaImportacionAsync();
+        Task<ImportacionProductosResultadoModel> ImportarMasivoAsync(Stream contenido, string nombreArchivo, string contentType);
     }
 }

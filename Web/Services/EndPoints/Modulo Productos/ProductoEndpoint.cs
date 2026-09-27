@@ -12,5 +12,7 @@ namespace Web.Services.EndPoints.Modulo_Productos
         public string Enable => "Producto/EnableProducto/";
         public string Buscar => "Producto/BuscarProductos";
         public string SubirImagen => "Producto/SubirImagen/";
+        public string DescargarPlantillaImportacion => "Producto/DescargarPlantillaImportacion";
+        public string ImportarMasivo => "Producto/ImportarMasivo";
     }
 }

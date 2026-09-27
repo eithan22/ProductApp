@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using ProductApp.Api.Filters;
@@ -6,6 +7,7 @@ using ProductApp.Aplication.Result.ApiResponses;
 using ProductApp.Extensions;
 using ProductApp.Infraesctructura.Persistencia.Contex;
 using Serilog;
+using System.Threading.RateLimiting;
 
 namespace ProductApp
 {
@@ -13,7 +15,17 @@ namespace ProductApp
     {
         public static async Task Main(string[] args)
         {
+            // QuestPDF exige declarar la licencia una sola vez antes de generar cualquier
+            // documento. El proyecto califica para la licencia Community (gratuita).
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
             var builder = WebApplication.CreateBuilder(args);
+
+            // No revelar el stack tecnológico en cada respuesta HTTP.
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.AddServerHeader = false;
+            });
 
             // Reemplaza el logging por consola por defecto: mismos niveles que Serilog:MinimumLevel
             // en appsettings, pero ahora también persistidos en logs/ con rotación diaria.
@@ -50,6 +62,15 @@ namespace ProductApp
 
             builder.Services.AddControllers(options =>
             {
+                // El orden importa y va de lo más fundamental a lo más específico:
+                //   1. ¿La cuenta sigue existiendo y siendo la que dice el token? (401)
+                //   2. ¿Aceptó el contrato que rige el uso del sistema? (403)
+                //   3. ¿Su credencial es propia y no la temporal que le dio el administrador? (403)
+                // No tiene sentido pedirle nada a una cuenta ya desactivada, y no tiene sentido
+                // dejar que una cuenta opere —ni que cambie su propia contraseña— antes de aceptar
+                // los términos: es justo lo que la aceptación tiene que preceder.
+                options.Filters.Add<VerificarSesionVigenteFilter>();
+                options.Filters.Add<RequiereAceptacionDocumentosLegalesFilter>();
                 options.Filters.Add<RequiereCambioPasswordFilter>();
             });
             builder.Services.AddEndpointsApiExplorer();
@@ -91,16 +112,21 @@ namespace ProductApp
             // sin cola de espera (el intento número 6 se rechaza al instante con 429, no espera turno).
             builder.Services.AddRateLimiter(options =>
             {
-                options.AddFixedWindowLimiter("login", limiterOptions =>
+                options.AddPolicy("login", httpContext =>
                 {
-                    limiterOptions.PermitLimit = 5;
-                    limiterOptions.Window = TimeSpan.FromMinutes(1);
-                    limiterOptions.QueueLimit = 0;
+                    var clave = httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
+                    return RateLimitPartition.GetFixedWindowLimiter(clave, _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    });
                 });
 
                 // Cuando se excede el límite, responde con el mismo formato ApiResponseT que usa el resto de la API.
                 options.OnRejected = async (context, cancellationToken) =>
                 {
+                    context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
                     context.HttpContext.Response.ContentType = "application/json";
                     await context.HttpContext.Response.WriteAsJsonAsync(
                         ApiResponseT<object>.FailureResponse(
@@ -114,6 +140,19 @@ namespace ProductApp
                 .AddDbContextCheck<AppDbContext>();
 
             var app = builder.Build();
+
+            // Debe ir antes que cualquier middleware que use la IP del cliente. Restringido a
+            // loopback a propósito (todavía no hay balanceador real en producción): la app solo
+            // confía en X-Forwarded-For si la petición llega directo desde localhost, así nadie
+            // externo puede falsificar su IP para evadir el rate-limit de login de arriba.
+            // TODO: cuando se agregue el balanceador de Azure, sumar su IP/red real acá con
+            // fhOptions.KnownProxies.Add(IPAddress.Parse("<ip-del-balanceador>")).
+            var fhOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+                ForwardLimit = 1
+            };
+            app.UseForwardedHeaders(fhOptions);
 
             using (var scope = app.Services.CreateScope())
             {
@@ -134,6 +173,16 @@ namespace ProductApp
 
             app.UseExceptionHandler();
             app.UseHttpsRedirection();
+
+            // Headers de seguridad básicos (OWASP): mitigan MIME-sniffing y clickjacking.
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Append("X-Frame-Options", "DENY");
+                context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+                await next();
+            });
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseRateLimiter(); // aplica la política de rate limiting a las rutas que la declaren con [EnableRateLimiting]

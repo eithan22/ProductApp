@@ -60,7 +60,7 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<InventarioResponseDto>.Success(response, "Inventario obtenido exitosamente.");
         }
 
-        public async Task<OperationResultD<InventarioResponseDto>> AgregarStockAsync(MovimientoStockDto dto)
+        public async Task<OperationResultD<InventarioResponseDto>> AgregarStockAsync(MovimientoStockDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _movimientoStockValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -82,11 +82,13 @@ namespace ProductApp.Aplication.Services
 
             await NotificarSiCruzoAStockBajoAsync(estabaBajo, inventario);
 
+            _logger.LogInformation("Entrada de stock para el producto {ProductoId}: {Cantidad} unidades, por el usuario {UsuarioSolicitanteId}", dto.ProductoId, dto.Cantidad, usuarioSolicitanteId);
+
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock agregado exitosamente.");
         }
 
-        public async Task<OperationResultD<InventarioResponseDto>> DescontarStockAsync(MovimientoStockDto dto)
+        public async Task<OperationResultD<InventarioResponseDto>> DescontarStockAsync(MovimientoStockDto dto, int usuarioSolicitanteId)
         {
             var validationResult = await _movimientoStockValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -107,6 +109,8 @@ namespace ProductApp.Aplication.Services
             await _inventarioRepository.UpdateAsync(inventario);
 
             await NotificarSiCruzoAStockBajoAsync(estabaBajo, inventario);
+
+            _logger.LogInformation("Salida de stock para el producto {ProductoId}: {Cantidad} unidades, por el usuario {UsuarioSolicitanteId}", dto.ProductoId, dto.Cantidad, usuarioSolicitanteId);
 
             return OperationResultD<InventarioResponseDto>.Success(
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock descontado exitosamente.");
@@ -144,9 +148,9 @@ namespace ProductApp.Aplication.Services
                 _mapperInventario.MapToInventarioResponse(inventario), "Stock ajustado exitosamente.");
         }
 
-        public async Task<OperationResultD<List<InventarioResponseDto>>> ObtenerStockBajoAsync()
+        public async Task<OperationResultD<List<InventarioResponseDto>>> ObtenerStockBajoAsync(int? proveedorId = null)
         {
-            var inventarios = await _inventarioRepository.GetStockBajoAsync();
+            var inventarios = await _inventarioRepository.GetStockBajoAsync(proveedorId);
             if (inventarios == null)
                 return OperationResultD<List<InventarioResponseDto>>.Failure("No se encontraron inventarios con stock bajo.");
 
@@ -154,7 +158,7 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<List<InventarioResponseDto>>.Success(response, "Inventarios con stock bajo obtenidos exitosamente.");
         }
 
-        public async Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<OperationResultD<PagedResult<InventarioResponseDto>>> ObtenerTodosInventariosAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault, int? proveedorId = null)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<InventarioResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
@@ -162,7 +166,7 @@ namespace ProductApp.Aplication.Services
             if (pageSize < 1 || pageSize > 100)
                 return OperationResultD<PagedResult<InventarioResponseDto>>.Failure("pageSize debe estar entre 1 y 100");
 
-            var (inventarios, totalCount) = await _inventarioRepository.GetAllConProductoAsync(pageNumber, pageSize);
+            var (inventarios, totalCount) = await _inventarioRepository.GetAllConProductoAsync(pageNumber, pageSize, proveedorId);
 
             var response = inventarios.Select(i => _mapperInventario.MapToInventarioResponse(i)).ToList();
 

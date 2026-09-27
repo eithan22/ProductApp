@@ -30,16 +30,45 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success("Validacion Correcta");
         }
 
+        public OperationResult ValidarClienteNoReservado(Cliente cliente)
+        {
+            if (cliente.EsConsumidorFinal())
+                return OperationResult.Failure(
+                    "«Consumidor Final» es un cliente reservado del sistema: no se puede editar, desactivar ni eliminar.");
+
+            return OperationResult.Success("Validacion Correcta");
+        }
+
         public async Task<OperationResult> ValidarDeleteClienteAsync(Cliente cliente)
         {
+            var reservado = ValidarClienteNoReservado(cliente);
+            if (!reservado.IsSuccess)
+                return reservado;
+
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("El cliente ya está inactivo.");
 
             return OperationResult.Success("Validacion Correcta");
         }
 
+        public OperationResult ValidarAnonimizarClienteAsync(Cliente cliente)
+        {
+            var reservado = ValidarClienteNoReservado(cliente);
+            if (!reservado.IsSuccess)
+                return reservado;
+
+            if (cliente.Estado == EstadoCliente.Anonimizado)
+                return OperationResult.Failure("El cliente ya está anonimizado.");
+
+            return OperationResult.Success("Validacion Correcta");
+        }
+
         public async Task<OperationResult> ValidarUpdateClienteAsync(UpdateClienteDto dto, Cliente cliente)
         {
+            var reservado = ValidarClienteNoReservado(cliente);
+            if (!reservado.IsSuccess)
+                return reservado;
+
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("No se puede actualizar un cliente inactivo.");
 
@@ -52,8 +81,10 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             if (cliente.Telefono != dto.Telefono && await _clienteRepository.ExisteAsync(c => c.Telefono == dto.Telefono))
                 return OperationResult.Failure("El teléfono ya está registrado por otro cliente.");
 
-            if (cliente.Nombre != dto.Nombre && await _clienteRepository.ExisteAsync(c => c.Nombre == dto.Nombre))
-                return OperationResult.Failure("El nombre ya está registrado por otro cliente.");
+            // El nombre NO se valida como único, igual que en ValidarCreateClienteAsync: dos
+            // clientes homónimos son un caso real y por eso Cliente.Nombre quedó fuera del
+            // índice único en base (ver ClienteConfig). Validarlo solo acá dejaba clientes
+            // creados que después no se podían editar.
 
             return OperationResult.Success("Validacion Correcta");
         }

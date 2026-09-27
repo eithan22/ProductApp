@@ -14,7 +14,7 @@
 <div class="page-header">
     <div>
         <h1>Nueva orden</h1>
-        <p class="text-muted">Seleccioná el cliente para iniciar la orden. Los productos se agregan en el siguiente paso.</p>
+        <p class="text-muted">Toda orden queda asociada a un cliente, para conservar la trazabilidad de fiado y entregas. Los productos se agregan en el siguiente paso.</p>
     </div>
 </div>
 
@@ -29,17 +29,29 @@
             <div class="stitle">Cliente</div>
             <div class="fgrid">
                 <div class="ffull">
-                    <label asp-for="ClienteId">Cliente</label>
+                    <div class="labelrow">
+                        <label asp-for="ClienteId">Cliente de la orden</label>
+                        @if (clientes != null && clientes.Any(c => c.EsReservado && c.Id == Model?.ClienteId))
+                        {
+                            <span class="defpill">@await Html.PartialAsync("_Icon", "tick") Predeterminado</span>
+                        }
+                    </div>
                     <select asp-for="ClienteId" class="form-select">
                         <option value="">-- Selecciona un cliente --</option>
                         @if (clientes != null)
                         {
                             @foreach (var c in clientes)
                             {
-                                <option value="@c.Id">@c.Nombre</option>
+                                <option value="@c.Id" selected="@(c.Id == Model?.ClienteId)">
+                                    @(c.EsReservado ? $"{c.Nombre} — venta de mostrador" : c.Nombre)
+                                </option>
                             }
                         }
                     </select>
+                    <div class="field-hint">
+                        Viene preseleccionado para agilizar la venta rápida de mostrador. Cambialo si necesitás
+                        registrar fiado, entrega a domicilio o facturar con RNC.
+                    </div>
                     <span asp-validation-for="ClienteId" class="text-danger small"></span>
                 </div>
             </div>

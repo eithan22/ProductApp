@@ -1,6 +1,7 @@
 using ProductApp.Domian.Common.Base;
 using ProductApp.Domian.Common.Enums.EnumsUsuario;
 using ProductApp.Domian.Common.Exceptions;
+using ProductApp.Domian.Common.Legal;
 
 namespace ProductApp.Domian.Entitis
 {
@@ -15,9 +16,23 @@ namespace ProductApp.Domian.Entitis
         public DateTime? FechaNacimiento { get; private set; }
         public bool DebeCambiarPassword { get; private set; } = false;
 
+        // Constancia de la aceptación de los documentos legales. Nullable a propósito: null
+        // significa "nunca aceptó", que es el estado de todo usuario creado antes de que este
+        // registro existiera y de todo usuario nuevo.
+        public string? VersionDocumentosLegalesAceptada { get; private set; }
+        public DateTime? FechaAceptacionDocumentosLegales { get; private set; }
+
+        public const int LargoMaximoVersionDocumentosLegales = 20;
+
         public int? Edad => FechaNacimiento.HasValue
             ? CalcularEdad(FechaNacimiento.Value)
             : null;
+
+        // Se compara contra la versión que hay en el código, no contra una guardada en base:
+        // ver el comentario de DocumentosLegales. Ordinal porque es un número de versión, no
+        // texto de interfaz. Como Edad, es calculada: UsuarioConfig la ignora.
+        public bool DebeAceptarDocumentosLegales =>
+            !string.Equals(VersionDocumentosLegalesAceptada, DocumentosLegales.VersionVigente, StringComparison.Ordinal);
 
         public IReadOnlyList<Orden> Ordenes { get; private set; } = new List<Orden>();
 
@@ -103,6 +118,27 @@ namespace ProductApp.Domian.Entitis
         public void ConfirmarCambioPassword()
         {
             DebeCambiarPassword = false;
+            ActualizarFechaModificacion();
+        }
+
+        // Deja constancia de qué versión aceptó el usuario y cuándo. Si ya había aceptado esa
+        // misma versión no toca nada: la fecha de la PRIMERA aceptación es la que sirve como
+        // prueba, y sobrescribirla con la de un segundo clic la destruiría.
+        public void RegistrarAceptacionDocumentosLegales(string version)
+        {
+            if (string.IsNullOrWhiteSpace(version))
+                throw new ValidacionDominioException("VersionDocumentosLegalesAceptada",
+                    "La versión de los documentos aceptados no puede estar vacía.");
+
+            if (version.Length > LargoMaximoVersionDocumentosLegales)
+                throw new ValidacionDominioException("VersionDocumentosLegalesAceptada",
+                    $"La versión de los documentos aceptados no puede exceder los {LargoMaximoVersionDocumentosLegales} caracteres.");
+
+            if (string.Equals(VersionDocumentosLegalesAceptada, version, StringComparison.Ordinal))
+                return;
+
+            VersionDocumentosLegalesAceptada = version;
+            FechaAceptacionDocumentosLegales = DateTime.UtcNow;
             ActualizarFechaModificacion();
         }
 

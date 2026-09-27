@@ -155,7 +155,8 @@ h1, h2, h3, h4, h5, h6 {
   color: #8B939C;               /* 5.7:1 sobre --color-ink, cumple AA */
 }
 
-.app-sidebar a {
+.app-sidebar a,
+.app-sidebar .logout {
   color: #A9AEB5;
   display: flex;
   align-items: center;
@@ -166,7 +167,8 @@ h1, h2, h3, h4, h5, h6 {
   border-left: 3px solid transparent;
 }
 
-.app-sidebar a:hover {
+.app-sidebar a:hover,
+.app-sidebar .logout:hover {
   background: rgba(255,255,255,.04);
   color: #fff;
 }
@@ -177,9 +179,21 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(20,80,63,.25);
 }
 
-.app-sidebar .logout {
-  color: #D48A7C;
+/* "Cerrar sesión" dejó de ser un <a> y pasó a ser el botón de un <form> POST (por GET
+   se podía disparar desde otro sitio). El margin-top va en el form, que es el hijo flex
+   del sidebar; los resets dejan al botón con el mismo aspecto que un ítem de navegación. */
+.app-sidebar .logout-form {
   margin-top: auto;
+}
+
+.app-sidebar .logout {
+  width: 100%;
+  background: none;
+  border: 0;
+  border-left: 3px solid transparent;
+  font-family: inherit;
+  cursor: pointer;
+  color: #D48A7C;
 }
 
 /* ---------- Shell: contenido + topbar ---------- */
@@ -222,6 +236,8 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1 1 auto;
   max-width: 400px;
   margin-left: auto;
+  /* ancla del panel de resultados, que se posiciona absoluto debajo */
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -383,6 +399,193 @@ button.notif-item:hover { background: var(--color-bg); }
 .notif-empty .icon { width: 28px; height: 28px; margin-bottom: 8px; }
 .notif-empty p { margin: 0; font-size: .84rem; }
 
+/* ---------- Búsqueda global ---------- */
+
+/* Pista del atajo, a la derecha del input (docs/diseno/.../BusquedaGlobal.dc.html) */
+.busq-esc {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 7px;
+  color: var(--color-muted);
+}
+
+.busq-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(22,25,29,.42);
+  /* debajo del topbar (30) y del sidebar (40): solo apaga el contenido */
+  z-index: 25;
+}
+body.busqueda-resultados .busq-scrim { display: block; }
+
+.busq-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.22);
+  z-index: 50;
+  overflow: hidden;
+  text-align: left;
+}
+body.busqueda-resultados .busq-panel { display: block; }
+
+.busq-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.busq-head p { margin: 0; }
+.busq-head .t { font-size: .83rem; color: var(--color-muted); }
+.busq-head .t b { color: var(--color-ink); }
+.busq-head .c { font-size: .76rem; color: var(--color-muted); white-space: nowrap; }
+
+/* Cuatro categorías llenas no pueden tapar la pantalla: mismo criterio que
+   la lista de notificaciones, el panel se desplaza por dentro. */
+.busq-body { max-height: min(60vh, 440px); overflow-y: auto; }
+
+.busq-group { border-bottom: 1px solid var(--color-border); }
+.busq-group:last-child { border-bottom: none; }
+
+.busq-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 11px 18px 7px;
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.busq-label .mono { letter-spacing: 0; font-weight: 700; }
+
+.busq-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  text-decoration: none;
+  color: inherit;
+}
+/* Una sola fila marcada: el teclado y el mouse comparten el mismo resaltado */
+.busq-item:hover,
+.busq-item.activa { background: var(--color-primary-soft); }
+
+.busq-tile {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.busq-tile .icon { width: 16px; height: 16px; vertical-align: 0; }
+.busq-tile.producto  { background: var(--color-primary-soft); color: var(--color-primary); }
+.busq-tile.cliente   { background: var(--color-info-soft);    color: var(--color-info); }
+.busq-tile.orden     { background: var(--color-warn-soft);    color: var(--color-warn); }
+.busq-tile.proveedor { background: var(--color-accent2-soft); color: var(--color-accent2); }
+
+.busq-texto { flex: 1 1 auto; min-width: 0; }
+.busq-name {
+  display: block;
+  font-weight: 700;
+  font-size: .89rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.busq-meta {
+  display: block;
+  font-size: .76rem;
+  color: var(--color-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Se reusa la pastilla de estado de las órdenes, en versión compacta */
+.busq-meta .estado-pill { font-size: .66rem; padding: 3px 9px; vertical-align: 1px; }
+
+.busq-right { flex: none; text-align: right; }
+.busq-val { display: block; font-family: var(--font-mono); font-size: .83rem; font-weight: 700; }
+.busq-sub { display: block; font-size: .72rem; color: var(--color-muted); margin-top: 2px; }
+
+.busq-item mark {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  border-radius: 3px;
+  padding: 0 1px;
+  font-weight: 800;
+}
+/* Sobre la fila marcada el resaltado se pierde contra el fondo: se invierte */
+.busq-item.activa mark,
+.busq-item:hover mark,
+.busq-item.activa .estado-pill,
+.busq-item:hover .estado-pill { background: #fff; }
+
+.busq-empty {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 4px 18px 12px;
+  font-size: .8rem;
+  color: var(--color-muted);
+}
+.busq-empty .icon { width: 15px; height: 15px; flex: none; vertical-align: 0; }
+
+.busq-mas {
+  margin: 0;
+  padding: 4px 18px 12px;
+  font-size: .79rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.busq-nada {
+  margin: 0;
+  padding: 28px 18px;
+  text-align: center;
+  font-size: .84rem;
+  color: var(--color-muted);
+}
+
+.busq-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 18px;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  font-size: .73rem;
+  color: var(--color-muted);
+}
+.busq-kb { display: inline-flex; align-items: center; gap: 5px; }
+.busq-kb b {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--color-ink);
+}
+
 .user-chip {
   display: inline-flex;
   align-items: center;
@@ -491,6 +694,46 @@ button.notif-item:hover { background: var(--color-bg); }
   padding-top: 24px;
   border-top: 1px solid var(--color-border);
   margin-top: 6px;
+}
+
+/* Píldora del registro reservado del sistema (Consumidor Final) y su gemela
+   "Predeterminado" del combo de cliente en Orden/Create. Mismo lenguaje visual
+   que .status-pill pero más chica, porque acompañan a un texto, no lo reemplazan. */
+.lockpill, .defpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  vertical-align: middle;
+}
+.lockpill { margin-left: 8px; }
+.lockpill .icon, .defpill .icon { width: 11px; height: 11px; vertical-align: -1px; }
+
+/* El candado no es un botón: no reacciona al hover ni es alcanzable por teclado,
+   solo explica por qué no hay acciones en esa fila. */
+.icon-btn.locked {
+  cursor: default;
+  background: var(--color-primary-soft);
+  border-color: transparent;
+  color: var(--color-primary);
+}
+.icon-btn.locked:hover { color: var(--color-primary); border-color: transparent; }
+
+.labelrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.labelrow label { margin-bottom: 7px; }
+
+.field-hint {
+  font-size: .8rem;
+  color: var(--color-muted);
+  margin-top: 7px;
+  line-height: 1.45;
 }
 
 /* Tabla que no se puede reflowar: desplazamiento horizontal contenido.
@@ -633,6 +876,9 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .ledger-name {
   font-weight: 700;
   font-size: .98rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ledger-desc {
@@ -1118,6 +1364,30 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .orden-thumb.e-entregada { background: var(--color-accent2-soft); color: var(--color-accent2); }
 .orden-thumb.e-cancelada { background: var(--color-danger-soft);  color: var(--color-danger); }
 
+/* Pagos: el canto y el icono identifican el método de cobro, con el mismo
+   lenguaje visual que los estados de orden. El color nunca va solo: siempre
+   lo acompaña el icono del método y el texto en la línea secundaria. */
+.orden-edge.m-transferencia { background: var(--color-primary); }
+.orden-edge.m-efectivo      { background: var(--color-warn); }
+.orden-edge.m-tarjeta       { background: var(--color-info); }
+.orden-edge.m-otro          { background: var(--color-accent2); }
+
+.orden-thumb.m-transferencia { background: var(--color-primary-soft); color: var(--color-primary); }
+.orden-thumb.m-efectivo      { background: var(--color-warn-soft);    color: var(--color-warn); }
+.orden-thumb.m-tarjeta       { background: var(--color-info-soft);    color: var(--color-info); }
+.orden-thumb.m-otro          { background: var(--color-accent2-soft); color: var(--color-accent2); }
+
+/* Selector de orden a cobrar: cada fila se despliega en su propio formulario,
+   sin JavaScript, para no sacar al usuario de la pantalla de Pagos. */
+.cobrar-item { border-bottom: 1px solid var(--color-border); }
+.cobrar-item:last-child { border-bottom: none; }
+.cobrar-item > summary { list-style: none; cursor: pointer; }
+.cobrar-item > summary::-webkit-details-marker { display: none; }
+.cobrar-item > summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.cobrar-item > summary .orden-row { border-bottom: none; }
+.cobrar-item[open] > summary .orden-chevron { transform: rotate(180deg); }
+.cobrar-form { padding: 4px 20px 20px 74px; }
+
 .orden-id {
   font-family: var(--font-mono);
   font-size: .78rem;
@@ -1350,6 +1620,7 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 
 /* En el sidebar el anillo va por dentro para no sobresalir del panel */
 .app-sidebar a:focus-visible,
+.app-sidebar .logout:focus-visible,
 .app-sidebar .brand:focus-visible {
   outline: 2px solid #FFFFFF;
   outline-offset: -2px;
@@ -1434,6 +1705,71 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 .stat-cell .value.is-danger { color: var(--color-danger); }
 
 /* ============================================================
+   Panel de inicio — ranking de productos y accesos rápidos
+   La barra proporcional reutiliza .inv-bar/.inv-bar-fill: es la
+   misma pieza que en Inventario (canal + relleno), no una nueva.
+   ============================================================ */
+
+.rank-list { display: flex; flex-direction: column; gap: 13px; }
+
+.rank-row { display: flex; align-items: center; gap: 11px; }
+
+.rank-pos {
+  width: 20px;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--color-muted);
+}
+
+.rank-main { flex: 1; min-width: 0; }
+
+.rank-name {
+  font-size: .85rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* el nombre ya dejó su propio aire abajo: la barra no suma el suyo */
+.rank-main .inv-bar { margin-top: 0; }
+
+.rank-value {
+  width: 62px;
+  flex: none;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--color-muted);
+}
+
+/* auto-fit y no dos columnas fijas: la tarjeta ocupa 5 columnas para el
+   administrador y las 12 para el resto; así da 2x2 o una sola línea de 4
+   sin necesitar un media query */
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: border-color .12s ease, background .12s ease;
+}
+.quick-link:hover { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.quick-link .icon { width: 20px; height: 20px; color: var(--color-primary); }
+.quick-link .quick-label { font-size: .84rem; font-weight: 700; }
+
+/* ============================================================
    Estado vacío
    ============================================================ */
 
@@ -1477,6 +1813,49 @@ label.form-label { font-size: .85rem; font-weight: 600; color: var(--color-ink);
 /* dentro de una tarjeta que ya trae su propio contenido (Inicio) el vacío
    es una zona más, no la pantalla entera: ahí no necesita tanto aire */
 .surface-card > .empty-state:not(:only-child) { padding: 36px 24px; }
+
+/* ============================================================
+   Logo de la empresa (Configuración)
+   Fila propia arriba de los datos de identidad. El logo se
+   muestra completo (contain), no recortado como las fotos de
+   producto, y sin logo la caja queda en el verde suave.
+   ============================================================ */
+
+.logo-row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+}
+
+.logo-box {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.logo-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.logo-box.is-empty {
+  background: var(--color-primary-soft);
+  border-color: transparent;
+  color: var(--color-primary);
+}
+.logo-box.is-empty .icon { width: 26px; height: 26px; }
+
+.logo-body { flex: 1; min-width: 220px; }
+.logo-body label { font-size: .83rem; font-weight: 700; color: var(--color-ink); display: block; margin-bottom: 7px; }
+.logo-acts { display: flex; gap: 8px; margin-top: 11px; }
 
 /* ============================================================
    Errores de validación en formularios.
@@ -2102,6 +2481,268 @@ html:has(.landing-page) { scroll-behavior: smooth; }
 }
 
 /* ============================================================
+   Importación masiva de productos (RF-3.10)
+   ------------------------------------------------------------
+   Dos pantallas. La de carga son tres pasos numerados y la zona
+   de archivo; la de resultado reusa .stat-strip para los cuatro
+   contadores y .list-head para las cabeceras, así que acá solo
+   van las grillas de filas y la píldora de columna.
+
+   Es la primera vez que el sistema sube un documento y no una
+   imagen: por eso la zona de archivo tiene caja propia en vez de
+   reusar .logo-row (pensada para una miniatura) o el input suelto
+   del formulario de producto (un campo más entre otros).
+   ============================================================ */
+
+/* ---------- Pantalla de carga ---------- */
+
+.import-paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-bottom: 16px;
+}
+
+.import-paso-num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.import-paso-titulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+
+.import-paso-desc {
+  margin: 3px 0 0;
+  font-size: .82rem;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+/* Encabezados esperados: el nombre exacto de la columna en mono a la
+   izquierda, qué acepta a la derecha. El nombre va en mono porque es
+   texto que el usuario tiene que copiar tal cual en su archivo. */
+.import-cols {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 14px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+.import-col-nombre {
+  font-family: var(--font-mono);
+  font-size: .79rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.import-col-nombre .req { color: var(--color-danger); }
+.import-col-desc { font-size: .79rem; color: var(--color-muted); line-height: 1.5; }
+
+/* Zona de archivo. Sin drag&drop propio: un <input type="file"> ya acepta
+   de fábrica los archivos que se le sueltan encima, así que el borde
+   punteado es la pista visual y el input hace el trabajo. Sin JS de por
+   medio, la zona sigue funcionando con teclado y lector de pantalla. */
+.import-drop {
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  padding: 28px 24px;
+  text-align: center;
+}
+.import-drop:focus-within { border-color: var(--color-primary); }
+
+.import-drop-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.import-drop-icon .icon { width: 24px; height: 24px; vertical-align: 0; }
+
+.import-drop-titulo { font-size: .94rem; font-weight: 700; }
+.import-drop-desc { font-size: .8rem; color: var(--color-muted); margin: 5px 0 16px; }
+.import-drop .form-control { max-width: 360px; margin: 0 auto; }
+
+/* Archivo elegido. Arranca oculto y el script de la vista le agrega
+   .is-visible: sin JS no aparece, pero el input ya muestra el nombre. */
+.import-file {
+  display: none;
+  align-items: center;
+  gap: 13px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-sm);
+}
+.import-file.is-visible { display: flex; }
+.import-file .icon { flex: none; color: var(--color-primary); }
+.import-file-nombre { font-weight: 700; font-size: .88rem; }
+.import-file-peso {
+  font-size: .75rem;
+  color: var(--color-primary-dark);
+  opacity: .8;
+  margin-top: 2px;
+}
+
+.import-reglas {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.import-regla { display: flex; gap: 10px; padding: 7px 0; font-size: .83rem; line-height: 1.5; }
+.import-regla .icon {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--color-primary);
+  margin-top: 3px;
+  vertical-align: 0;
+}
+
+/* ---------- Pantalla de resultado ---------- */
+
+/* Veredicto en una línea: el número que importa antes que las tablas.
+   Verde si salió todo limpio, ámbar si hay algo para revisar. */
+.import-verdict {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-left: 4px solid var(--color-primary);
+  margin-bottom: 20px;
+}
+.import-verdict.is-warn { border-left-color: var(--color-warn); }
+
+.import-verdict-icon {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.import-verdict.is-warn .import-verdict-icon {
+  background: var(--color-warn-soft);
+  color: var(--color-warn);
+}
+.import-verdict-icon .icon { width: 24px; height: 24px; vertical-align: 0; }
+
+.import-verdict-body { flex: 1; min-width: 0; }
+.import-verdict-titulo {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+.import-verdict-desc { margin: 3px 0 0; font-size: .85rem; color: var(--color-muted); }
+.import-verdict-file {
+  flex: none;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: .76rem;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+/* Filas rechazadas y omitidas: mismo esquema cabecera + fila en grilla
+   que ya usan Inventario y Usuarios (.list-head + clase de grilla). */
+.import-err-head,
+.import-err-row {
+  display: grid;
+  grid-template-columns: 64px 1.4fr 140px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.import-err-row {
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.import-err-row:last-child { border-bottom: none; }
+
+.import-dup-head,
+.import-dup-row {
+  display: grid;
+  grid-template-columns: 64px 1.4fr 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.import-dup-row {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.import-dup-row:last-child { border-bottom: none; }
+
+.import-fila {
+  font-family: var(--font-mono);
+  font-size: .83rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+.import-prod { font-size: .86rem; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.import-dup-nombre { font-size: .85rem; font-weight: 700; overflow-wrap: anywhere; }
+.import-dup-desc { font-size: .8rem; color: var(--color-muted); }
+.import-motivo { font-size: .82rem; line-height: 1.45; overflow-wrap: anywhere; }
+
+/* Nombre de la columna que falló: en mono porque es el encabezado
+   literal del archivo, el dato que el usuario tiene que ir a corregir. */
+.import-col-pill {
+  display: inline-flex;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+.import-col-pill.is-warn { background: var(--color-warn-soft); color: var(--color-warn); }
+
+/* En teléfono las cuatro columnas no entran: cada fila se lee de arriba
+   abajo y la cabecera de columnas deja de tener sentido. */
+@media (max-width: 767.98px) {
+  .import-err-head,
+  .import-dup-head { display: none; }
+
+  .import-err-row,
+  .import-dup-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    align-items: start;
+  }
+
+  .import-verdict { flex-wrap: wrap; }
+  .import-verdict-file { text-align: left; width: 100%; }
+
+  .import-cols { grid-template-columns: 1fr; gap: 4px 0; }
+  .import-col-desc { margin-bottom: 8px; }
+}
+
+/* ============================================================
    Adaptación a pantallas angostas
    ------------------------------------------------------------
    Tres tramos, sobre el diseño de escritorio que no se toca:
@@ -2175,7 +2816,8 @@ html:has(.landing-page) { scroll-behavior: smooth; }
   .app-sidebar .brand { padding-right: 56px; }
 
   /* objetivo táctil más holgado */
-  .app-sidebar a { padding: 12px 22px; }
+  .app-sidebar a,
+  .app-sidebar .logout { padding: 12px 22px; }
 
   /* ---------- Contenido a ancho completo ---------- */
 
@@ -2250,6 +2892,13 @@ html:has(.landing-page) { scroll-behavior: smooth; }
   }
   .topbar-search-toggle:hover { color: var(--color-ink); border-color: var(--color-ink); }
 
+  /* En pantalla táctil no hay teclado físico: la pista "esc" y el pie de
+     atajos ocupan espacio sin significar nada. */
+  .busq-esc,
+  .busq-foot { display: none; }
+
+  .busq-panel { width: calc(100vw - 32px); }
+
   .topbar-actions { margin-left: auto; }
 
   /* el nombre y el rol se caen: queda el avatar como acceso al perfil */
@@ -2293,6 +2942,13 @@ html:has(.landing-page) { scroll-behavior: smooth; }
   .orden-id { width: auto; }
   .orden-total { width: auto; margin-left: auto; }
   .orden-chevron { display: none; }
+
+  /* ---------- Pagos: selector de orden a cobrar ---------- */
+
+  /* En las filas del selector el chevron no es decorativo: es lo único que
+     avisa que la fila se abre, así que acá sí se muestra. */
+  .cobrar-item > summary .orden-chevron { display: block; }
+  .cobrar-form { padding: 4px 16px 16px; }
 
   /* ---------- Usuarios ---------- */
 
@@ -2375,6 +3031,126 @@ html:has(.landing-page) { scroll-behavior: smooth; }
   .page-header .page-header-actions { width: 100%; }
   .page-header .page-header-actions > .btn-pa { flex: 1 1 auto; justify-content: center; }
   .page-header > .btn-pa { justify-content: center; }
+}
+
+/* ============================================================
+   Páginas legales (Privacidad / Términos)
+   ============================================================ */
+
+/* Estas dos vistas se abren en dos contextos: con sesión, dentro del shell; y
+   sin sesión, desde el pie de la landing. Sin sesión el layout las encierra en
+   la caja de 440px del login, donde un documento largo no se puede leer. Mismo
+   recurso que en .landing-page: la pantalla se detecta por su contenido y el
+   layout no se toca. */
+.auth-container:has(.legal-page) {
+  display: block;
+  padding: 0;
+  background: var(--color-bg);
+}
+
+.auth-box:has(.legal-page) {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.legal-page { max-width: 820px; margin: 0 auto; }
+
+/* El aire exterior solo hace falta sin sesión: con sesión lo pone .app-content */
+.auth-box:has(.legal-page) .legal-page { padding: 40px 24px 64px; }
+
+.legal-back { display: inline-flex; margin-bottom: 18px; }
+
+.legal-title { font-size: 1.6rem; font-weight: 800; margin: 0 0 6px; }
+
+.legal-meta {
+  color: var(--color-muted);
+  font-size: .8rem;
+  margin: 0 0 20px;
+}
+
+.legal-doc { padding: 32px 36px; }
+
+/* La línea superior separa secciones sin necesidad de numerarlas a mano en CSS */
+.legal-doc h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 30px 0 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+.legal-doc > h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+
+.legal-doc h3 { font-size: .93rem; font-weight: 700; margin: 18px 0 6px; }
+
+.legal-doc p,
+.legal-doc li { font-size: .9rem; line-height: 1.65; }
+
+.legal-doc p { margin: 0 0 12px; }
+.legal-doc ul { margin: 0 0 12px; padding-left: 20px; }
+.legal-doc li { margin-bottom: 6px; }
+.legal-doc a { color: var(--color-primary); }
+
+.legal-doc code {
+  font-family: var(--font-mono);
+  font-size: .82em;
+  background: var(--color-bg);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* Aviso de encabezado: el documento arranca diciendo que es un proyecto
+   académico, y eso tiene que leerse antes que el resto */
+.legal-note {
+  background: var(--color-warn-soft);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin: 0 0 20px;
+}
+.legal-note p:last-child { margin-bottom: 0; }
+
+/* Enlaces legales al pie del menú lateral. Sin esto heredan el display:flex
+   y el padding de ancho completo de .app-sidebar a, y se ven como dos ítems
+   más de navegación. */
+.app-sidebar .sidebar-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 7px;
+  margin: 6px 0 0;
+  padding: 0 22px;
+  font-size: .72rem;
+  color: #6F777F;
+}
+.app-sidebar .sidebar-legal a {
+  display: inline;
+  padding: 0;
+  border-left: 0;
+  font-size: inherit;
+  color: #8B939C;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.app-sidebar .sidebar-legal a:hover { background: none; color: #fff; }
+
+/* Enlaces legales en el pie de la landing, sobre el verde oscuro */
+.landing-credits .landing-legal {
+  margin: 0 0 8px;
+  font-size: .8rem;
+  color: rgba(255,255,255,.82);
+}
+.landing-credits .landing-legal a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.landing-credits .landing-legal a:hover { color: #fff; }
+
+@media (max-width: 575.98px) {
+  .legal-doc { padding: 22px 18px; }
+  .auth-box:has(.legal-page) .legal-page { padding: 28px 16px 48px; }
 }
 
 /* ============================================================

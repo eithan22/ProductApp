@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductApp.Aplication.Dtos.Modulo_Ventas.DetalleOrdenDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
+using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Ventas
 {
@@ -27,7 +28,9 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         
         public async Task<IActionResult> CreateDetalleOrden(CreateDetalleOrdenDto  dto)
         {
-            var result = await _detalleOrdenServices.AgregarProductoAsync(dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var esAdministrador = User.IsInRole("Administrador");
+            var result = await _detalleOrdenServices.AgregarProductoAsync(dto, usuarioSolicitanteId, esAdministrador);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
@@ -43,7 +46,9 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
         public async Task<IActionResult> UpdateDetalleOrden(int id, UpdateDetalleOrdenDto dto)
         {
             dto.id = id;
-            var result = await _detalleOrdenServices.ActualizarDetalleOrden(id, dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var esAdministrador = User.IsInRole("Administrador");
+            var result = await _detalleOrdenServices.ActualizarDetalleOrden(id, dto, usuarioSolicitanteId, esAdministrador);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
@@ -76,7 +81,9 @@ namespace ProductApp.Api.Controllers.Modulo_Ventas
 
         public async Task<IActionResult> DeleteDetalleOrden(int id)
         {
-            var result = await _detalleOrdenServices.EliminarProductoAsync(id);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var esAdministrador = User.IsInRole("Administrador");
+            var result = await _detalleOrdenServices.EliminarProductoAsync(id, usuarioSolicitanteId, esAdministrador);
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 

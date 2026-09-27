@@ -11,5 +11,6 @@ namespace Web.Services.Interfaces.IEndPoints.Modulo_Ventas
         string CambiarEstado { get; }
         string Cancelar { get; }
         string Confirmar { get; }
+        string GetFactura { get; }
     }
 }

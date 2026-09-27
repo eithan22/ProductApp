@@ -23,6 +23,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<ResetearPasswordDto> _resetPasswordValidator;
         private readonly IValidator<CambiarRolDto> _cambiarRolValidator;
         private readonly IValidator<ActualizarMiPerfilDto> _actualizarMiPerfilValidator;
+        private readonly IValidator<AceptarDocumentosLegalesDto> _aceptarDocumentosLegalesValidator;
         private readonly IValidatorBusinessUsuario _validatorBusinessUsuarios;
         private readonly ILogger<UsuarioService> _logger;
 
@@ -36,6 +37,7 @@ namespace ProductApp.Aplication.Services
             IValidator<ResetearPasswordDto> resetPasswordValidator,
             IValidator<CambiarRolDto> cambiarRolValidator,
             IValidator<ActualizarMiPerfilDto> actualizarMiPerfilValidator,
+            IValidator<AceptarDocumentosLegalesDto> aceptarDocumentosLegalesValidator,
             ILogger<UsuarioService> logger)
         {
             _usuarioRepository = usuarioRepository;
@@ -47,6 +49,7 @@ namespace ProductApp.Aplication.Services
             _resetPasswordValidator = resetPasswordValidator;
             _cambiarRolValidator = cambiarRolValidator;
             _actualizarMiPerfilValidator = actualizarMiPerfilValidator;
+            _aceptarDocumentosLegalesValidator = aceptarDocumentosLegalesValidator;
             _logger = logger;
         }
 
@@ -150,6 +153,10 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Rol actualizado correctamente");
         }
 
+        // Baja definitiva por soft delete: marca EstaEliminado y conserva la fila. El borrado
+        // fisico esta prohibido aqui porque las FK de Orden y Notificacion estan en cascada, y
+        // eliminar la fila arrastraria las ordenes, sus detalles y sus pagos: el historial
+        // financiero y los reportes de ventas cambiarian retroactivamente.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -159,11 +166,23 @@ namespace ProductApp.Aplication.Services
             if (usuario == null)
                 return OperationResultD<bool>.Failure("Usuario no encontrado");
 
-            await _usuarioRepository.DeleteAsync(id);
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarBorradoFisicoUsuarioAsync(usuario);
+            if (!validatorBusinessResult.IsSuccess)
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+
+            usuario.Eliminar();
+            await _usuarioRepository.UpdateAsync(usuario);
+
             return OperationResultD<bool>.Success(true, "Usuario Eliminado Correctamente");
         }
 
-        public async Task<OperationResultD<bool>> DisableAsync(int id)
+        // Igual que GetAllAsync: la firma de IBaseServices delega en la sobrecarga con
+        // solicitante. El 0 significa "sin solicitante identificado" y en la práctica no
+        // ocurre: el único que llama es el controller, que siempre pasa el id del token.
+        public Task<OperationResultD<bool>> DisableAsync(int id)
+            => DisableAsync(id, usuarioSolicitanteId: 0);
+
+        public async Task<OperationResultD<bool>> DisableAsync(int id, int usuarioSolicitanteId)
         {
             if (id <= 0)
                 return OperationResultD<bool>.Failure("Id no valido");
@@ -178,6 +197,8 @@ namespace ProductApp.Aplication.Services
 
             usuario.Desactivar();
             await _usuarioRepository.UpdateAsync(usuario);
+
+            _logger.LogInformation("Usuario {UsuarioId} deshabilitado, por el usuario {UsuarioSolicitanteId}", usuario.Id, usuarioSolicitanteId);
 
             return OperationResultD<bool>.Success(true, "Usuario Deshabilitado Correctamente");
         }
@@ -197,10 +218,10 @@ namespace ProductApp.Aplication.Services
             return OperationResultD<bool>.Success(true, "Usuario activado correctamente");
         }
 
-        public Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
             => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
 
-        public async Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        public async Task<OperationResultD<PagedResult<UsuarioResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<UsuarioResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
@@ -283,6 +304,10 @@ namespace ProductApp.Aplication.Services
             if (usuario == null)
                 return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
 
+            var businessValidationResult = await _validatorBusinessUsuarios.ValidarActualizarMiPerfilAsync(dto, usuarioId);
+            if (!businessValidationResult.IsSuccess)
+                return OperationResultD<UsuarioResponseDto>.Failure(businessValidationResult.Message);
+
             usuario.CambiarNombre(dto.Nombre);
             usuario.CambiarEmail(dto.Email);
             usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
@@ -290,6 +315,35 @@ namespace ProductApp.Aplication.Services
 
             var usuarioResponseDto = _mapperUsuario.ToDto(usuario);
             return OperationResultD<UsuarioResponseDto>.Success(usuarioResponseDto, "Perfil actualizado correctamente");
+        }
+
+        public async Task<OperationResultD<bool>> RegistrarAceptacionDocumentosLegalesAsync(int usuarioId, AceptarDocumentosLegalesDto dto)
+        {
+            var validationResult = await _aceptarDocumentosLegalesValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return OperationResultD<bool>.Failure($"Validación fallida: {errors}");
+            }
+
+            var usuario = await _usuarioRepository.GetByIdAsync(usuarioId);
+            if (usuario == null)
+                return OperationResultD<bool>.Failure("Usuario no encontrado");
+
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarAceptacionDocumentosLegales(dto);
+            if (!validatorBusinessResult.IsSuccess)
+                return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
+
+            usuario.RegistrarAceptacionDocumentosLegales(dto.Version);
+            await _usuarioRepository.UpdateAsync(usuario);
+
+            // Auditoría: junto con las dos columnas, es el único rastro del acto. Mismo criterio
+            // que el reseteo de contraseña y el cambio de rol.
+            _logger.LogInformation(
+                "Aceptación de documentos legales registrada para el usuario {UsuarioId}: versión {Version} el {FechaAceptacion}",
+                usuario.Id, usuario.VersionDocumentosLegalesAceptada, usuario.FechaAceptacionDocumentosLegales);
+
+            return OperationResultD<bool>.Success(true, "Documentos legales aceptados correctamente");
         }
     }
 }

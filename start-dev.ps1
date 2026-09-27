@@ -11,28 +11,7 @@ $root = $PSScriptRoot
 
 # ---------- Azurite ----------
 
-$azuritePort = Get-NetTCPConnection -LocalPort 10000 -State Listen -ErrorAction SilentlyContinue
-
-if (-not $azuritePort) {
-    Write-Host "Azurite no está corriendo. Iniciando..." -ForegroundColor Yellow
-
-    $azuriteDir = Join-Path $root ".azurite"
-    New-Item -ItemType Directory -Force -Path $azuriteDir | Out-Null
-
-    Start-Process -FilePath "azurite" `
-        -ArgumentList "--silent", "--location", $azuriteDir, "--debug", (Join-Path $azuriteDir "debug.log") `
-        -WindowStyle Hidden
-
-    Start-Sleep -Seconds 2
-
-    if (Get-NetTCPConnection -LocalPort 10000 -State Listen -ErrorAction SilentlyContinue) {
-        Write-Host "Azurite arriba en el puerto 10000." -ForegroundColor Green
-    } else {
-        Write-Warning "Azurite no respondió en el puerto 10000. Verificá que esté instalado (npm i -g azurite)."
-    }
-} else {
-    Write-Host "Azurite ya estaba corriendo." -ForegroundColor Green
-}
+& (Join-Path $root "scripts\ensure-azurite.ps1")
 
 # ---------- API ----------
 

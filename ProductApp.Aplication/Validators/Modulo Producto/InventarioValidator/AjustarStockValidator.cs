@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
+using ProductApp.Domian.Entitis;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,7 +17,9 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator
 
             RuleFor(x => x.NuevoStock)
                  .NotEmpty().WithMessage("El nuevo stock es obligatorio.")
-                 .GreaterThanOrEqualTo(0).WithMessage("El nuevo stock debe ser mayor o igual a cero.");
+                 .GreaterThanOrEqualTo(0).WithMessage("El nuevo stock debe ser mayor o igual a cero.")
+                 .LessThanOrEqualTo(Inventario.CantidadMaximaStock)
+                 .WithMessage($"El nuevo stock no puede superar las {Inventario.CantidadMaximaStock} unidades.");
 
             RuleFor(x => x.NuevoStockMinimo)
                  .GreaterThanOrEqualTo(0).WithMessage("El nuevo stock mínimo debe ser mayor o igual a cero.")

@@ -69,7 +69,12 @@ namespace ProductApp.Aplication.Services
 
 
 
-        //no se usa por ahora
+        // DEUDA TÉCNICA — no exponer este método en el controller sin agregarle antes un
+        // validador de negocio. Es borrado FÍSICO y la FK Productos→Categorias está en
+        // cascada: borrar una categoría arrastra sus productos, y de ahí sigue a Inventarios
+        // y a DetalleOrden, o sea que cambiaría el historial de ventas ya facturado. Es la
+        // misma razón por la que A5 convirtió el borrado de Usuario en lógico. Hoy no es
+        // alcanzable: CategoriaController solo publica DisableCategoria/EnableCategoria.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if(id <=0)
@@ -150,10 +155,10 @@ namespace ProductApp.Aplication.Services
 
 
 
-        public Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
             => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
 
-        public async Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+        public async Task<OperationResultD<PagedResult<CategoriaResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<CategoriaResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");

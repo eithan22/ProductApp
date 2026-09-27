@@ -20,7 +20,8 @@ public class ClienteMappers : IMapperCliente
                 Telefono = cliente.Telefono,
                 Cedula = cliente.Cedula,
                 Direccion = cliente.Direccion,
-                Estado = cliente.Estado.ToString()
+                Estado = cliente.Estado.ToString(),
+                EsReservado = cliente.EsConsumidorFinal()
 
             };
 

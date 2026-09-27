@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Configuración";
+    var sinLogo = string.IsNullOrWhiteSpace(Model.LogoUrl);
 }
 
 <div class="page-header">
@@ -16,11 +17,46 @@
 }
 
 <div class="form-wrap">
-    <form asp-action="Index">
+    @* Los formularios no se anidan: el botón "Quitar" vive en la tarjeta
+       y se asocia a este form por el atributo form=. *@
+    <form asp-action="QuitarLogo" method="post" id="form-quitar-logo" hidden></form>
+
+    <form asp-action="Index" enctype="multipart/form-data">
+        <input type="hidden" asp-for="LogoUrl" />
 
         <div class="surface-card p-4 mb-3">
-            <div class="ctitle">Empresa</div>
+            <div class="ctitle">Identidad de la empresa</div>
             <p class="cdesc">Aparece en el menú lateral, en el título de cada pantalla y en la moneda de todos los importes.</p>
+
+            <div class="logo-row">
+                <div class="logo-box @(sinLogo ? "is-empty" : null)">
+                    @if (!sinLogo)
+                    {
+                        <img src="@Model.LogoUrl" alt="Logo de @Model.NombreEmpresa" />
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_Icon", "image")
+                    }
+                </div>
+                <div class="logo-body">
+                    <label for="logo">Logo de la empresa</label>
+                    <input type="file" id="logo" name="logo" class="form-control" accept=".jpg,.jpeg,.png,.webp" data-max-mb="5" />
+                    <div class="text-muted" style="font-size:.76rem; margin-top:5px;">
+                        PNG, JPG o WEBP cuadrado, hasta 5 MB. Se guarda en el almacenamiento de imágenes del sistema; no se admiten enlaces externos.
+                    </div>
+                    <span class="text-danger small d-block" data-imagen-error></span>
+                    @if (!sinLogo)
+                    {
+                        <div class="logo-acts">
+                            <button type="submit" form="form-quitar-logo" class="btn-pa btn-pa-danger">
+                                @await Html.PartialAsync("_Icon", "trash") Quitar
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+
             <div class="fgrid">
                 <div>
                     <label asp-for="NombreEmpresa">Nombre de la empresa</label>
@@ -28,7 +64,7 @@
                     <span asp-validation-for="NombreEmpresa" class="text-danger small"></span>
                 </div>
                 <div>
-                    <label asp-for="Moneda"></label>
+                    <label asp-for="Moneda">Moneda</label>
                     <select asp-for="Moneda" class="form-select">
                         <option value="USD">USD — Dólar estadounidense</option>
                         <option value="DOP">DOP — Peso dominicano</option>
@@ -36,6 +72,22 @@
                         <option value="MXN">MXN — Peso mexicano</option>
                     </select>
                     <span asp-validation-for="Moneda" class="text-danger small"></span>
+                </div>
+                <div>
+                    <label asp-for="RucONit">RNC / RUC / NIT</label>
+                    <input asp-for="RucONit" class="form-control mono" />
+                    <div class="text-muted" style="font-size:.76rem; margin-top:5px;">
+                        Aparece bajo el nombre en la factura.
+                    </div>
+                    <span asp-validation-for="RucONit" class="text-danger small"></span>
+                </div>
+                <div>
+                    <label asp-for="Direccion">Dirección</label>
+                    <input asp-for="Direccion" class="form-control" />
+                    <div class="text-muted" style="font-size:.76rem; margin-top:5px;">
+                        Una sola línea, tal como debe imprimirse.
+                    </div>
+                    <span asp-validation-for="Direccion" class="text-danger small"></span>
                 </div>
             </div>
         </div>

@@ -71,5 +71,10 @@ namespace Web.Services.ServicesHttp.Modulo_Ventas
             await _baseHttpServices.PatchAsync<object, object>($"{_ordenEndpoint.Confirmar}{id}", new { });
             return true;
         }
+
+        public async Task<byte[]> GetFacturaAsync(int id)
+        {
+            return await _baseHttpServices.GetBytesAsync($"{_ordenEndpoint.GetFactura}{id}");
+        }
     }
 }

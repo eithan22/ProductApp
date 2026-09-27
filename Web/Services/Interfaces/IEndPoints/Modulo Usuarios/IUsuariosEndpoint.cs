@@ -17,5 +17,7 @@
         string ResetPassword { get; }
 
         string MiPerfil { get; }
+
+        string AceptarDocumentosLegales { get; }
     }
 }

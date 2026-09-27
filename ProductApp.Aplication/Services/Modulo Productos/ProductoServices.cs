@@ -26,6 +26,7 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<SubirImagenProductoDto> _validatorSubirImagenProductoDto;
         private readonly IValidatorBusinessProducto _validatorBusinessProducto;
         private readonly IAlmacenamientoImagenes _almacenamientoImagenes;
+        private readonly IGestorTransacciones _gestorTransacciones;
         private readonly ILogger<ProductoServices> _logger;
 
         public ProductoServices
@@ -38,6 +39,7 @@ namespace ProductApp.Aplication.Services
             IInventarioRepository inventarioRepository,
             IConfiguracionSistemaRepository configuracionSistemaRepository,
             IAlmacenamientoImagenes almacenamientoImagenes,
+            IGestorTransacciones gestorTransacciones,
             ILogger<ProductoServices> logger
             )
         {
@@ -50,6 +52,7 @@ namespace ProductApp.Aplication.Services
             _configuracionSistemaRepository = configuracionSistemaRepository;
             _validatorSubirImagenProductoDto = validatorSubirImagenProductoDto;
             _almacenamientoImagenes = almacenamientoImagenes;
+            _gestorTransacciones = gestorTransacciones;
             _logger = logger;
 
         }
@@ -68,7 +71,12 @@ namespace ProductApp.Aplication.Services
 
 
 
-        //no se usara por ahora
+        // DEUDA TÉCNICA — no exponer este método en el controller sin agregarle antes un
+        // validador de negocio. Es borrado FÍSICO y las FK Inventarios→Productos y
+        // DetalleOrden→Productos están en cascada: borrar un producto se lleva su inventario
+        // y las líneas de las órdenes donde se vendió, alterando ventas ya cerradas. Es la
+        // misma razón por la que A5 convirtió el borrado de Usuario en lógico. Hoy no es
+        // alcanzable: ProductoController solo publica DisableProducto/EnableProducto.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -131,7 +139,8 @@ namespace ProductApp.Aplication.Services
 
          public async Task<OperationResultD<ProductoResponseDto>> CreateAsync(CreateProductoDto dto)
         {
-
+            // La validación de forma del DTO no toca la base de datos: se hace antes de abrir
+            // la transacción para no mantener bloqueos abiertos de gusto.
             var dtoValidator = await _validatorCreateProductoDto.ValidateAsync(dto);
 
             if (!dtoValidator.IsValid)
@@ -140,34 +149,64 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ProductoResponseDto>.Failure($"Error de validación: {errors}");
             }
 
+            Producto producto;
 
-            var validatorBusiness = await _validatorBusinessProducto.ValidarCreateProductoAsync(dto);
-
-            if (!validatorBusiness.IsSuccess)
+            try
             {
-                return OperationResultD<ProductoResponseDto>.Failure(validatorBusiness.Message);
+                // Un producto sin inventario no se puede vender ni ajustar: las dos filas entran
+                // juntas o no entra ninguna. Serializable, además, impide que dos peticiones
+                // simultáneas con el mismo nombre lean las dos "no existe" y creen dos productos
+                // iguales (mismo caso del saldo en PagoService.RegistrarPagoAsync).
+                await using var transaccion = await _gestorTransacciones.IniciarSerializableAsync();
+
+                // El duplicado de nombre se comprueba DENTRO de la transacción a propósito: es una
+                // lectura de la misma tabla que estamos por escribir. Cualquier return temprano de
+                // acá para abajo sale del "await using" sin commit y la transacción se revierte.
+                var validatorBusiness = await _validatorBusinessProducto.ValidarCreateProductoAsync(dto);
+
+                if (!validatorBusiness.IsSuccess)
+                {
+                    return OperationResultD<ProductoResponseDto>.Failure(validatorBusiness.Message);
+                }
+
+                producto = _mapperProductoMapper.MapToCreateProducto(dto);
+
+                await _productorepository.CreateAsync(producto);
+
+                //crear un inventario para el producto creado con cantidad actual 0 y la cantidad minima configurada por defecto
+
+                var configuracion = await _configuracionSistemaRepository.ObtenerAsync();
+
+                var inventario = new Inventario(
+                 0,
+                 configuracion?.CantidadMinimaInventarioDefecto ?? CantidadMinimaDefectoRespaldo,
+                 producto.Id
+                 );
+
+                await _inventarioRepository.CreateAsync(inventario);
+
+                await transaccion.CommitAsync();
+            }
+            catch (Exception ex) when (_gestorTransacciones.EsConflictoDeConcurrencia(ex))
+            {
+                // La transacción perdedora ya fue revertida por el motor: no quedó producto sin
+                // inventario. Se responde con un mensaje de negocio, no un 500.
+                _logger.LogWarning(ex,
+                    "Conflicto de concurrencia al crear el producto {NombreProducto}. No se creó nada.",
+                    dto.Nombre);
+
+                return OperationResultD<ProductoResponseDto>.Failure(
+                    "El producto está siendo creado por otra operación. Verifique el listado antes de volver a intentarlo.");
             }
 
-            var producto = _mapperProductoMapper.MapToCreateProducto(dto);
+            // Mismo criterio que el update: se recarga con Categoria, Inventario y Proveedor para
+            // que la respuesta del POST traiga el stock recién creado y el nombre de la categoría,
+            // en vez de los null que deja la entidad construida a mano por el mapper.
+            // La recarga va DESPUÉS del commit: es una lectura de lo ya confirmado y no tiene
+            // sentido tener bloqueos serializables abiertos para armar un DTO.
+            var productoCreado = await _productorepository.GetProductoConCategoriaByIdAsync(producto.Id) ?? producto;
 
-            
-
-            await _productorepository.CreateAsync(producto);
-
-
-            //crear un inventario para el producto creado con cantidad actual 0 y la cantidad minima configurada por defecto
-
-            var configuracion = await _configuracionSistemaRepository.ObtenerAsync();
-
-            var inventario = new Inventario(
-             0,
-             configuracion?.CantidadMinimaInventarioDefecto ?? CantidadMinimaDefectoRespaldo,
-             producto.Id
-             );
-
-            await _inventarioRepository.CreateAsync(inventario);
-
-            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(producto);
+            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(productoCreado);
 
             return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto creado correctamente");
 
@@ -178,10 +217,10 @@ namespace ProductApp.Aplication.Services
 
 
         //ver todos os productos
-       public Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+       public Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
             => GetAllAsync(incluirInactivos: false, pageNumber, pageSize);
 
-       public async Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10)
+       public async Task<OperationResultD<PagedResult<ProductoResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             if (pageNumber < 1)
                 return OperationResultD<PagedResult<ProductoResponseDto>>.Failure("pageNumber debe ser mayor o igual a 1");
@@ -262,7 +301,13 @@ namespace ProductApp.Aplication.Services
 
             await _productorepository.UpdateAsync(producto);
 
-            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(producto);
+            // Se recarga con Categoria, Inventario y Proveedor para que la respuesta del PUT
+            // traiga los mismos campos que el listado (nombre de categoría y stock). Recargar
+            // DESPUÉS de guardar y no antes es lo que hace que el nombre de la categoría sea
+            // el nuevo cuando el update cambió de categoría.
+            var productoActualizado = await _productorepository.GetProductoConCategoriaByIdAsync(dto.Id) ?? producto;
+
+            var productoresponsedto = _mapperProductoMapper.MapToProductoResponse(productoActualizado);
 
             return OperationResultD<ProductoResponseDto>.Success(productoresponsedto, "Producto actualizado correctamente");
         }
@@ -332,6 +377,20 @@ namespace ProductApp.Aplication.Services
                 return OperationResultD<ProductoResponseDto>.Failure($"Error de validación: {errors}");
             }
 
+            // La extensión y el Content-Type del request no prueban nada: cualquiera puede
+            // llamar "foto.jpg" a un ejecutable. Lo único confiable es la firma del contenido.
+            var formato = await DetectorFormatoImagen.DetectarAsync(dto.Contenido);
+
+            if (formato is null)
+            {
+                _logger.LogWarning(
+                    "Se rechazó la imagen {NombreArchivo} del producto {ProductoId}: el contenido no corresponde a JPEG, PNG ni WEBP",
+                    dto.NombreArchivo, dto.ProductoId);
+
+                return OperationResultD<ProductoResponseDto>.Failure(
+                    "El contenido del archivo no es una imagen válida. Se aceptan JPEG, PNG y WEBP.");
+            }
+
             var producto = await _productorepository.GetProductoConCategoriaByIdAsync(dto.ProductoId);
 
             if (producto == null)
@@ -341,7 +400,11 @@ namespace ProductApp.Aplication.Services
 
             var imagenAnterior = producto.ImagenUrl;
 
-            var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, dto.NombreArchivo, dto.ContentType);
+            // Se sube con la extensión y el Content-Type que salieron de la firma real, no con los
+            // declarados: el contenedor es de lectura pública y el blob debe servirse como imagen.
+            var nombreNormalizado = Path.ChangeExtension(dto.NombreArchivo, formato.Extension);
+
+            var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, nombreNormalizado, formato.ContentType);
 
             producto.AsignarImagen(nuevaUrl);
 

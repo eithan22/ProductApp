@@ -11,13 +11,17 @@ namespace ProductApp.Aplication.Interface
      public interface IClienteServices : IBaseServices<ClienteResponseDto, CreateClienteDto, UpdateClienteDto>
     {
 
-        Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = 10);
+        Task<OperationResultD<PagedResult<ClienteResponseDto>>> GetAllAsync(bool incluirInactivos, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
         Task<OperationResultD<bool>> EnableCliente(int id);
+
+        Task<OperationResultD<bool>> AnonimizarAsync(int id, int usuarioSolicitanteId);
 
         Task<OperationResultD<List<ClienteResponseDto>>> BuscarAsync(string? nombre, string? telefono, string? correo, bool incluirInactivos = false);
 
         Task<OperationResultD<ClienteTotalComprasDto>> ObtenerTotalComprasAsync(int clienteId);
+
+        Task<OperationResultD<ClienteResponseDto>> ObtenerClienteReservadoAsync();
 
     }
 }

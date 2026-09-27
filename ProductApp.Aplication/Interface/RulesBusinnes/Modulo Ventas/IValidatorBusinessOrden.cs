@@ -7,5 +7,6 @@ namespace ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Ventas
     {
         Task<OperationResult> ValidarCrearOrdenAsync(int clienteId);
         Task<OperationResult> ValidarCambiarEstadoAsync(EstadoOrden nuevoEstado);
+        Task<OperationResult> ValidarCancelarOrdenAsync(decimal totalPagado, bool esAdministrador);
     }
 }

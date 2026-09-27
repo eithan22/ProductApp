@@ -56,13 +56,13 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             var validatorBusiness = await _validatorBusinessAuth.ValidarLoginAsync(dto);
             if (!validatorBusiness.IsSuccess)
             {
-                _logger.LogWarning("Intento de login fallido para el usuario {Username} desde {Motivo}", dto.Username, validatorBusiness.Message);
+                _logger.LogWarning("Intento de login fallido para el usuario {Username}. Motivo: {Motivo}", dto.Username, validatorBusiness.MotivoInterno);
                 return OperationResultD<AuthResponseDto>.Failure(validatorBusiness.Message);
             }
 
             var usuario = await _usuarioRepository.FirstOrDefaultAsync(x => x.Username == dto.Username);
             if (usuario == null)
-                return OperationResultD<AuthResponseDto>.Failure("Usuario no encontrado");
+                return OperationResultD<AuthResponseDto>.Failure("Usuario o contraseña incorrectos");
 
             var claims = new[]
             {
@@ -93,6 +93,11 @@ namespace ProductApp.Aplication.Services.Modulo_Usuarios
             {
                 Token = tokenString,
                 DebeCambiarPassword = usuario.DebeCambiarPassword,
+                // No hay claim equivalente en el token a propósito: la aceptación se verifica
+                // contra la base en cada petición, así que un claim quedaría obsoleto en cuanto
+                // el usuario aceptara y obligaría a cerrarle la sesión. Este flag existe solo
+                // para que la capa Web sepa a qué pantalla mandarlo justo después del login.
+                DebeAceptarDocumentosLegales = usuario.DebeAceptarDocumentosLegales,
                 Usuario = _mapperUsuario.ToDto(usuario)
             }, "Login exitoso");
         }

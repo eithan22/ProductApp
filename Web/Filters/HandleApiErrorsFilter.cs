@@ -31,6 +31,17 @@ namespace Web.Filters
                 return;
             }
 
+            // Espejo de la rama de abajo, y primero porque en la API el gate de aceptación corre
+            // antes que el de contraseña: si las dos cosas están pendientes, este es el mensaje
+            // que llega. Cubre al usuario que entra por una URL profunda sin pasar por el login.
+            if (message.Contains("Debe aceptar los Términos"))
+            {
+                tempData["Aviso"] = message;
+                context.Result = new RedirectToActionResult("AceptarDocumentosLegales", "Usuario", null);
+                context.ExceptionHandled = true;
+                return;
+            }
+
             if (message.Contains("Debe cambiar su contraseña"))
             {
                 tempData["Aviso"] = message;

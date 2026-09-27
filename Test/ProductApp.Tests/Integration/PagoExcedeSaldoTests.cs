@@ -30,7 +30,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 ProductId = producto.Id,
                 Cantidad = 3
-            });
+            }, usuario.Id, esAdministrador: false);
             detalleResult.IsSuccess.Should().BeTrue(detalleResult.Message);
             // Total = 60
 
@@ -39,7 +39,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 Monto = 100,
                 MetodoPago = "Efectivo"
-            }, usuario.Id);
+            }, usuario.Id, esAdministrador: false);
 
             pagoResult.IsSuccess.Should().BeFalse();
 

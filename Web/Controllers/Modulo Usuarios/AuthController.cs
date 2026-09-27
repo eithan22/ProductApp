@@ -50,6 +50,12 @@ namespace Web.Controllers.Modulo_Usuarios
             {
                 var result = await _authHttpServices.Login(model);
 
+                // Se descarta lo que hubiera en la sesión antes de escribir el token nuevo: si
+                // alguien logró dejar datos plantados ahí antes del login, no sobreviven al
+                // inicio de sesión. No rota el id de sesión (el middleware de ASP.NET Core no
+                // lo permite); eso queda como deuda documentada.
+                HttpContext.Session.Clear();
+
                 // Guardar el token y el rol en la sesión
                 HttpContext.Session.SetString("TOKEN", result.Token);
                 HttpContext.Session.SetString("ROL", result.Usuario.RolUsuario);
@@ -64,6 +70,20 @@ namespace Web.Controllers.Modulo_Usuarios
                 catch
                 {
                     // La configuración es informativa; si falla, seguimos con los valores por defecto.
+                }
+
+                // El orden es el mismo que el de los filtros de la API y no es intercambiable: si
+                // se mandara primero a cambiar la contraseña, ese POST volvería con 403 pidiendo
+                // aceptar los documentos.
+                if (result.DebeAceptarDocumentosLegales)
+                {
+                    // Un usuario nuevo tiene las dos cosas pendientes. Se anota acá porque después
+                    // de aceptar la Web no tiene otra forma de saberlo: MiPerfil no expone la
+                    // bandera y el token no se vuelve a emitir.
+                    HttpContext.Session.SetString("DEBE_CAMBIAR_PASSWORD", result.DebeCambiarPassword.ToString());
+
+                    TempData["Aviso"] = "Antes de continuar, revisá y aceptá los Términos de Servicio y la Política de Privacidad.";
+                    return RedirectToAction("AceptarDocumentosLegales", "Usuario");
                 }
 
                 if (result.DebeCambiarPassword)
@@ -82,9 +102,13 @@ namespace Web.Controllers.Modulo_Usuarios
         }
 
 
+        // POST y con token antifalsificación: por GET, un tercero podía cerrarle la sesión a
+        // cualquiera con solo hacerle abrir un enlace a esta ruta desde otro sitio.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear(); // 🔐 elimina el token
+            HttpContext.Session.Clear(); // elimina el token
 
             return RedirectToAction("Login", "Auth");
         }

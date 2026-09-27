@@ -30,7 +30,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 ProductId = producto.Id,
                 Cantidad = 3
-            });
+            }, usuario.Id, esAdministrador: false);
             detalleResult.IsSuccess.Should().BeTrue(detalleResult.Message);
             // Total = 3 * 20 = 60
 
@@ -39,7 +39,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 Monto = 30,
                 MetodoPago = "Efectivo"
-            }, usuario.Id);
+            }, usuario.Id, esAdministrador: false);
             primerPago.IsSuccess.Should().BeTrue(primerPago.Message);
 
             var ordenTrasPrimerPago = await context.Ordenes.FindAsync(ordenId);
@@ -53,7 +53,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 Monto = 30,
                 MetodoPago = "Efectivo"
-            }, usuario.Id);
+            }, usuario.Id, esAdministrador: false);
             segundoPago.IsSuccess.Should().BeTrue(segundoPago.Message);
 
             var ordenFinal = await context.Ordenes.FindAsync(ordenId);

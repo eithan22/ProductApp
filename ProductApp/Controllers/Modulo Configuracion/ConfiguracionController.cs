@@ -38,5 +38,52 @@ namespace ProductApp.Api.Controllers.Modulo_Configuracion
 
             return Ok(ApiResponseT<ConfiguracionSistemaDto>.SuccessResponse(result.Data, result.Message));
         }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPost("SubirLogo")]
+        [RequestSizeLimit(6 * 1024 * 1024)]
+        public async Task<IActionResult> SubirLogo([FromForm] SubirLogoEmpresaRequest request)
+        {
+            var archivo = request?.Archivo;
+
+            if (archivo is null || archivo.Length == 0)
+                return BadRequest(ApiResponseT<object>.FailureResponse("Debe adjuntar un archivo de imagen."));
+
+            await using var contenido = archivo.OpenReadStream();
+
+            var dto = new SubirLogoEmpresaDto
+            {
+                Contenido = contenido,
+                NombreArchivo = archivo.FileName,
+                ContentType = archivo.ContentType,
+                TamanoBytes = archivo.Length
+            };
+
+            var result = await _configuracionSistemaService.SubirLogoAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<ConfiguracionSistemaDto>.SuccessResponse(result.Data, result.Message));
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpDelete("Logo")]
+        public async Task<IActionResult> QuitarLogo()
+        {
+            var result = await _configuracionSistemaService.QuitarLogoAsync();
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponseT<object>.FailureResponse(result.Message));
+
+            return Ok(ApiResponseT<ConfiguracionSistemaDto>.SuccessResponse(result.Data, result.Message));
+        }
+    }
+
+    // Swashbuckle no puede documentar un IFormFile recibido como parámetro suelto de acción
+    // (rompe swagger con 500): hay que envolverlo en una clase para [FromForm].
+    public class SubirLogoEmpresaRequest
+    {
+        public IFormFile Archivo { get; set; } = null!;
     }
 }

@@ -6,7 +6,7 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Usuarios
 {
     public interface IUsuarioHttpServices
     {
-        Task<PagedResult<UsuarioModel>> GetUsuariosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10);
+        Task<PagedResult<UsuarioModel>> GetUsuariosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
         Task<UsuarioModel> GetUsuarioByIdAsync(int id);
         Task<UsuarioModel> CreateUsuarioAsync(CreateUsuarioModel model);
         Task<UsuarioModel> UpdateUsuarioAsync(UpdateUsuarioModel model);
@@ -19,5 +19,6 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Usuarios
         Task<bool> ResetPasswordAsync(ResetearPasswordModel model);
         Task<UsuarioModel> ObtenerMiPerfilAsync();
         Task<UsuarioModel> ActualizarMiPerfilAsync(UsuarioModel model);
+        Task<bool> AceptarDocumentosLegalesAsync(AceptarDocumentosLegalesModel model);
     }
 }

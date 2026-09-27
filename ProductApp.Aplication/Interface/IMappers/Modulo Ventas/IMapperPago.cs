@@ -10,5 +10,6 @@ namespace ProductApp.Aplication.Interface.IMappers.Modulo_Ventas
     {
         Pago MapToCreatePago(CreatePagoDto dto);
         PagoResponseDto MapToPagoResponseDto(Pago pago, decimal saldoPendiente);
+        PagoListaResponseDto MapToPagoListaResponseDto(Pago pago);
     }
 }

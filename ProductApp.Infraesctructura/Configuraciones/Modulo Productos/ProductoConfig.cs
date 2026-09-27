@@ -27,6 +27,23 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
             builder.Property(e => e.Estado)
                 .HasConversion<string>()
                 .IsRequired();
+
+            // Restrict y no Cascade: borrar un proveedor no puede llevarse por delante su
+            // catálogo de productos. El intento se corta antes, en la regla de negocio del
+            // borrado físico, con un mensaje entendible.
+            builder.HasOne(e => e.Proveedor)
+                .WithMany(p => p.Productos)
+                .HasForeignKey(e => e.ProveedorId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Único por categoría, no global: así lo trata la importación masiva
+            // (ImportacionProductosService) y así queda alineado el validator (ver
+            // ValidatorBusinessProducto). "Camiseta" puede existir en Ropa y en Promociones.
+            builder.HasIndex(e => new { e.Nombre, e.CategoriaId })
+                .IsUnique()
+                .HasDatabaseName("UX_Productos_Nombre_CategoriaId")
+                .HasFilter("[EstaEliminado] = 0");
         }
     }
 }

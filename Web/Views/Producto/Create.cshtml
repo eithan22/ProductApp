@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Nuevo producto";
     var categorias = ViewBag.Categorias as List<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>;
+    var proveedores = ViewBag.Proveedores as List<Web.Models.Modelo_Proveedores.ProveedorModels.ProveedorModel>;
 }
 
 <div class="crumb">
@@ -53,6 +54,22 @@
                         }
                     </select>
                     <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ProveedorId">Proveedor <span class="text-muted">(opcional)</span></label>
+                    <select asp-for="ProveedorId" class="form-select">
+                        <option value="">-- Sin proveedor --</option>
+                        @if (proveedores != null)
+                        {
+                            @foreach (var p in proveedores)
+                            {
+                                <option value="@p.Id">@p.Nombre</option>
+                            }
+                        }
+                    </select>
+                    <div class="hint" style="font-size:.76rem;color:var(--color-muted);margin-top:5px;">Se usa para agrupar el stock bajo por quién repone.</div>
+                    <span asp-validation-for="ProveedorId" class="text-danger small"></span>
                 </div>
 
                 <div>

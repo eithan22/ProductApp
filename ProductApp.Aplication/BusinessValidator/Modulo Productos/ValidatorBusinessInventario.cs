@@ -53,6 +53,14 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
             if (producto.Estado == EstadoProducto.Inactivo)
                 return OperationResult.Failure("No se puede ajustar el stock de un producto inactivo.");
 
+            // El mínimo se comprueba acá, antes de que el servicio toque la entidad: el ajuste
+            // son dos mutaciones seguidas (cantidad y mínimo) y si la segunda reventara dentro
+            // del dominio, el inventario ya habría quedado a medio ajustar en memoria. Mismo
+            // criterio que ValidarSalidaStockAsync, que también repite una regla del dominio
+            // para poder cortar con un mensaje de negocio en vez de una excepción.
+            if (dto.NuevoStockMinimo.HasValue && dto.NuevoStockMinimo.Value < 0)
+                return OperationResult.Failure("El nuevo stock mínimo no puede ser negativo.");
+
             return OperationResult.Success();
         }
     }

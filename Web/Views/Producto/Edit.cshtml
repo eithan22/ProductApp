@@ -3,6 +3,13 @@
 @{
     ViewData["Title"] = "Editar producto";
     var categorias = ViewBag.Categorias as List<Web.Models.Modelo_Productos.CategoriaModels.CategoriaModel>;
+    var proveedores = ViewBag.Proveedores as List<Web.Models.Modelo_Proveedores.ProveedorModels.ProveedorModel>;
+    var proveedorActual = ViewBag.ProveedorActual as string;
+
+    // El select solo lista proveedores activos. Si el que tiene el producto ya está
+    // dado de baja, se agrega como opción aparte para no perderlo al guardar.
+    var proveedorDadoDeBaja = Model.ProveedorId.HasValue
+        && (proveedores == null || !proveedores.Any(p => p.Id == Model.ProveedorId.Value));
     var imagenUrl = ViewBag.ImagenUrl as string;
 }
 
@@ -57,6 +64,25 @@
                         }
                     </select>
                     <span asp-validation-for="CategoriaId" class="text-danger small"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ProveedorId">Proveedor <span class="text-muted">(opcional)</span></label>
+                    <select asp-for="ProveedorId" class="form-select">
+                        <option value="">-- Sin proveedor --</option>
+                        @if (proveedorDadoDeBaja)
+                        {
+                            <option value="@Model.ProveedorId">@(proveedorActual ?? "Proveedor actual") (dado de baja)</option>
+                        }
+                        @if (proveedores != null)
+                        {
+                            @foreach (var p in proveedores)
+                            {
+                                <option value="@p.Id">@p.Nombre</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="ProveedorId" class="text-danger small"></span>
                 </div>
 
                 <div>

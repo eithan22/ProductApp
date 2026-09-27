@@ -23,6 +23,12 @@
     string TextoMetodo(string valor) =>
         metodosPago.FirstOrDefault(m => m.Valor == valor).Texto ?? valor;
 
+    // "Pendiente" en Pago.EstadoPago no significa "sin confirmar": el dinero ya entró,
+    // solo indica que ese pago no saldó la orden todavía (ver M14). Mismo criterio de
+    // lenguaje que ya usa Pago/Index.cshtml, para no mostrar el enum crudo acá.
+    string TextoEstadoPago(string estado) =>
+        string.Equals(estado, "Completado", StringComparison.OrdinalIgnoreCase) ? "Saldó la orden" : "Abono registrado";
+
     var transiciones = new Dictionary<string, string[]>
     {
         ["Pendiente"] = Array.Empty<string>(),
@@ -35,6 +41,9 @@
     var puedeCancelar = Model.Estado == "Pendiente" || Model.Estado == "Procesada";
     var siguientesEstados = transiciones.TryGetValue(Model.Estado, out var t) ? t : Array.Empty<string>();
     var puedeRegistrarPago = (Model.Estado == "Pendiente" || Model.Estado == "Procesada") && saldoPendiente > 0;
+    // La API sirve la factura para Pagada y Entregada; en el resto de estados
+    // todavía no existe el PDF y el botón no debe aparecer.
+    var puedeDescargarFactura = Model.Estado == "Pagada" || Model.Estado == "Entregada";
 
     var cancelada = Model.Estado == "Cancelada";
     var pasos = new[] { "Pendiente", "Procesada", "Pagada", "Entregada" };
@@ -57,6 +66,16 @@
 
     <div class="page-header-actions">
         <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "back") Volver</a>
+
+        @if (puedeDescargarFactura)
+        {
+            <a asp-action="DescargarFactura" asp-route-id="@Model.Id"
+               target="_blank" rel="noopener"
+               class="btn-pa btn-pa-outline">
+                @await Html.PartialAsync("_Icon", "invoice") Descargar factura
+                <span class="visually-hidden">(se abre en una pestaña nueva)</span>
+            </a>
+        }
 
         @foreach (var estado in siguientesEstados)
         {
@@ -284,7 +303,7 @@ else
                     <div class="pay-row">
                         <div>
                             <div class="m">@TextoMetodo(p.MetodoPago)</div>
-                            <div class="d">@p.FechaPago.ToString("dd/MM/yyyy HH:mm") &middot; @p.EstadoPago</div>
+                            <div class="d">@p.FechaPago.ToString("dd/MM/yyyy HH:mm") &middot; @TextoEstadoPago(p.EstadoPago)</div>
                         </div>
                         <div class="amt">@Html.Moneda(p.Monto)</div>
                     </div>

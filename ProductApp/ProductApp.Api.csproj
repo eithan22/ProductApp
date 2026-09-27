@@ -26,4 +26,13 @@
     <ProjectReference Include="..\ProductApp.Infraesctructura\ProductApp.Infraesctructura.Persistencia.csproj" />
   </ItemGroup>
 
+  <!-- Auto-arranca Azurite (emulador de Blob Storage) antes de compilar en
+       Debug local, para no depender de acordarse de levantarlo a mano.
+       No corre en CI: ahí el build es Release y el runner es Linux. -->
+  <Target Name="IniciarAzurite" BeforeTargets="Build"
+          Condition="'$(OS)' == 'Windows_NT' AND '$(Configuration)' == 'Debug'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\scripts\ensure-azurite.ps1&quot;"
+          ContinueOnError="true" />
+  </Target>
+
 </Project>

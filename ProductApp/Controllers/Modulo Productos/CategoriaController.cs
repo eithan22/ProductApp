@@ -34,7 +34,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         [Authorize]
         [HttpGet("GetAllCategorias")]
 
-        public async Task<IActionResult> GetAllCategorias([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllCategorias([FromQuery] bool incluirInactivos = false, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             var result = await _categoriaService.GetAllAsync(incluirInactivos, pageNumber, pageSize);
 
@@ -73,7 +73,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("DisableCategoria/{id}")]
 
         public async Task<IActionResult> DisableCategoria(int id)
@@ -85,7 +85,7 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPatch("EnableCategoria/{id}")]
 
         public async Task<IActionResult> EnableCategoria(int id)

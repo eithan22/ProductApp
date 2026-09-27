@@ -8,5 +8,12 @@ namespace Web.Services.Interfaces.IEndPoints.Modulo_Reportes
         string InventarioActual { get; }
         string ProductosMasVendidos { get; }
         string IngresosTotales { get; }
+
+        string ExportarVentasPorFecha { get; }
+        string ExportarVentasPorProducto { get; }
+        string ExportarVentasPorVendedor { get; }
+        string ExportarInventarioActual { get; }
+        string ExportarProductosMasVendidos { get; }
+        string ExportarIngresosTotales { get; }
     }
 }

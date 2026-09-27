@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using ProductApp.Aplication.Dtos.Modulo_Productos.InventarioDto;
+using ProductApp.Domian.Entitis;
 
 namespace ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator
 {
@@ -13,8 +14,10 @@ namespace ProductApp.Aplication.Validators.Modulo_Producto.InventarioValidator
 
             RuleFor(x => x.Cantidad)
                 .NotEmpty().WithMessage("La cantidad es obligatoria.")
-                .GreaterThan(0).WithMessage("La cantidad debe ser mayor que cero.");
-                
+                .GreaterThan(0).WithMessage("La cantidad debe ser mayor que cero.")
+                .LessThanOrEqualTo(Inventario.CantidadMaximaStock)
+                .WithMessage($"La cantidad no puede superar las {Inventario.CantidadMaximaStock} unidades en un solo movimiento.");
+
 
         }
     }

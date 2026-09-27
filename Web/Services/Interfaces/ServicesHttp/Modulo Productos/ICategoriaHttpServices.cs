@@ -7,7 +7,7 @@ namespace Web.Services.Interfaces.ServicesHttp.Modulo_Productos
     {
         public Task<List<CategoriaModel>> GetCategoriasAsync();
 
-        public Task<PagedResult<CategoriaModel>> GetCategoriasPagedAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10);
+        public Task<PagedResult<CategoriaModel>> GetCategoriasPagedAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault);
 
         public Task<CategoriaModel> GetCategoriaByIdAsync(int id);
 

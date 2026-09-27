@@ -8,5 +8,8 @@ namespace Web.Models.Modelo_Productos.ProductoModels
         public decimal Precio { get; set; }
         public decimal Costo { get; set; }
         public int CategoriaId { get; set; }
+
+        // Mandar null es la forma de dejar el producto sin proveedor.
+        public int? ProveedorId { get; set; }
     }
 }

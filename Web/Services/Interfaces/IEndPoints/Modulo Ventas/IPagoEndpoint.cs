@@ -5,5 +5,6 @@ namespace Web.Services.Interfaces.IEndPoints.Modulo_Ventas
         string RegistrarPago { get; }
         string GetPagosByOrden { get; }
         string GetSaldoPendiente { get; }
+        string GetAll { get; }
     }
 }

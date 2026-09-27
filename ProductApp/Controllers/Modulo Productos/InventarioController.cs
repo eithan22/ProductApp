@@ -38,9 +38,9 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         [Authorize]
         [HttpGet("GetAllInventarios")]
-        public async Task<IActionResult> GetAllInventarios([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllInventarios([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = PaginacionDefaults.PageSizeDefault, [FromQuery] int? proveedorId = null)
         {
-            var result = await _inventarioService.ObtenerTodosInventariosAsync(pageNumber, pageSize);
+            var result = await _inventarioService.ObtenerTodosInventariosAsync(pageNumber, pageSize, proveedorId);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
@@ -51,9 +51,9 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
         [Authorize]
         [HttpGet("GetStockBajo")]
-        public async Task<IActionResult> GetStockBajo()
+        public async Task<IActionResult> GetStockBajo([FromQuery] int? proveedorId = null)
         {
-            var result = await _inventarioService.ObtenerStockBajoAsync();
+            var result = await _inventarioService.ObtenerStockBajoAsync(proveedorId);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
@@ -62,12 +62,13 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPost("AgregarStock")]
 
         public async Task<IActionResult> AgregarStockAsync( MovimientoStockDto dto)
         {
-            var result = await _inventarioService.AgregarStockAsync(dto);
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _inventarioService.AgregarStockAsync(dto, usuarioSolicitanteId);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
@@ -77,13 +78,15 @@ namespace ProductApp.Api.Controllers.Modulo_Productos
 
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrador")]
         [HttpPost("DescontarStock/{productoId}")]
 
         public async Task<IActionResult> DescontarStockAsync(int productoId, MovimientoStockDto dto)
         {
             dto.ProductoId = productoId;
-            var result = await _inventarioService.DescontarStockAsync(dto);
+
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _inventarioService.DescontarStockAsync(dto, usuarioSolicitanteId);
 
             if (!result.IsSuccess)
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));

@@ -30,16 +30,28 @@ namespace ProductApp.Aplication.Services
             await _notificacionRepository.CreateAsync(notificacion);
         }
 
-        public async Task NotificarAdministradoresAsync(TipoNotificacion tipo, string mensaje)
+        public async Task NotificarAdministradoresAsync(TipoNotificacion tipo, string mensaje, int? excluirUsuarioId = null)
         {
             var idsAdministradores = await _usuarioRepository.ObtenerIdsAdministradoresActivosAsync();
 
             foreach (var usuarioId in idsAdministradores)
+            {
+                // Evita notificar dos veces al mismo usuario cuando ya recibió la notificación
+                // por otra vía (ej. el vendedor dueño de la orden que además es Administrador).
+                if (excluirUsuarioId.HasValue && usuarioId == excluirUsuarioId.Value)
+                    continue;
+
                 await NotificarUsuarioAsync(usuarioId, tipo, mensaje);
+            }
         }
 
         public async Task<OperationResultD<NotificacionResumenDto>> ObtenerResumenAsync(int usuarioId, int cantidad = 10)
         {
+            // Mismo tope que los listados paginados (pageSize): sin esto un cantidad=100000
+            // devuelve el histórico completo y un negativo revienta en el Take() de EF.
+            if (cantidad < 1 || cantidad > 100)
+                return OperationResultD<NotificacionResumenDto>.Failure("cantidad debe estar entre 1 y 100");
+
             var recientes = await _notificacionRepository.ObtenerRecientesPorUsuarioAsync(usuarioId, cantidad);
             var noLeidas = await _notificacionRepository.ContarNoLeidasPorUsuarioAsync(usuarioId);
 

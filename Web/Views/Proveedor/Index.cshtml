@@ -1,0 +1,113 @@
+@model ProductApp.Aplication.Common.PagedResult<Web.Models.Modelo_Proveedores.ProveedorModels.ProveedorModel>
+
+@{
+    ViewData["Title"] = "Proveedores";
+    var incluirInactivos = ViewBag.IncluirInactivos as bool? ?? false;
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
+
+    string Iniciales(string nombre)
+    {
+        var partes = (nombre ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var letras = string.Concat(partes.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+        return string.IsNullOrEmpty(letras) ? "?" : letras;
+    }
+}
+
+<div class="page-header">
+    <p class="text-muted">
+        @Model.TotalCount @(Model.TotalCount == 1 ? "proveedor registrado" : "proveedores registrados").
+    </p>
+    <a asp-action="Create" class="btn-pa btn-pa-primary">
+        @await Html.PartialAsync("_Icon", "add") Nuevo proveedor
+    </a>
+</div>
+
+@* La API solo busca por nombre; el alcance activos/todos viaja junto a la búsqueda
+   para que el segmento no se pierda al filtrar. *@
+<form asp-action="Buscar" method="get" class="toolbar">
+    <input type="hidden" name="incluirInactivos" value="@incluirInactivos.ToString().ToLowerInvariant()" />
+
+    <div class="toolbar-search">
+        @await Html.PartialAsync("_Icon", "search")
+        <label class="visually-hidden" for="buscar-nombre">Buscar por nombre</label>
+        <input id="buscar-nombre" type="search" name="nombre" placeholder="Buscar por nombre…" autocomplete="off"
+               value="@(ViewBag.NombreBuscado as string)" />
+    </div>
+
+    <div class="toolbar-group">
+        <button type="submit" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "search") Buscar</button>
+        <a asp-action="Index" class="btn-pa btn-pa-outline">@await Html.PartialAsync("_Icon", "reset") Limpiar</a>
+    </div>
+
+    <div class="seg">
+        <a asp-action="Index" asp-route-incluirInactivos="false" class="@(incluirInactivos ? "" : "on")">Activos</a>
+        <a asp-action="Index" asp-route-incluirInactivos="true" class="@(incluirInactivos ? "on" : "")">Todos</a>
+    </div>
+</form>
+
+@if (!Model.Items.Any())
+{
+    <div class="surface-card empty-state">
+        <div class="empty-icon">@await Html.PartialAsync("_Icon", "inbox")</div>
+        <p class="empty-title">No hay proveedores que mostrar</p>
+        <p class="empty-text">Probá con otro término de búsqueda, o registrá un proveedor para poder asignarle productos.</p>
+        <a asp-action="Create" class="btn-pa btn-pa-primary">
+            @await Html.PartialAsync("_Icon", "add") Nuevo proveedor
+        </a>
+    </div>
+}
+else
+{
+    <div class="surface-card list-card">
+        @foreach (var item in Model.Items)
+        {
+            <div class="ledger-row @(item.Activo ? "" : "fila-apagada")">
+                <div class="ledger-tag" style="background:@(item.Activo ? "var(--color-primary)" : "var(--color-muted)")"></div>
+
+                <div class="avatar-lista" aria-hidden="true">@Iniciales(item.Nombre)</div>
+
+                <div class="ledger-body">
+                    <div class="ledger-name">@item.Nombre</div>
+                    <div class="ledger-desc">@item.Correo</div>
+                </div>
+
+                <div class="ledger-meta">
+                    <div class="meta-col">
+                        <div class="l">Teléfono</div>
+                        <div class="v">@item.Telefono</div>
+                    </div>
+
+                    <div class="meta-col">
+                        <div class="l">Dirección</div>
+                        <div class="v">@item.Direccion</div>
+                    </div>
+
+                    <span class="status-pill @(item.Activo ? "on" : "off")">
+                        <span class="dot"></span> @(item.Activo ? "Activo" : "Inactivo")
+                    </span>
+
+                    <div class="ledger-actions">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="icon-btn" title="Ver @item.Nombre">@await Html.PartialAsync("_Icon", "view")</a>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="icon-btn" title="Editar @item.Nombre">@await Html.PartialAsync("_Icon", "edit")</a>
+
+                        @if (item.Activo)
+                        {
+                            @if (esAdministrador)
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="icon-btn danger" title="Dar de baja a @item.Nombre">@await Html.PartialAsync("_Icon", "trash")</a>
+                            }
+                        }
+                        else if (esAdministrador)
+                        {
+                            <form asp-action="Enable" asp-route-id="@item.Id" method="post" class="d-inline">
+                                <button type="submit" class="icon-btn" title="Reactivar @item.Nombre">@await Html.PartialAsync("_Icon", "check")</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@await Html.PartialAsync("_Pagination", new Web.Models.Common.PaginationInfo { PageNumber = Model.PageNumber, TotalPages = Model.TotalPages })

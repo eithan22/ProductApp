@@ -10,6 +10,11 @@ namespace Web.Models.Modelo_Productos.ProductoModels
         public string Estado { get; set; } = "";
         public string? Categoria { get; set; }
         public string? ImagenUrl { get; set; }
+
+        // Null cuando el producto no tiene proveedor asignado: la asignación es opcional.
+        public int? ProveedorId { get; set; }
+        public string? Proveedor { get; set; }
+
         public int? StockActual { get; set; }
         public int? StockMinimo { get; set; }
     }

@@ -10,6 +10,12 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 {
     public class ValidatorBusinessAuth : IValidatorBusinessAuth
     {
+        // Único mensaje que ve el cliente cuando el login falla, sin importar la causa: usuario
+        // inexistente, eliminado, inactivo/suspendido o contraseña incorrecta. Si cada caso
+        // tuviera su propio texto, cualquiera podría probar nombres de usuario y deducir cuáles
+        // existen en el sistema. El motivo real viaja en MotivoInterno y queda en el log.
+        private const string CredencialesInvalidas = "Usuario o contraseña incorrectos";
+
         private readonly IUsuarioRepository _usuarioRepository;
         public ValidatorBusinessAuth(IUsuarioRepository usuarioRepository)
         {
@@ -27,18 +33,18 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
                 .FirstOrDefaultAsync(x => x.Username == dto.Username);
 
             if (usuario == null)
-                return OperationResult.Failure("Usuario no encontrado");
+                return OperationResult.Failure(CredencialesInvalidas, "El usuario no existe");
 
             if (usuario.EstaEliminado)
-                return OperationResult.Failure("Usuario deshabilitado");
+                return OperationResult.Failure(CredencialesInvalidas, "El usuario está eliminado");
 
             if (usuario.EstadoUsuario != EstadoUsuario.Activo)
-                return OperationResult.Failure("Usuario inactivo o suspendido");
+                return OperationResult.Failure(CredencialesInvalidas, $"El usuario está en estado {usuario.EstadoUsuario}");
 
             bool valido = PasswordHelper.Verify(dto.Password, usuario.PasswordHash);
 
             if (!valido)
-                return OperationResult.Failure("Contraseña incorrecta");
+                return OperationResult.Failure(CredencialesInvalidas, "La contraseña es incorrecta");
 
             return OperationResult.Success();
         }

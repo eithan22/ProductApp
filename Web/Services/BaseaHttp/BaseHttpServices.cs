@@ -82,6 +82,60 @@ namespace Web.Services.Base
 
         }
 
+        // 🔹 GET binario (archivos: PDF de factura, etc.)
+        // A diferencia del GET normal, la respuesta OK no es JSON sino el archivo crudo.
+        // Solo cuando algo falla el cuerpo trae el ApiResponse con el mensaje real.
+        public async Task<byte[]> GetBytesAsync(string url)
+        {
+            var (contenido, _) = await GetArchivoAsync(url);
+            return contenido;
+        }
+
+        // 🔹 GET de archivo con su nombre. La API es la única que decide cómo se llama el
+        // archivo y lo manda en Content-Disposition; acá solo se lee, no se reconstruye.
+        public async Task<(byte[] Contenido, string? NombreArchivo)> GetArchivoAsync(string url)
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                var mensaje = $"Error HTTP {response.StatusCode}";
+
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    try
+                    {
+                        var apiResponse = JsonSerializer.Deserialize<ApiResponse>(error, _jsonOptions);
+
+                        if (apiResponse != null && !string.IsNullOrWhiteSpace(apiResponse.Message))
+                            mensaje = apiResponse.Message;
+                    }
+                    catch (JsonException)
+                    {
+                        // No todo error viene en JSON (un 401 lo corta el middleware
+                        // antes del controller). Ahí queda el mensaje del status.
+                    }
+                }
+
+                throw new ApiHttpException(response.StatusCode, mensaje);
+            }
+
+            var contenido = await response.Content.ReadAsByteArrayAsync();
+
+            if (contenido.Length == 0)
+            {
+                throw new ApiHttpException(response.StatusCode, $"Respuesta vacía. Status: {response.StatusCode}");
+            }
+
+            var disposition = response.Content.Headers.ContentDisposition;
+            var nombreArchivo = disposition?.FileNameStar ?? disposition?.FileName?.Trim('"');
+
+            return (contenido, nombreArchivo);
+        }
+
         // 🔹 POST
         public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest data)
         {

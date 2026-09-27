@@ -51,6 +51,11 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Nombre")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Categorias_Nombre")
+                        .HasFilter("[EstaEliminado] = 0");
+
                     b.ToTable("Categorias");
                 });
 
@@ -92,8 +97,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Telefono")
                         .IsRequired()
@@ -101,6 +106,16 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                         .HasColumnType("nvarchar(12)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Cedula")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Clientes_Cedula")
+                        .HasFilter("[EstaEliminado] = 0");
+
+                    b.HasIndex("Correo")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Clientes_Correo")
+                        .HasFilter("[EstaEliminado] = 0");
 
                     b.ToTable("Clientes");
                 });
@@ -119,11 +134,19 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("DuracionTokenMinutos")
                         .HasColumnType("int");
 
                     b.Property<bool>("EstaEliminado")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("datetime2");
@@ -137,6 +160,10 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RucONit")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
 
@@ -240,7 +267,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("Date");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("datetime2");
@@ -386,11 +413,77 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                     b.Property<decimal>("Precio")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("ProveedorId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoriaId");
 
+                    b.HasIndex("ProveedorId");
+
+                    b.HasIndex("Nombre", "CategoriaId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Productos_Nombre_CategoriaId")
+                        .HasFilter("[EstaEliminado] = 0");
+
                     b.ToTable("Productos");
+                });
+
+            modelBuilder.Entity("ProductApp.Domian.Entitis.Proveedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Correo")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("EstaEliminado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModificadoEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Correo")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Proveedores_Correo")
+                        .HasFilter("[EstaEliminado] = 0");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Proveedores_Nombre")
+                        .HasFilter("[EstaEliminado] = 0");
+
+                    b.ToTable("Proveedores");
                 });
 
             modelBuilder.Entity("ProductApp.Domian.Entitis.Usuario", b =>
@@ -419,6 +512,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("FechaAceptacionDocumentosLegales")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("FechaNacimiento")
                         .HasColumnType("datetime2");
 
@@ -427,8 +523,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -444,7 +540,21 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("VersionDocumentosLegalesAceptada")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Usuarios_Email")
+                        .HasFilter("[EstaEliminado] = 0");
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Usuarios_Username")
+                        .HasFilter("[EstaEliminado] = 0");
 
                     b.ToTable("Usuarios");
                 });
@@ -528,7 +638,14 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ProductApp.Domian.Entitis.Proveedor", "Proveedor")
+                        .WithMany("Productos")
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Categoria");
+
+                    b.Navigation("Proveedor");
                 });
 
             modelBuilder.Entity("ProductApp.Domian.Entitis.Categoria", b =>
@@ -552,6 +669,11 @@ namespace ProductApp.Infraesctructura.Persistencia.Migrations
                 {
                     b.Navigation("Inventario")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ProductApp.Domian.Entitis.Proveedor", b =>
+                {
+                    b.Navigation("Productos");
                 });
 
             modelBuilder.Entity("ProductApp.Domian.Entitis.Usuario", b =>

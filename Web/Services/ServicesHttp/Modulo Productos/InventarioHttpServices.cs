@@ -19,15 +19,20 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             _inventarioEndpoint = inventarioEndpoint;
         }
 
-        public async Task<PagedResult<InventarioModel>> GetAllInventariosAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<InventarioModel>> GetAllInventariosAsync(int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault, int? proveedorId = null)
         {
+            var filtroProveedor = proveedorId.HasValue ? $"&proveedorId={proveedorId.Value}" : "";
+
             return await _baseHttpServices.GetAsync<PagedResult<InventarioModel>>(
-                $"{_inventarioEndpoint.GetAll}?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"{_inventarioEndpoint.GetAll}?pageNumber={pageNumber}&pageSize={pageSize}{filtroProveedor}");
         }
 
-        public async Task<List<InventarioModel>> GetStockBajoAsync()
+        public async Task<List<InventarioModel>> GetStockBajoAsync(int? proveedorId = null)
         {
-            return await _baseHttpServices.GetAsync<List<InventarioModel>>(_inventarioEndpoint.GetStockBajo);
+            var filtroProveedor = proveedorId.HasValue ? $"?proveedorId={proveedorId.Value}" : "";
+
+            return await _baseHttpServices.GetAsync<List<InventarioModel>>(
+                $"{_inventarioEndpoint.GetStockBajo}{filtroProveedor}");
         }
 
         public async Task<InventarioModel> GetInventarioPorProductoAsync(int productoId)

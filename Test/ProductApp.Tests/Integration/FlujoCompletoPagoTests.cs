@@ -31,10 +31,10 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 ProductId = producto.Id,
                 Cantidad = 3
-            });
+            }, usuario.Id, esAdministrador: false);
             detalleResult.IsSuccess.Should().BeTrue(detalleResult.Message);
 
-            var confirmarResult = await ordenServices.ConfirmarOrden(ordenId, usuario.Id);
+            var confirmarResult = await ordenServices.ConfirmarOrden(ordenId, usuario.Id, esAdministrador: false);
             confirmarResult.IsSuccess.Should().BeTrue(confirmarResult.Message);
 
             var pagoResult = await pagoService.RegistrarPagoAsync(new CreatePagoDto
@@ -42,7 +42,7 @@ namespace ProductApp.Tests.Integration
                 OrdenId = ordenId,
                 Monto = 60,
                 MetodoPago = "Efectivo"
-            }, usuario.Id);
+            }, usuario.Id, esAdministrador: false);
             pagoResult.IsSuccess.Should().BeTrue(pagoResult.Message);
 
             var ordenFinal = await context.Ordenes.FindAsync(ordenId);

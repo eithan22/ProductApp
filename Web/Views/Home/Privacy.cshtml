@@ -1,6 +1,542 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
-}
-<h1>@ViewData["Title"]</h1>
+@using Microsoft.AspNetCore.Http
+@using ProductApp.Domian.Common.Legal
 
-<p>Use this page to detail your site's privacy policy.</p>
+@{
+    ViewData["Title"] = "Política de Privacidad";
+
+    // La página se abre en dos contextos: con sesión (el shell ya pinta el
+    // título en la barra superior) y sin sesión, desde el pie de la landing.
+    // Sin sesión no hay barra ni menú: el título y la vuelta los pone la vista.
+    var conSesion = !string.IsNullOrEmpty(Context.Session.GetString("TOKEN"));
+}
+
+@*
+    ProductApp se presta como servicio por suscripción, con una instancia
+    separada por negocio operada por el Proveedor sobre su propia
+    infraestructura de Azure. Eso hace que el Proveedor sea responsable del
+    banco de datos frente a la Ley 172-13, no un simple alojador: este texto
+    está escrito desde esa posición.
+
+    Todo lo que se afirma acá es verificable en el código (entidades, hash
+    BCrypt, contenedores de Azure, cascadas de borrado, ausencia de borrado de
+    facturas). Si el modelo de datos cambia, este texto cambia con él: una
+    política que describe algo que la app ya no hace es peor que no tener
+    política. Los plazos de conservación y respuesta son compromisos
+    operativos: si se cambian acá, hay que cambiarlos también en los Términos.
+*@
+
+<div class="legal-page">
+
+    @if (!conSesion)
+    {
+        <a class="btn-pa btn-pa-outline legal-back" asp-controller="Auth" asp-action="Login">
+            @await Html.PartialAsync("_Icon", "back") Volver al inicio
+        </a>
+
+        <h1 class="legal-title">Política de Privacidad</h1>
+    }
+
+    <p class="legal-meta">Versión @DocumentosLegales.VersionVigente &middot; Última actualización: @DocumentosLegales.FechaUltimaActualizacion</p>
+
+    <article class="surface-card legal-doc">
+
+        <div class="legal-note">
+            <p>
+                <strong>Lo esencial:</strong> ProductApp es un servicio de software por
+                suscripción. Cada negocio que lo contrata recibe <strong>su propia instancia
+                privada</strong>, que el Proveedor aloja y opera en Microsoft Azure. Como los
+                datos viven en infraestructura del Proveedor, el Proveedor
+                <strong>responde por su custodia y seguridad</strong> ante la Ley No. 172-13 de
+                la República Dominicana: no se limita a &laquo;prestar la herramienta&raquo;.
+                Esta política describe exactamente qué datos se guardan, dónde, por cuánto
+                tiempo y qué se puede hacer con ellos, incluidas las limitaciones que el
+                sistema todavía tiene.
+            </p>
+        </div>
+
+        <h2>1. Quién responde por sus datos</h2>
+        <p>
+            ProductApp es desarrollado y operado por <strong>Eithan Leonardo Read</strong>,
+            persona física, domiciliado en Santo Domingo Oeste, República Dominicana (en
+            adelante, <strong>&laquo;el Proveedor&raquo;</strong>). El Proveedor actúa por
+            cuenta propia, sin sociedad comercial constituida. Contacto:
+            <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a>.
+        </p>
+        <p>
+            Esta página publica la ciudad del domicilio, no la dirección exacta ni el número
+            de cédula. Esos datos constan en la Orden de Servicio suscrita con cada negocio
+            contratante, y se facilitan ante el requerimiento de una autoridad competente.
+            Toda notificación dirigida al Proveedor —incluidos los pedidos de acceso,
+            rectificación, cancelación u oposición de la sección 13— se cursa válidamente al
+            correo indicado.
+        </p>
+        <p>
+            En el lenguaje de la Ley 172-13, el <strong>responsable del banco de datos</strong>
+            es quien decide qué se hace con los datos personales y responde por ellos. En este
+            servicio esa figura se reparte así, y conviene no confundir los dos papeles:
+        </p>
+        <ul>
+            <li>
+                <strong>El Proveedor</strong> aloja la instancia, la base de datos y los
+                archivos; define las medidas técnicas de seguridad; tiene acceso técnico a la
+                información para operar, respaldar y dar soporte. Responde por la custodia, la
+                confidencialidad y la seguridad de todo lo que se guarda, y por atender los
+                pedidos que reciba de personas titulares de esos datos.
+            </li>
+            <li>
+                <strong>El negocio contratante</strong> decide qué datos carga (los de sus
+                clientes, proveedores y empleados) y con qué finalidad, y responde por haber
+                obtenido esos datos de forma lícita, por su exactitud y por mantenerlos
+                actualizados.
+            </li>
+        </ul>
+        <p>
+            Dicho en una línea: el negocio decide <em>qué</em> datos entran al sistema; el
+            Proveedor responde por <em>qué le pasa</em> a esos datos una vez dentro.
+        </p>
+
+        <h2>2. A quién se aplica esta política</h2>
+        <ul>
+            <li><strong>Usuarios del sistema</strong>: el personal del negocio que inicia sesión.</li>
+            <li>
+                <strong>Personas cuyos datos carga el negocio</strong>: sus clientes compradores
+                y sus proveedores. Estas personas no usan ProductApp, pero sus datos están
+                dentro, y por eso esta política también habla de ellas y les reconoce derechos.
+            </li>
+            <li>
+                <strong>Visitantes</strong> de las pantallas públicas del sistema (la pantalla de
+                acceso, esta página y los Términos).
+            </li>
+        </ul>
+
+        <h2>3. Qué datos personales guarda el sistema</h2>
+
+        <h3>3.1 Usuarios del sistema (personal del negocio)</h3>
+        <ul>
+            <li>Nombre, correo electrónico y nombre de usuario.</li>
+            <li>Rol asignado (Vendedor o Administrador) y estado de la cuenta (activo o inactivo).</li>
+            <li>Fecha de nacimiento, si se carga: es un campo opcional.</li>
+            <li>
+                La contraseña <strong>no se guarda</strong>. Se guarda un hash BCrypt, un valor
+                del que no se puede volver a la contraseña original. Ni un administrador del
+                negocio ni el Proveedor pueden leer la contraseña de nadie: lo único posible es
+                restablecerla, lo que genera una contraseña temporal que el sistema obliga a
+                cambiar en el siguiente acceso.
+            </li>
+            <li>Fechas de creación y de última modificación del registro.</li>
+        </ul>
+
+        <h3>3.2 Clientes del negocio</h3>
+        <ul>
+            <li>Nombre, cédula, dirección, correo electrónico y teléfono.</li>
+            <li>Estado (activo o inactivo).</li>
+            <li>Su historial comercial: órdenes, líneas de detalle de cada orden y pagos registrados.</li>
+            <li>
+                Existe un cliente reservado llamado <strong>&laquo;Consumidor Final&raquo;</strong>
+                (cédula 00000000000, imposible en la realidad) pensado para las ventas de
+                mostrador. Cuando una venta se registra a nombre de ese cliente,
+                <strong>no queda asociada a ninguna persona identificable</strong>. Si el
+                comprador no quiere dar sus datos, esa es la opción correcta: pedir la cédula
+                para una venta al contado no es obligatorio.
+            </li>
+        </ul>
+
+        <h3>3.3 Proveedores del negocio</h3>
+        <ul>
+            <li>Nombre, teléfono, correo electrónico, dirección y estado.</li>
+            <li>
+                Cuando el proveedor es una persona física y no una empresa, esos datos son datos
+                personales y esta política les aplica igual.
+            </li>
+        </ul>
+
+        <h3>3.4 Archivos</h3>
+        <ul>
+            <li>
+                <strong>Imágenes de producto</strong>: se guardan en un contenedor de Azure Blob
+                Storage configurado con <strong>lectura pública</strong>. En la práctica,
+                cualquiera que conozca la dirección exacta del archivo puede verlo sin iniciar
+                sesión. Por eso: no subir como imagen de producto ninguna foto que contenga datos
+                personales (documentos, cédulas, facturas fotografiadas). Ver la sección 12.
+            </li>
+            <li>
+                <strong>Facturas en PDF</strong>: se guardan en un contenedor
+                <strong>privado</strong> e incluyen el nombre, la cédula, la dirección y el
+                teléfono del cliente de esa orden. Solo se entregan a través de la API
+                autenticada, nunca por una dirección pública.
+            </li>
+        </ul>
+
+        <h3>3.5 Notificaciones</h3>
+        <p>
+            Mensajes internos del sistema (por ejemplo, avisos de stock bajo) asociados al usuario
+            que debe verlos.
+        </p>
+
+        <h3>3.6 Registros técnicos</h3>
+        <ul>
+            <li>
+                El sistema registra eventos técnicos con Serilog: nivel, fecha, operación y
+                resultado. En las operaciones administrativas sensibles (cambio de rol,
+                restablecimiento de contraseña, registro de pago, cancelación de orden y ajuste
+                manual de inventario) se guarda el identificador del usuario que ejecutó la
+                acción.
+            </li>
+            <li>
+                En un intento de acceso fallido se registra el <strong>nombre de usuario que se
+                intentó usar</strong>. La contraseña no se registra nunca, ni siquiera en un
+                intento fallido.
+            </li>
+            <li>
+                La plataforma de alojamiento (Microsoft Azure) mantiene además sus propios
+                registros, que pueden incluir direcciones IP, según la configuración del servicio.
+            </li>
+            <li>
+                Para frenar intentos de fuerza bruta, el sistema limita los intentos de inicio de
+                sesión usando la dirección IP de quien intenta acceder como referencia temporal
+                (máximo 5 intentos por minuto). Esa IP no se guarda de forma persistente: solo
+                vive en memoria mientras dura la ventana de un minuto.
+            </li>
+        </ul>
+
+        <h3>3.7 Datos de la relación comercial con el negocio contratante</h3>
+        <p>
+            Por tratarse de un servicio pago, el Proveedor conserva además, fuera de la
+            aplicación, los datos necesarios para administrar el contrato: nombre del negocio,
+            nombre y datos de contacto de la persona que lo representa, comunicaciones de soporte
+            y el registro de las suscripciones facturadas y cobradas. El cobro de la suscripción
+            se realiza por los medios acordados con cada negocio,
+            <strong>fuera de la aplicación</strong>: ProductApp no procesa tarjetas ni almacena
+            credenciales bancarias de nadie.
+        </p>
+
+        <h2>4. Qué NO guarda el sistema</h2>
+        <ul>
+            <li>
+                <strong>Ningún dato de tarjeta de crédito ni credencial bancaria.</strong>
+                Cuando el sistema &laquo;registra un pago&raquo;, está anotando que el negocio cobró
+                (en efectivo, tarjeta o transferencia): es una anotación contable interna, no un
+                cobro real ni una conexión con una pasarela.
+            </li>
+            <li>
+                Datos sensibles: salud, biometría, origen racial, religión, afiliación política o
+                sindical. El sistema no tiene campos para eso y tampoco deben cargarse disimulados
+                en campos libres como la dirección o el nombre.
+            </li>
+            <li>Ubicación del dispositivo, contactos, cámara ni micrófono.</li>
+            <li>
+                Cookies publicitarias, píxeles de seguimiento ni herramientas de analítica de
+                comportamiento. No hay perfilado ni decisiones automatizadas sobre personas.
+            </li>
+        </ul>
+
+        <h2>5. Para qué se usan</h2>
+        <ul>
+            <li>Emitir órdenes y comprobantes internos de venta, e identificar al comprador cuando corresponde.</li>
+            <li>Llevar el control de inventario y las compras a proveedores.</li>
+            <li>Autenticar a los usuarios y limitar qué puede hacer cada rol.</li>
+            <li>Mostrar reportes agregados de ventas al administrador del negocio.</li>
+            <li>Avisar internamente de situaciones que requieren atención, como stock bajo.</li>
+            <li>Operar el servicio: respaldos, diagnóstico de fallas, detección de accesos indebidos y soporte solicitado por el negocio.</li>
+            <li>Administrar la suscripción y su cobro (solo respecto de los datos descritos en 3.7).</li>
+        </ul>
+        <p>
+            No se usan para ningún otro fin. En particular: <strong>el Proveedor no usa los datos
+            de un negocio para otro negocio</strong>, no los usa para entrenar modelos, no los
+            cruza con fuentes externas, no hace publicidad con ellos y no los somete a decisiones
+            automatizadas que afecten a una persona.
+        </p>
+
+        <h2>6. Base legal y consentimiento</h2>
+        <p>
+            En República Dominicana el tratamiento de datos personales se rige por la
+            <strong>Ley No. 172-13</strong>, que exige, entre otros principios, consentimiento
+            previo, libre, expreso e informado del titular, además de calidad de los datos,
+            finalidad determinada, seguridad y confidencialidad.
+        </p>
+        <ul>
+            <li>
+                <strong>Usuarios del sistema</strong>: sus datos se tratan para ejecutar la
+                relación laboral o de servicio con el negocio y para dar acceso al sistema.
+            </li>
+            <li>
+                <strong>Clientes y proveedores del negocio</strong>: quien carga esos datos es
+                quien debe haber obtenido el consentimiento o contar con otra base legítima, y
+                debe poder explicar para qué los pide. En una venta, el tratamiento se apoya
+                además en la relación comercial existente.
+            </li>
+        </ul>
+        <p>
+            El sistema no puede verificar por sí mismo que el consentimiento se obtuvo: esa
+            obligación es del negocio que opera la aplicación, y está expresada también en los
+            <a asp-controller="Home" asp-action="Terminos">Términos de Servicio</a>. Que el
+            Proveedor responda por la custodia de esos datos no traslada al Proveedor la
+            responsabilidad por cómo fueron recolectados.
+        </p>
+
+        <h2>7. Infraestructura y terceros que intervienen</h2>
+        <p>
+            Los datos <strong>no se venden, no se alquilan, no se ceden ni se comparten</strong>
+            con terceros con fines comerciales. No hay publicidad, socios de datos ni herramientas
+            de analítica. Las únicas terceras partes que intervienen lo hacen como infraestructura
+            técnica, por cuenta y bajo instrucción del Proveedor:
+        </p>
+        <ul>
+            <li>
+                <strong>Microsoft Azure</strong>: aloja la aplicación, la base de datos y los
+                archivos (imágenes y facturas), bajo la cuenta y los controles del Proveedor. Los
+                datos quedan almacenados en la región <strong>Central US (Estados
+                Unidos)</strong> de Microsoft Azure, no en República Dominicana. Esa transferencia
+                internacional es necesaria para prestar el servicio y se apoya en los compromisos
+                contractuales de protección de datos del propio proveedor de nube.
+            </li>
+            <li>
+                <strong>Google Fonts</strong> (fonts.googleapis.com y fonts.gstatic.com): al abrir
+                cualquier pantalla, el navegador le pide la tipografía, y por el funcionamiento
+                normal de HTTP ese servidor conoce la dirección IP pública y el navegador de quien
+                visita. <strong>No recibe ningún dato del negocio, de sus clientes ni de sus
+                ventas</strong>: solo entrega un archivo de tipografía. La librería de gráficos
+                (Chart.js) está alojada en el propio servidor del Proveedor, no en un tercero.
+            </li>
+        </ul>
+        <p>
+            Además, los datos podrían entregarse a una autoridad competente si media un
+            requerimiento legal válido. En ese caso, salvo prohibición legal, el Proveedor lo
+            informará al negocio afectado.
+        </p>
+
+        <h2>8. Cookies</h2>
+        <p>El sistema usa exactamente dos cookies, y las dos son estrictamente necesarias:</p>
+        <ul>
+            <li>
+                <strong>Cookie de sesión</strong>: identifica la sesión iniciada. Está marcada como
+                <code>HttpOnly</code> (el JavaScript de la página no puede leerla) y
+                <code>Secure</code> (solo viaja por HTTPS), y caduca a los 60 minutos de
+                inactividad. Los datos de la sesión, incluido el token de acceso, quedan del lado
+                del servidor, no dentro de la cookie.
+            </li>
+            <li>
+                <strong>Cookie antifalsificación</strong>: protege los formularios contra
+                peticiones fraudulentas originadas en otros sitios.
+            </li>
+        </ul>
+        <p>
+            Sin ellas no es posible iniciar sesión. No hay cookies de terceros, de publicidad ni de
+            seguimiento, y por eso esta aplicación no muestra un banner de consentimiento de
+            cookies: no habría nada opcional que consentir.
+        </p>
+
+        <h2>9. Cómo se protegen</h2>
+        <p>Medidas efectivamente implementadas hoy:</p>
+        <ul>
+            <li>Contraseñas almacenadas como hash BCrypt, nunca en texto plano.</li>
+            <li>Acceso mediante token JWT con vencimiento (60 minutos por defecto, configurable desde la propia aplicación).</li>
+            <li>Instancia separada por negocio: los datos de un cliente no comparten base de datos con los de otro.</li>
+            <li>Control de acceso por rol: un Vendedor no ve las pantallas de administración de usuarios ni la configuración del sistema.</li>
+            <li>Cambio obligatorio de las contraseñas temporales en el primer acceso.</li>
+            <li>HTTPS forzado y HSTS activo fuera del entorno de desarrollo.</li>
+            <li>Protección contra falsificación de peticiones en todos los formularios.</li>
+            <li>Contenedor de facturas privado: los PDF solo se entregan con sesión iniciada.</li>
+            <li>
+                Los errores internos no se devuelven al navegador: ante una falla inesperada el
+                sistema muestra un mensaje genérico y deja el detalle solo en los registros del
+                servidor.
+            </li>
+            <li>
+                Acceso del Proveedor limitado a lo necesario para operar, respaldar o atender un
+                pedido de soporte, y sujeto a deber de confidencialidad.
+            </li>
+        </ul>
+        <p>
+            Con la misma honestidad: el Proveedor <strong>no cuenta con certificaciones</strong>
+            de seguridad (ISO 27001, SOC 2 u otras), no realiza auditorías externas de seguridad y
+            no ofrece cifrado adicional a nivel de campo por encima del que provee la plataforma.
+            Ninguna medida es infalible y no se afirma lo contrario.
+        </p>
+
+        <h2>10. Incidentes de seguridad</h2>
+        <p>
+            La Ley 172-13 no establece hoy un procedimiento general obligatorio de notificación de
+            brechas. El Proveedor asume igualmente este compromiso, que es exigible como parte de
+            esta política:
+        </p>
+        <ul>
+            <li>
+                Notificar al negocio afectado <strong>sin demora indebida y a más tardar dentro de
+                las 72 horas</strong> de haber tomado conocimiento de un incidente que comprometa
+                datos personales alojados en su instancia.
+            </li>
+            <li>
+                Informar qué ocurrió, qué categorías de datos y de personas se vieron afectadas,
+                qué se hizo para contenerlo y qué se recomienda hacer.
+            </li>
+            <li>
+                Colaborar con el negocio para que pueda avisar a las personas titulares afectadas
+                y, cuando corresponda, a la autoridad que resulte competente.
+            </li>
+            <li>Conservar un registro interno de los incidentes y de las medidas adoptadas.</li>
+        </ul>
+        <p>
+            Si usted detecta una vulnerabilidad o un acceso indebido, escriba a
+            <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a>. Los reportes hechos
+            de buena fe son bienvenidos y no serán objeto de represalia.
+        </p>
+
+        <h2>11. Cuánto tiempo se conservan y cómo se eliminan</h2>
+        <ul>
+            <li>
+                Mientras la suscripción esté vigente, los datos se conservan mientras el registro
+                exista en el sistema. No hay borrado automático por antigüedad.
+            </li>
+            <li>
+                <strong>Eliminar un cliente o un proveedor</strong> no existe como función en la
+                aplicación: solo se puede <strong>desactivar</strong>. El registro permanece en el
+                sistema, marcado como inactivo, junto con todo su historial.
+            </li>
+            <li>
+                <strong>Eliminar un usuario</strong> tampoco borra la fila: es un borrado
+                lógico&mdash;se marca como eliminado y conserva intacto su historial de ventas y
+                pagos. Es intencional: un borrado físico arrastraría en cascada las órdenes, los
+                detalles y los pagos de ese vendedor.
+            </li>
+            <li>El cliente reservado &laquo;Consumidor Final&raquo; no se puede eliminar.</li>
+            <li>Las imágenes de producto se eliminan del almacenamiento cuando se elimina el producto.</li>
+            <li>
+                <strong>Las facturas en PDF ya generadas se pueden eliminar de forma manual</strong>
+                (ver sección 12): hoy es una operación exclusiva del Administrador, sin pantalla
+                propia en la aplicación.
+            </li>
+            <li>
+                <strong>Al terminar la suscripción</strong>: el negocio dispone de 30 días
+                corridos desde la baja para solicitar la exportación completa de su información.
+                Vencido ese plazo, y a más tardar a los 90 días de la terminación, la instancia y
+                sus datos se eliminan de forma definitiva, incluidos los archivos almacenados. Las
+                copias de respaldo que puedan existir se purgan dentro de los 30 días siguientes
+                conforme a los ciclos de retención de la plataforma. Los detalles operativos están
+                en los <a asp-controller="Home" asp-action="Terminos">Términos de Servicio</a>.
+            </li>
+            <li>
+                El Proveedor conserva los datos de facturación de la suscripción (sección 3.7)
+                durante el plazo que exija la normativa tributaria y contable aplicable, aun
+                después de terminada la relación.
+            </li>
+            <li>
+                Los registros técnicos propios de la aplicación se conservan <strong>30
+                días</strong>, con rotación diaria. La plataforma de alojamiento (Microsoft Azure)
+                mantiene además sus propios registros de infraestructura, con la retención que
+                Microsoft define para su servicio.
+            </li>
+        </ul>
+
+        <h2>12. Limitaciones conocidas y qué se hace con ellas</h2>
+        <p>
+            Estas son limitaciones reales de la versión actual. Se declaran porque afectan la
+            protección efectiva de los datos, y cada una tiene un procedimiento definido mientras
+            no se resuelva en el producto:
+        </p>
+        <ul>
+            <li>
+                <strong>Las imágenes de producto son legibles por cualquiera que conozca su
+                dirección</strong>, por estar el contenedor en modo de lectura pública. Mientras
+                tanto: no subir imágenes con datos personales. El Proveedor se compromete a migrar
+                ese contenedor a acceso restringido con enlaces temporales en una versión futura y,
+                a pedido, elimina de inmediato cualquier imagen cargada por error.
+            </li>
+            <li>
+                <strong>Las facturas en PDF no tienen una pantalla propia para borrarse.</strong>
+                Una factura con el nombre y la cédula del cliente puede seguir en el
+                almacenamiento privado aunque la orden o el cliente ya no existan. Procedimiento
+                vigente: escriba a
+                <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a> indicando la
+                orden o la persona; el Proveedor elimina el archivo
+                <strong>dentro de los 10 días hábiles</strong> y confirma por escrito que se
+                eliminó. Agregar una pantalla para hacerlo desde la aplicación es parte del plan
+                de trabajo del producto.
+            </li>
+            <li>
+                <strong>No existe todavía un registro de auditoría consultable desde la
+                aplicación</strong> (quién consultó qué y cuándo). Las operaciones sensibles quedan
+                en los registros técnicos del servidor, no en una pantalla; el Proveedor puede
+                consultarlos a pedido del negocio ante una sospecha concreta.
+            </li>
+        </ul>
+
+        <h2>13. Sus derechos</h2>
+        <p>
+            La Ley 172-13 reconoce cuatro derechos que se ejercen de forma independiente uno del
+            otro: <strong>acceso</strong> (saber qué datos suyos hay),
+            <strong>rectificación</strong> (corregir los que estén mal),
+            <strong>cancelación</strong> (pedir que se eliminen) y
+            <strong>oposición</strong> (oponerse a un tratamiento determinado). La ley fija un
+            plazo máximo de <strong>diez (10) días hábiles</strong> para atender la rectificación,
+            actualización o supresión, y si no hay respuesta el titular puede acudir a los
+            tribunales mediante la <strong>acción de habeas data</strong>.
+        </p>
+        <p>
+            Conviene saberlo: la República Dominicana <strong>no cuenta hoy con una autoridad
+            general de protección de datos</strong> ante la cual reclamar administrativamente (la
+            Superintendencia de Bancos supervisa únicamente a las sociedades de información
+            crediticia). La vía prevista es la judicial, y por eso el Proveedor asume responder
+            directamente dentro de los plazos indicados.
+        </p>
+        <p>Cómo ejercerlos en la práctica:</p>
+        <ul>
+            <li>
+                <strong>Si usted es usuario del sistema</strong>: la pantalla &laquo;Mi
+                perfil&raquo; le permite ver y corregir sus propios datos y cambiar su contraseña,
+                sin pedirle permiso a nadie.
+            </li>
+            <li>
+                <strong>Si usted es cliente o proveedor de un negocio que usa ProductApp</strong>:
+                lo más rápido es pedírselo directamente a ese negocio, que puede consultar,
+                corregir, desactivar o eliminar su registro desde las pantallas de Clientes o
+                Proveedores. Si no obtiene respuesta, puede escribir al Proveedor a
+                <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a>: como los datos
+                están alojados en su infraestructura, el Proveedor tramitará su pedido junto con el
+                negocio y le responderá dentro de los <strong>diez (10) días hábiles</strong>.
+            </li>
+            <li>
+                <strong>Verificación</strong>: para evitar entregar datos a quien no corresponde,
+                se pedirá información razonable que permita confirmar su identidad antes de
+                responder.
+            </li>
+            <li>
+                <strong>Límite honesto a la cancelación</strong>: un negocio puede estar obligado
+                por la normativa tributaria y contable a conservar sus registros de venta durante
+                cierto plazo. En ese caso el pedido de eliminación se atiende sobre los datos que
+                no estén sujetos a esa obligación, y se le explicará por escrito qué se conserva y
+                por qué.
+            </li>
+        </ul>
+
+        <h2>14. Menores de edad</h2>
+        <p>
+            ProductApp es una herramienta de trabajo y no está dirigida a menores de edad. Las
+            cuentas de usuario son para personal del negocio: el sistema exige que el titular sea
+            mayor de edad para crearlas o editarlas. El sistema no verifica la edad de los
+            clientes que se registran: si se detecta que se
+            cargaron datos de un menor sin autorización de su padre, madre o tutor, se eliminarán
+            apenas se reciba el aviso en el correo de contacto.
+        </p>
+
+        <h2>15. Cambios en esta política</h2>
+        <p>
+            Si el sistema cambia lo que hace con los datos, esta página cambia con él y se
+            actualiza la fecha del encabezado. Los cambios sustanciales se avisan al negocio
+            contratante por correo electrónico con al menos <strong>30 días</strong> de antelación
+            a su entrada en vigor.
+        </p>
+
+        <h2>16. Contacto</h2>
+        <p>
+            Consultas, reclamos, reportes de seguridad y pedidos de acceso, rectificación,
+            cancelación u oposición:
+            <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a>.
+        </p>
+        <p>
+            Ver también los <a asp-controller="Home" asp-action="Terminos">Términos de Servicio</a>,
+            que regulan la contratación del servicio.
+        </p>
+
+    </article>
+</div>

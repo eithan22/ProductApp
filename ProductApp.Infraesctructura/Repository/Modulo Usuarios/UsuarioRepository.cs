@@ -51,5 +51,30 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 .Select(u => u.Id)
                 .ToListAsync();
         }
+
+        public async Task<(bool Existe, RolUsuario Rol, EstadoUsuario Estado)> ObtenerEstadoSesionAsync(int id)
+        {
+            var datos = await _context.Usuarios
+                .AsNoTracking()
+                .Where(u => !u.EstaEliminado && u.Id == id)
+                .Select(u => new { u.RolUsuario, u.EstadoUsuario })
+                .FirstOrDefaultAsync();
+
+            // Los valores de relleno son los más restrictivos a propósito (Vendedor + Inactivo):
+            // si alguien ignora Existe, el peor caso es negar acceso, nunca concederlo.
+            if (datos == null)
+                return (false, RolUsuario.Vendedor, EstadoUsuario.Inactivo);
+
+            return (true, datos.RolUsuario, datos.EstadoUsuario);
+        }
+
+        public async Task<string?> ObtenerVersionDocumentosLegalesAceptadaAsync(int id)
+        {
+            return await _context.Usuarios
+                .AsNoTracking()
+                .Where(u => !u.EstaEliminado && u.Id == id)
+                .Select(u => u.VersionDocumentosLegalesAceptada)
+                .FirstOrDefaultAsync();
+        }
     }
 }

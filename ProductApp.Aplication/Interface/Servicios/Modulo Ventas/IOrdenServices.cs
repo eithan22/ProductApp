@@ -12,8 +12,8 @@ namespace ProductApp.Aplication.Interface
     public interface IOrdenServices
     {
           Task<OperationResultD<OrdenResponseDto>> CrearOrden(CreateOrdenDto dto, int usuarioId);
-          Task<OperationResultD<bool>> CancelarOrden(int id, int usuarioSolicitanteId);
-          Task<OperationResultD<bool>> ConfirmarOrden(int id, int usuarioSolicitanteId);
+          Task<OperationResultD<bool>> CancelarOrden(int id, int usuarioSolicitanteId, bool esAdministrador);
+          Task<OperationResultD<bool>> ConfirmarOrden(int id, int usuarioSolicitanteId, bool esAdministrador);
             Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorFecha(DateTime fecha, EstadoOrden? estado = null);
 
         Task<OperationResultD<List<OrdenResponseDto>>> ConsultarOrdenesPorCliente(int clienteId, EstadoOrden? estado = null);
@@ -21,9 +21,8 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<List<OrdenResponseDto>>> GetAllOrdenes(EstadoOrden? estado = null);
 
-        Task<OperationResultD<bool>> CambiarEstadoOrden(CambiarEstadoOrdenDto dto);
+        Task<OperationResultD<bool>> CambiarEstadoOrden(CambiarEstadoOrdenDto dto, int usuarioSolicitanteId, bool esAdministrador);
 
-        Task<OperationResultD<bool>> RecalcularTotalAsync(int id);
         Task<OperationResultD<OrdenResponseDto>> GetOrdenByIdAsync(int id);
         Task<OperationResultD<List<OrdenResponseDto>>> GetOrdenesByUsuarioAsync(int usuarioId);
 

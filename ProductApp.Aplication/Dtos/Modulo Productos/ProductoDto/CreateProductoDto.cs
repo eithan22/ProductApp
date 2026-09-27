@@ -17,6 +17,9 @@ namespace ProductApp.Aplication.Dtos.ProductoDto
 
         public int  CategoriaId { get; set; }
 
+        // Opcional: null significa "producto sin proveedor asignado" (RF-3.7.2).
+        public int? ProveedorId { get; set; }
+
         public string? ImagenUrl { get; set; }
 
 

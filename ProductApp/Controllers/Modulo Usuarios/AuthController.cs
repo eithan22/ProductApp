@@ -4,6 +4,7 @@ using ProductApp.Aplication.Dtos.Modulo_Usuarios.UsuarioDto.AuthDto;
 using ProductApp.Aplication.Dtos.UsuarioDto;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Usuarios;
 using ProductApp.Aplication.Result.ApiResponses;
+using ProductApp.Api.Filters;
 
 namespace ProductApp.Api.Controllers.Modulo_Usuarios
 {
@@ -20,6 +21,13 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
 
         [HttpPost("login")]
         [EnableRateLimiting("login")] // aplica la política "login" (5 intentos por minuto) definida en Program.cs
+        // El endpoint es anónimo, pero si el navegador todavía adjunta un token viejo de una
+        // cuenta ya desactivada, VerificarSesionVigenteFilter lo cortaría con 401 antes de
+        // llegar acá, impidiendo el nuevo login. El propio login no necesita esa verificación.
+        [PermitirSinVerificarEstado]
+        // Mismo motivo que el atributo de arriba: un token viejo con la aceptación pendiente no
+        // debe impedir un login nuevo.
+        [PermitirSinAceptarDocumentosLegales]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var result = await _authService.Login(dto);

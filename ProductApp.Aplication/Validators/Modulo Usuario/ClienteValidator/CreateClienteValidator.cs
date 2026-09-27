@@ -12,7 +12,7 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.ClienteValidator
         {
             RuleFor(x => x.Nombre)
                 .NotEmpty().WithMessage("El nombre es requerido.")
-                .MaximumLength(20).WithMessage("El nombre no puede exceder los 20 caracteres.");
+                .MaximumLength(100).WithMessage("El nombre no puede exceder los 100 caracteres.");
 
             RuleFor(x => x.Correo)
                 .NotEmpty().WithMessage("El correo es requerido.")

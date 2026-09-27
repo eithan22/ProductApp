@@ -1,0 +1,31 @@
+@* Cascarón del dropdown de la búsqueda global. El contenido lo pinta
+   busqueda-global.js con lo que devuelve Busqueda/Buscar.
+
+   Los íconos se dejan acá como plantillas en vez de escribirlos dentro del JS:
+   así siguen saliendo del partial _Icon y no hay dos juegos de SVG que mantener. *@
+
+<div class="busq-panel" id="busqueda-panel" role="listbox"
+     aria-label="Resultados de la búsqueda">
+
+    <div class="busq-head">
+        <p class="t" data-busqueda-titulo></p>
+        <p class="c mono" data-busqueda-contador></p>
+    </div>
+
+    <div class="busq-body" data-busqueda-cuerpo></div>
+
+    <div class="busq-foot">
+        <span class="busq-kb"><b>↑</b><b>↓</b> moverse</span>
+        <span class="busq-kb"><b>↵</b> abrir</span>
+        <span class="busq-kb"><b>esc</b> cerrar</span>
+    </div>
+</div>
+
+@* Le avisa al lector de pantalla cuántos resultados hay sin robarle el foco al input. *@
+<p class="visually-hidden" role="status" aria-live="polite" data-busqueda-estado></p>
+
+<template data-busqueda-icono="producto">@await Html.PartialAsync("_Icon", "box")</template>
+<template data-busqueda-icono="cliente">@await Html.PartialAsync("_Icon", "users")</template>
+<template data-busqueda-icono="orden">@await Html.PartialAsync("_Icon", "receipt")</template>
+<template data-busqueda-icono="proveedor">@await Html.PartialAsync("_Icon", "inbox")</template>
+<template data-busqueda-icono="vacio">@await Html.PartialAsync("_Icon", "search")</template>

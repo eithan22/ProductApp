@@ -24,25 +24,25 @@ namespace ProductApp.Tests.Integration
             var ordenAResult = await ordenServices.CrearOrden(new CreateOrdenDto { ClienteId = cliente.Id }, usuario.Id);
             ordenAResult.IsSuccess.Should().BeTrue(ordenAResult.Message);
             var ordenAId = ordenAResult.Data!.Id;
-            var detalleAResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenAId, ProductId = producto.Id, Cantidad = 3 });
+            var detalleAResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenAId, ProductId = producto.Id, Cantidad = 3 }, usuario.Id, esAdministrador: false);
             detalleAResult.IsSuccess.Should().BeTrue(detalleAResult.Message);
-            var pagoAResult = await pagoService.RegistrarPagoAsync(new CreatePagoDto { OrdenId = ordenAId, Monto = 30, MetodoPago = "Efectivo" }, usuario.Id);
+            var pagoAResult = await pagoService.RegistrarPagoAsync(new CreatePagoDto { OrdenId = ordenAId, Monto = 30, MetodoPago = "Efectivo" }, usuario.Id, esAdministrador: false);
             pagoAResult.IsSuccess.Should().BeTrue(pagoAResult.Message);
 
             // Orden B: termina Cancelada. Total = 5 * 10 = 50 (no debe contar).
             var ordenBResult = await ordenServices.CrearOrden(new CreateOrdenDto { ClienteId = cliente.Id }, usuario.Id);
             ordenBResult.IsSuccess.Should().BeTrue(ordenBResult.Message);
             var ordenBId = ordenBResult.Data!.Id;
-            var detalleBResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenBId, ProductId = producto.Id, Cantidad = 5 });
+            var detalleBResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenBId, ProductId = producto.Id, Cantidad = 5 }, usuario.Id, esAdministrador: false);
             detalleBResult.IsSuccess.Should().BeTrue(detalleBResult.Message);
-            var cancelarBResult = await ordenServices.CancelarOrden(ordenBId, usuario.Id);
+            var cancelarBResult = await ordenServices.CancelarOrden(ordenBId, usuario.Id, esAdministrador: false);
             cancelarBResult.IsSuccess.Should().BeTrue(cancelarBResult.Message);
 
             // Orden C: se queda Pendiente. Total = 4 * 10 = 40.
             var ordenCResult = await ordenServices.CrearOrden(new CreateOrdenDto { ClienteId = cliente.Id }, usuario.Id);
             ordenCResult.IsSuccess.Should().BeTrue(ordenCResult.Message);
             var ordenCId = ordenCResult.Data!.Id;
-            var detalleCResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenCId, ProductId = producto.Id, Cantidad = 4 });
+            var detalleCResult = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto { OrdenId = ordenCId, ProductId = producto.Id, Cantidad = 4 }, usuario.Id, esAdministrador: false);
             detalleCResult.IsSuccess.Should().BeTrue(detalleCResult.Message);
 
             var reporteService = IntegrationTestFactory.CrearReporteService(context);

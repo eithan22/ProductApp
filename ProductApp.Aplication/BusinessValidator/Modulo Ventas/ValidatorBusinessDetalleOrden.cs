@@ -12,15 +12,18 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
         private readonly IOrdenRepository _ordenRepository;
         private readonly IDetalleOrdenRepository _detalleOrdenRepository;
         private readonly IProductoRepository _productoRepository;
+        private readonly IPagoRepository _pagoRepository;
 
         public ValidatorBusinessDetalleOrden(
             IOrdenRepository ordenRepository,
             IDetalleOrdenRepository detalleOrdenRepository,
-            IProductoRepository productoRepository)
+            IProductoRepository productoRepository,
+            IPagoRepository pagoRepository)
         {
             _ordenRepository = ordenRepository;
             _detalleOrdenRepository = detalleOrdenRepository;
             _productoRepository = productoRepository;
+            _pagoRepository = pagoRepository;
         }
 
         public async Task<OperationResult> ValidarAgregarProductoAsync(CreateDetalleOrdenDto dto)
@@ -31,6 +34,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
 
             if (orden.Estado != EstadoOrden.Pendiente)
                 return OperationResult.Failure("No se pueden agregar productos a una orden que no está pendiente");
+
+            if (await _pagoRepository.ExisteAsync(p => p.OrdenId == orden.Id))
+                return OperationResult.Failure("No se pueden agregar productos a una orden que ya tiene pagos registrados");
 
             var producto = await _productoRepository.ObtenerConInventarioAsync(dto.ProductId);
             if (producto == null)
@@ -64,6 +70,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
             if (orden.Estado != EstadoOrden.Pendiente)
                 return OperationResult.Failure("No se pueden modificar detalles de una orden que no está pendiente");
 
+            if (await _pagoRepository.ExisteAsync(p => p.OrdenId == orden.Id))
+                return OperationResult.Failure("No se pueden modificar detalles de una orden que ya tiene pagos registrados");
+
             var producto = await _productoRepository.ObtenerConInventarioAsync(detalle.ProductId);
             if (producto == null)
                 return OperationResult.Failure("Producto no encontrado");
@@ -89,6 +98,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
 
             if (orden.Estado != EstadoOrden.Pendiente)
                 return OperationResult.Failure("No se pueden eliminar productos de una orden que no está pendiente");
+
+            if (await _pagoRepository.ExisteAsync(p => p.OrdenId == orden.Id))
+                return OperationResult.Failure("No se pueden eliminar productos de una orden que ya tiene pagos registrados");
 
             return OperationResult.Success();
         }

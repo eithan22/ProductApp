@@ -15,8 +15,18 @@ namespace ProductApp.Domian.Entitis
         public int CategoriaId { get; private set; }
         public string? ImagenUrl { get; private set; }
 
+        // Proveedor principal, opcional (RF-3.7.2). Es nullable a propósito: el catálogo
+        // ya existente no tiene proveedor asignado y debe seguir funcionando igual.
+        public int? ProveedorId { get; private set; }
+
         public Inventario Inventario { get; private set; } = null!;
         public Categoria Categoria { get; private set; } = null!;
+        public Proveedor? Proveedor { get; private set; }
+
+        // Tope por unidad para precio y costo. La columna es decimal(18,2) y aguanta mucho
+        // más, pero un monto de siete cifras en un producto de mostrador siempre es un dedazo
+        // o un archivo de importación mal armado, y el error se propaga al total de la orden.
+        public const decimal MontoMaximo = 999_999.99m;
 
         protected Producto() { }
 
@@ -54,6 +64,10 @@ namespace ProductApp.Domian.Entitis
             if (precio < 0)
                 throw new PrecioInvalidoException(precio);
 
+            if (precio > MontoMaximo)
+                throw new ValidacionDominioException("Precio",
+                    $"El precio no puede superar los {MontoMaximo}.");
+
             Precio = precio;
             ActualizarFechaModificacion();
         }
@@ -62,6 +76,10 @@ namespace ProductApp.Domian.Entitis
         {
             if (costo < 0)
                 throw new ValidacionDominioException("Costo", "El costo del producto no puede ser negativo.");
+
+            if (costo > MontoMaximo)
+                throw new ValidacionDominioException("Costo",
+                    $"El costo no puede superar los {MontoMaximo}.");
 
             Costo = costo;
             ActualizarFechaModificacion();
@@ -73,6 +91,23 @@ namespace ProductApp.Domian.Entitis
                 throw new ValidacionDominioException("CategoriaId", "El id de la categoría debe ser mayor a cero.");
 
             CategoriaId = categoriaId;
+            ActualizarFechaModificacion();
+        }
+
+        // Recibe int? y no int porque "sin proveedor" es un valor válido del negocio:
+        // mandar null es la forma explícita de dejar el producto sin proveedor asignado.
+        public void AsignarProveedor(int? proveedorId)
+        {
+            if (proveedorId.HasValue && proveedorId.Value <= 0)
+                throw new ValidacionDominioException("ProveedorId", "El id del proveedor debe ser mayor a cero.");
+
+            ProveedorId = proveedorId;
+            ActualizarFechaModificacion();
+        }
+
+        public void QuitarProveedor()
+        {
+            ProveedorId = null;
             ActualizarFechaModificacion();
         }
 

@@ -6,6 +6,10 @@ namespace Web.Services.Interfaces.IBase
     {
         Task<TResponse> GetAsync<TResponse>(string url);
 
+        Task<byte[]> GetBytesAsync(string url);
+
+        Task<(byte[] Contenido, string? NombreArchivo)> GetArchivoAsync(string url);
+
         Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest data);
 
         Task<TResponse> PutAsync<TRequest, TResponse>(string url, TRequest data);

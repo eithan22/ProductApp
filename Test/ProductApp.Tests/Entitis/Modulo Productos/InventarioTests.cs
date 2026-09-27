@@ -94,5 +94,172 @@ namespace ProductApp.Tests.Entitis
 
             accion.Should().Throw<ValidacionDominioException>();
         }
+
+        // --- Entrada de stock: camino feliz (antes sin cobertura) ---
+
+        [Fact]
+        public void RegistrarEntradaStock_ConCantidadValida_SumaALaCantidadActual()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            inventario.RegistrarEntradaStock(7);
+
+            inventario.CantidadActual.Should().Be(17);
+        }
+
+        [Fact]
+        public void RegistrarEntradaStock_SobreUnInventarioEnCero_DejaExactamenteLaCantidadIngresada()
+        {
+            var inventario = CrearInventario(cantidadActual: 0, cantidadMinima: 5);
+
+            inventario.RegistrarEntradaStock(3);
+
+            inventario.CantidadActual.Should().Be(3);
+        }
+
+        [Fact]
+        public void RegistrarEntradaStock_ConLaCantidadMinimaValida_SumaUnaUnidad()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            inventario.RegistrarEntradaStock(1);
+
+            inventario.CantidadActual.Should().Be(11);
+        }
+
+        [Fact]
+        public void RegistrarEntradaStock_VariasVecesSeguidas_AcumulaLasEntradas()
+        {
+            var inventario = CrearInventario(cantidadActual: 0, cantidadMinima: 5);
+
+            inventario.RegistrarEntradaStock(4);
+            inventario.RegistrarEntradaStock(6);
+            inventario.RegistrarEntradaStock(10);
+
+            inventario.CantidadActual.Should().Be(20);
+        }
+
+        [Fact]
+        public void RegistrarEntradaStock_NoTocaLaCantidadMinimaNiElProductoId()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5, productoId: 42);
+
+            inventario.RegistrarEntradaStock(5);
+
+            inventario.CantidadMinima.Should().Be(5);
+            inventario.ProductoId.Should().Be(42);
+        }
+
+        [Fact]
+        public void RegistrarEntradaStock_QueSuperaElMinimo_DejaDeEstarEnStockBajo()
+        {
+            var inventario = CrearInventario(cantidadActual: 2, cantidadMinima: 5);
+            inventario.EsStockBajo().Should().BeTrue("el escenario parte de un inventario bajo mínimo");
+
+            inventario.RegistrarEntradaStock(10);
+
+            inventario.EsStockBajo().Should().BeFalse();
+        }
+
+        // El delay hace determinista la comparación de timestamps: sin él, dos lecturas
+        // consecutivas de DateTime.UtcNow pueden devolver el mismo valor.
+        [Fact]
+        public async Task RegistrarEntradaStock_ConCantidadValida_RefrescaUltimaActualizacionYModificadoEn()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+            var ultimaActualizacionPrevia = inventario.UltimaActualizacion;
+            var modificadoEnPrevio = inventario.ModificadoEn;
+            await Task.Delay(10);
+
+            inventario.RegistrarEntradaStock(5);
+
+            inventario.UltimaActualizacion.Should().BeAfter(ultimaActualizacionPrevia);
+            inventario.ModificadoEn.Should().BeAfter(modificadoEnPrevio);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        [InlineData(-100)]
+        public void RegistrarEntradaStock_ConCantidadInvalida_NoModificaElStockNiLaFecha(int cantidad)
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+            var ultimaActualizacionPrevia = inventario.UltimaActualizacion;
+
+            var accion = () => inventario.RegistrarEntradaStock(cantidad);
+
+            accion.Should().Throw<ValidacionDominioException>()
+                .WithMessage("*mayor a cero*")
+                .Which.Campo.Should().Be("Cantidad");
+            inventario.CantidadActual.Should().Be(10);
+            inventario.UltimaActualizacion.Should().Be(ultimaActualizacionPrevia);
+        }
+
+        // --- Tope máximo de stock (defensa contra el desbordamiento del int) ---
+
+        // Sin el tope, la suma habría desbordado el int y dejado la cantidad en negativo.
+        [Fact]
+        public void RegistrarEntradaStock_ConUnaCantidadQueDesbordariaElInt_LanzaValidacionDominioExceptionYNoTocaElStock()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            var accion = () => inventario.RegistrarEntradaStock(int.MaxValue);
+
+            accion.Should().Throw<ValidacionDominioException>()
+                .WithMessage("*Stock máximo excedido*")
+                .Which.Campo.Should().Be("Cantidad");
+            inventario.CantidadActual.Should().Be(10);
+        }
+
+        // Aquí no hay desbordamiento posible: la entrada simplemente cruza el tope.
+        [Fact]
+        public void RegistrarEntradaStock_ConUnaCantidadQueCruzaElTopeSinDesbordar_LanzaValidacionDominioExceptionYNoTocaElStock()
+        {
+            var inventario = CrearInventario(cantidadActual: Inventario.CantidadMaximaStock - 10, cantidadMinima: 5);
+
+            var accion = () => inventario.RegistrarEntradaStock(11);
+
+            accion.Should().Throw<ValidacionDominioException>()
+                .WithMessage("*Stock máximo excedido*")
+                .Which.Campo.Should().Be("Cantidad");
+            inventario.CantidadActual.Should().Be(Inventario.CantidadMaximaStock - 10);
+        }
+
+        // Borde inclusivo: llegar justo al tope es válido.
+        [Fact]
+        public void RegistrarEntradaStock_QueLlegaExactamenteAlTope_SeAcepta()
+        {
+            var inventario = CrearInventario(cantidadActual: Inventario.CantidadMaximaStock - 10, cantidadMinima: 5);
+
+            inventario.RegistrarEntradaStock(10);
+
+            inventario.CantidadActual.Should().Be(Inventario.CantidadMaximaStock);
+        }
+
+        [Theory]
+        [InlineData(Inventario.CantidadMaximaStock + 1)]
+        [InlineData(int.MaxValue)]
+        public void AjustarStock_ConUnValorMayorAlTope_LanzaValidacionDominioExceptionYNoTocaElStock(int nuevoStock)
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            var accion = () => inventario.AjustarStock(nuevoStock);
+
+            accion.Should().Throw<ValidacionDominioException>()
+                .WithMessage("*no puede superar*")
+                .Which.Campo.Should().Be("Stock");
+            inventario.CantidadActual.Should().Be(10);
+        }
+
+        // Borde inclusivo: ajustar justo al tope es válido.
+        [Fact]
+        public void AjustarStock_ExactamenteAlTope_SeAcepta()
+        {
+            var inventario = CrearInventario(cantidadActual: 10, cantidadMinima: 5);
+
+            inventario.AjustarStock(Inventario.CantidadMaximaStock);
+
+            inventario.CantidadActual.Should().Be(Inventario.CantidadMaximaStock);
+        }
     }
 }

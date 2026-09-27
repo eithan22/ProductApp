@@ -1,5 +1,6 @@
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ProductoDto;
+using Web.Models.Modelo_Productos.ImportacionModels;
 using Web.Models.Modelo_Productos.ProductoModels;
 using Web.Services.Interfaces.IBase;
 using Web.Services.Interfaces.IEndPoints.Modulo_Productos;
@@ -42,7 +43,7 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
             return await _baseHttpServices.GetAsync<ProductoModel>($"{_productoEndpoint.GetById}{id}");
         }
 
-        public async Task<PagedResult<ProductoModel>> GetProductosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResult<ProductoModel>> GetProductosAsync(bool incluirInactivos = false, int pageNumber = 1, int pageSize = PaginacionDefaults.PageSizeDefault)
         {
             return await _baseHttpServices.GetAsync<PagedResult<ProductoModel>>(
                 $"{_productoEndpoint.GetAll}?incluirInactivos={incluirInactivos}&pageNumber={pageNumber}&pageSize={pageSize}");
@@ -57,6 +58,19 @@ namespace Web.Services.ServicesHttp.Modulo_Productos
         {
             return await _baseHttpServices.PostFileAsync<ProductoModel>(
                 $"{_productoEndpoint.SubirImagen}{productoId}", contenido, nombreArchivo, contentType);
+        }
+
+        public async Task<(byte[] Contenido, string? NombreArchivo)> DescargarPlantillaImportacionAsync()
+        {
+            return await _baseHttpServices.GetArchivoAsync(_productoEndpoint.DescargarPlantillaImportacion);
+        }
+
+        // Mismo camino que SubirImagenAsync: multipart con el stream ya abierto por el
+        // controller. La respuesta no es el archivo sino el parte de la importación.
+        public async Task<ImportacionProductosResultadoModel> ImportarMasivoAsync(Stream contenido, string nombreArchivo, string contentType)
+        {
+            return await _baseHttpServices.PostFileAsync<ImportacionProductosResultadoModel>(
+                _productoEndpoint.ImportarMasivo, contenido, nombreArchivo, contentType);
         }
 
         public async Task<ProductoModel> UpdateProductoAsync(UpdateProductoModel model)
