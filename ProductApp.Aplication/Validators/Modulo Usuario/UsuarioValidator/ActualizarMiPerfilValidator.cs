@@ -18,7 +18,9 @@ namespace ProductApp.Aplication.Validators.Modulo_Usuario.UsuarioValidator
 
             RuleFor(x => x.FechaNacimiento)
                 .Must(f => !f.HasValue || f.Value < DateTime.UtcNow)
-                .WithMessage("La fecha de nacimiento debe ser una fecha pasada.");
+                .WithMessage("La fecha de nacimiento debe ser una fecha pasada.")
+                .Must(f => !f.HasValue || f.Value <= DateTime.UtcNow.AddYears(-18))
+                .WithMessage("El usuario debe ser mayor de edad (18 años o más).");
         }
     }
 }

@@ -51,6 +51,18 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success("Validacion Correcta");
         }
 
+        public OperationResult ValidarAnonimizarClienteAsync(Cliente cliente)
+        {
+            var reservado = ValidarClienteNoReservado(cliente);
+            if (!reservado.IsSuccess)
+                return reservado;
+
+            if (cliente.Estado == EstadoCliente.Anonimizado)
+                return OperationResult.Failure("El cliente ya está anonimizado.");
+
+            return OperationResult.Success("Validacion Correcta");
+        }
+
         public async Task<OperationResult> ValidarUpdateClienteAsync(UpdateClienteDto dto, Cliente cliente)
         {
             var reservado = ValidarClienteNoReservado(cliente);

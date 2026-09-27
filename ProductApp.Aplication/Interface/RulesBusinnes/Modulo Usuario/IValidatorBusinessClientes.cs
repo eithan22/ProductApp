@@ -18,6 +18,8 @@ namespace ProductApp.Aplication.Interface.RulesBusinnes
         // pueda reusarla sin arrastrar las otras reglas de la desactivación.
         OperationResult ValidarClienteNoReservado(Cliente cliente);
 
+        OperationResult ValidarAnonimizarClienteAsync(Cliente cliente);
+
         
 
         

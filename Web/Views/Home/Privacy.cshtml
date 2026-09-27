@@ -161,9 +161,9 @@
             </li>
             <li>
                 <strong>Facturas en PDF</strong>: se guardan en un contenedor
-                <strong>privado</strong> e incluyen el nombre y la cédula del cliente de esa
-                orden. Solo se entregan a través de la API autenticada, nunca por una dirección
-                pública.
+                <strong>privado</strong> e incluyen el nombre, la cédula, la dirección y el
+                teléfono del cliente de esa orden. Solo se entregan a través de la API
+                autenticada, nunca por una dirección pública.
             </li>
         </ul>
 
@@ -190,6 +190,12 @@
             <li>
                 La plataforma de alojamiento (Microsoft Azure) mantiene además sus propios
                 registros, que pueden incluir direcciones IP, según la configuración del servicio.
+            </li>
+            <li>
+                Para frenar intentos de fuerza bruta, el sistema limita los intentos de inicio de
+                sesión usando la dirección IP de quien intenta acceder como referencia temporal
+                (máximo 5 intentos por minuto). Esa IP no se guarda de forma persistente: solo
+                vive en memoria mientras dura la ventana de un minuto.
             </li>
         </ul>
 
@@ -278,21 +284,19 @@
         <ul>
             <li>
                 <strong>Microsoft Azure</strong>: aloja la aplicación, la base de datos y los
-                archivos (imágenes y facturas), bajo la cuenta y los controles del Proveedor. Como
-                en cualquier servicio en la nube, los datos quedan almacenados en servidores de
-                Microsoft, que pueden estar ubicados fuera de la República Dominicana según la
-                región configurada en el despliegue. Esa transferencia internacional es necesaria
-                para prestar el servicio y se apoya en los compromisos contractuales de protección
-                de datos del propio proveedor de nube.
+                archivos (imágenes y facturas), bajo la cuenta y los controles del Proveedor. Los
+                datos quedan almacenados en la región <strong>Central US (Estados
+                Unidos)</strong> de Microsoft Azure, no en República Dominicana. Esa transferencia
+                internacional es necesaria para prestar el servicio y se apoya en los compromisos
+                contractuales de protección de datos del propio proveedor de nube.
             </li>
             <li>
-                <strong>Google Fonts</strong> (fonts.googleapis.com y fonts.gstatic.com) y
-                <strong>jsDelivr</strong> (cdn.jsdelivr.net, desde donde se carga la librería de
-                gráficos): al abrir cualquier pantalla, el navegador les pide archivos, y por el
-                funcionamiento normal de HTTP esos servidores conocen la dirección IP pública y el
-                navegador de quien visita. <strong>No reciben ningún dato del negocio, de sus
-                clientes ni de sus ventas</strong>: solo entregan una tipografía y un archivo de
-                JavaScript.
+                <strong>Google Fonts</strong> (fonts.googleapis.com y fonts.gstatic.com): al abrir
+                cualquier pantalla, el navegador le pide la tipografía, y por el funcionamiento
+                normal de HTTP ese servidor conoce la dirección IP pública y el navegador de quien
+                visita. <strong>No recibe ningún dato del negocio, de sus clientes ni de sus
+                ventas</strong>: solo entrega un archivo de tipografía. La librería de gráficos
+                (Chart.js) está alojada en el propio servidor del Proveedor, no en un tercero.
             </li>
         </ul>
         <p>
@@ -417,8 +421,10 @@
                 después de terminada la relación.
             </li>
             <li>
-                Los registros técnicos se conservan según la retención configurada en el servicio
-                de alojamiento.
+                Los registros técnicos propios de la aplicación se conservan <strong>30
+                días</strong>, con rotación diaria. La plataforma de alojamiento (Microsoft Azure)
+                mantiene además sus propios registros de infraestructura, con la retención que
+                Microsoft define para su servicio.
             </li>
         </ul>
 
@@ -506,8 +512,9 @@
         <h2>14. Menores de edad</h2>
         <p>
             ProductApp es una herramienta de trabajo y no está dirigida a menores de edad. Las
-            cuentas de usuario son para personal del negocio y no deben crearse para menores. El
-            sistema no verifica la edad de los clientes que se registran: si se detecta que se
+            cuentas de usuario son para personal del negocio: el sistema exige que el titular sea
+            mayor de edad para crearlas o editarlas. El sistema no verifica la edad de los
+            clientes que se registran: si se detecta que se
             cargaron datos de un menor sin autorización de su padre, madre o tutor, se eliminarán
             apenas se reciba el aviso en el correo de contacto.
         </p>

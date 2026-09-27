@@ -81,5 +81,38 @@ namespace ProductApp.Tests.Validators.Modulo_Usuario
 
             new CreateUsuarioValidator().Validate(dto).IsValid.Should().Be(esValido);
         }
+
+        [Theory]
+        [InlineData(-17, false)]
+        [InlineData(-18, true)]
+        public void CreateUsuario_ExigeSerMayorDeEdad(int anios, bool esValido)
+        {
+            var dto = CrearDto();
+            dto.FechaNacimiento = DateTime.UtcNow.AddYears(anios);
+
+            new CreateUsuarioValidator().Validate(dto).IsValid.Should().Be(esValido);
+        }
+
+        [Theory]
+        [InlineData(-17, false)]
+        [InlineData(-18, true)]
+        public void UpdateUsuario_ExigeSerMayorDeEdad(int anios, bool esValido)
+        {
+            var dto = ActualizarDto();
+            dto.FechaNacimiento = DateTime.UtcNow.AddYears(anios);
+
+            new UpdateUsuarioValidator().Validate(dto).IsValid.Should().Be(esValido);
+        }
+
+        [Theory]
+        [InlineData(-17, false)]
+        [InlineData(-18, true)]
+        public void ActualizarMiPerfil_ExigeSerMayorDeEdad(int anios, bool esValido)
+        {
+            var dto = PerfilDto();
+            dto.FechaNacimiento = DateTime.UtcNow.AddYears(anios);
+
+            new ActualizarMiPerfilValidator().Validate(dto).IsValid.Should().Be(esValido);
+        }
     }
 }

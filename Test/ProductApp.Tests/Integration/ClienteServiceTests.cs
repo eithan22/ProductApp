@@ -346,6 +346,61 @@ namespace ProductApp.Tests.Integration
         }
 
         [Fact]
+        public async Task AnonimizarAsync_ClienteExistente_LoAnonimizaYConservaSuHistorial()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var cliente = await IntegrationTestFactory.SembrarClienteAsync(context);
+            var service = IntegrationTestFactory.CrearClienteServices(context);
+
+            var resultado = await service.AnonimizarAsync(cliente.Id, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+            var actualizado = await context.Clientes.FindAsync(cliente.Id);
+            actualizado!.Estado.Should().Be(EstadoCliente.Anonimizado);
+            actualizado.Nombre.Should().Be("Cliente anonimizado");
+        }
+
+        [Fact]
+        public async Task AnonimizarAsync_ClienteReservado_DevuelveFailure()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var reservado = await IntegrationTestFactory.SembrarConsumidorFinalAsync(context);
+            var service = IntegrationTestFactory.CrearClienteServices(context);
+
+            var resultado = await service.AnonimizarAsync(reservado.Id, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("cliente reservado del sistema");
+            (await context.Clientes.FindAsync(reservado.Id))!.Estado.Should().Be(EstadoCliente.Activo);
+        }
+
+        [Fact]
+        public async Task AnonimizarAsync_ClienteYaAnonimizado_DevuelveFailure()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var cliente = await IntegrationTestFactory.SembrarClienteAsync(context);
+            var service = IntegrationTestFactory.CrearClienteServices(context);
+            (await service.AnonimizarAsync(cliente.Id, usuarioSolicitanteId: 1)).IsSuccess.Should().BeTrue();
+
+            var resultado = await service.AnonimizarAsync(cliente.Id, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("ya está anonimizado");
+        }
+
+        [Fact]
+        public async Task AnonimizarAsync_ClienteInexistente_DevuelveFailure()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var service = IntegrationTestFactory.CrearClienteServices(context);
+
+            var resultado = await service.AnonimizarAsync(999, usuarioSolicitanteId: 1);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("no fue encontrado");
+        }
+
+        [Fact]
         public async Task GetAllAsync_PorDefecto_OmiteALosClientesInactivos()
         {
             using var context = IntegrationTestFactory.CrearContexto();

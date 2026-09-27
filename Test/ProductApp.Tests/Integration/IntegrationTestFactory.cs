@@ -127,7 +127,8 @@ namespace ProductApp.Tests.Integration
                 new ClienteMappers(),
                 new UpdateClienteValidator(),
                 new CreateClienteValidator(),
-                new ValidatorBusinessClientes(new ClienteRepository(context)));
+                new ValidatorBusinessClientes(new ClienteRepository(context)),
+                NullLogger<ClienteServices>.Instance);
 
         public static ProveedorService CrearProveedorService(AppDbContext context)
             => new(

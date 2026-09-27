@@ -2,7 +2,8 @@
 {
     public enum EstadoCliente
     {
-        Activo   = 0,
-        Inactivo = 1
+        Activo      = 0,
+        Inactivo    = 1,
+        Anonimizado = 2
     }
 }

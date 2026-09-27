@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ClienteDto;
@@ -22,13 +23,14 @@ namespace ProductApp.Aplication.Services
         private readonly IValidator<CreateClienteDto> _createValidator;
         private readonly IValidator<UpdateClienteDto> _updateValidator;
         private readonly IValidatorBusinessClientes _validatorBusinessClientes;
+        private readonly ILogger<ClienteServices> _logger;
 
         public ClienteServices(IClienteRepository clienterepository,
             IMapperCliente mapperCliente,
             IValidator<UpdateClienteDto> updateValidator,
             IValidator<CreateClienteDto> createValidator,
-            IValidatorBusinessClientes validatorBusinessClientes
-
+            IValidatorBusinessClientes validatorBusinessClientes,
+            ILogger<ClienteServices> logger
 
             )
         {
@@ -37,6 +39,7 @@ namespace ProductApp.Aplication.Services
             _updateValidator = updateValidator;
             _createValidator = createValidator;
             _validatorBusinessClientes = validatorBusinessClientes;
+            _logger = logger;
         }
 
 
@@ -306,6 +309,29 @@ namespace ProductApp.Aplication.Services
             };
 
             return OperationResultD<ClienteTotalComprasDto>.Success(dto, "Total de compras obtenido correctamente");
+        }
+
+        public async Task<OperationResultD<bool>> AnonimizarAsync(int id, int usuarioSolicitanteId)
+        {
+            if (id <= 0)
+                return OperationResultD<bool>.Failure("El id no puede ser menor o igual a 0");
+
+            var cliente = await _clienteRepository.GetByIdAsync(id);
+            if (cliente == null)
+                return OperationResultD<bool>.Failure("El cliente no fue encontrado");
+
+            var validationResult = _validatorBusinessClientes.ValidarAnonimizarClienteAsync(cliente);
+            if (!validationResult.IsSuccess)
+                return OperationResultD<bool>.Failure(validationResult.Message);
+
+            cliente.Anonimizar();
+            await _clienteRepository.UpdateAsync(cliente);
+
+            _logger.LogInformation(
+                "Cliente anonimizado: {ClienteId}, por el usuario {UsuarioSolicitanteId}",
+                cliente.Id, usuarioSolicitanteId);
+
+            return OperationResultD<bool>.Success(true, "Cliente anonimizado correctamente");
         }
 
         public async Task<OperationResultD<ClienteResponseDto>> ObtenerClienteReservadoAsync()

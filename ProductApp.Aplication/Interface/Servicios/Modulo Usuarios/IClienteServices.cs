@@ -15,6 +15,8 @@ namespace ProductApp.Aplication.Interface
 
         Task<OperationResultD<bool>> EnableCliente(int id);
 
+        Task<OperationResultD<bool>> AnonimizarAsync(int id, int usuarioSolicitanteId);
+
         Task<OperationResultD<List<ClienteResponseDto>>> BuscarAsync(string? nombre, string? telefono, string? correo, bool incluirInactivos = false);
 
         Task<OperationResultD<ClienteTotalComprasDto>> ObtenerTotalComprasAsync(int clienteId);

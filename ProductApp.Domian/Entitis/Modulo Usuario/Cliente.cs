@@ -113,6 +113,8 @@ namespace ProductApp.Domian.Entitis
 
         public void Desactivar()
         {
+            if (Estado == EstadoCliente.Anonimizado)
+                throw new EstadoInvalidoException("Cliente", Estado.ToString(), "Desactivar");
             if (Estado == EstadoCliente.Inactivo)
                 throw new EstadoInvalidoException("Cliente", Estado.ToString(), "Desactivar");
 
@@ -122,10 +124,31 @@ namespace ProductApp.Domian.Entitis
 
         public void Activar()
         {
+            if (Estado == EstadoCliente.Anonimizado)
+                throw new EstadoInvalidoException("Cliente", Estado.ToString(), "Activar");
             if (Estado == EstadoCliente.Activo)
                 throw new EstadoInvalidoException("Cliente", Estado.ToString(), "Activar");
 
             Estado = EstadoCliente.Activo;
+            ActualizarFechaModificacion();
+        }
+
+        // --- Derecho de eliminación (Ley 172-13) sin perder el historial de ventas ---
+
+        // A diferencia de Desactivar, es terminal: no existe "Desanonimizar". Los valores
+        // generados incluyen el Id para no chocar con los índices únicos de Cédula/Correo
+        // si se anonimiza más de un cliente.
+        public void Anonimizar()
+        {
+            if (Estado == EstadoCliente.Anonimizado)
+                throw new EstadoInvalidoException("Cliente", Estado.ToString(), "Anonimizar");
+
+            Nombre = "Cliente anonimizado";
+            Cedula = $"ANON-{Id}";
+            Direccion = "N/D";
+            Correo = $"anon{Id}@anon.local";
+            Telefono = "N/D";
+            Estado = EstadoCliente.Anonimizado;
             ActualizarFechaModificacion();
         }
 

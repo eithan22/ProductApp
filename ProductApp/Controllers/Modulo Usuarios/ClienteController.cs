@@ -6,6 +6,7 @@ using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Result.ApiResponses;
 using ProductApp.Domian.Entitis;
+using System.Security.Claims;
 
 namespace ProductApp.Api.Controllers.Modulo_Usuarios
 {
@@ -105,6 +106,19 @@ namespace ProductApp.Api.Controllers.Modulo_Usuarios
                 return BadRequest(ApiResponseT<Object>.FailureResponse(result.Message));
 
             return Ok(ApiResponseT<ClienteResponseDto>.SuccessResponse(result.Data, result.Message));//no usamos data porque solo queremos indicar que se actualizo correctamente
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPatch("AnonimizarCliente/{id}")]
+        public async Task<IActionResult> AnonimizarCliente(int id)
+        {
+            var usuarioSolicitanteId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _clienteService.AnonimizarAsync(id, usuarioSolicitanteId);
+
+            if (!result.IsSuccess)
+                return BadRequest(ApiResponse.FailureResponse(result.Message));
+
+            return Ok(ApiResponse.SuccessResponse(result.Message));
         }
 
         [Authorize]
