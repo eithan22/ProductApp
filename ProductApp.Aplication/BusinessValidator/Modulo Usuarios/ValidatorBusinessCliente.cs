@@ -48,6 +48,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("El cliente ya está inactivo.");
 
+            if (cliente.Estado == EstadoCliente.Anonimizado)
+                return OperationResult.Failure("El cliente ya está anonimizado, no se puede desactivar.");
+
             return OperationResult.Success("Validacion Correcta");
         }
 
