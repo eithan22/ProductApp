@@ -24,6 +24,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Ventas
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("No se puede crear una orden para un cliente inactivo.");
 
+            if (cliente.Estado == EstadoCliente.Anonimizado)
+                return OperationResult.Failure("No se puede crear una orden para un cliente anonimizado.");
+
             return OperationResult.Success();
         }
 
