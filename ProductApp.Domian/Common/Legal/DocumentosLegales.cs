@@ -17,8 +17,8 @@ namespace ProductApp.Domian.Common.Legal
     // juntos, en un solo acto. Versionarlos por separado exigiría dos pares de columnas en Usuario.
     public static class DocumentosLegales
     {
-        public const string VersionVigente = "2.1";
+        public const string VersionVigente = "2.2";
 
-        public const string FechaUltimaActualizacion = "25 de septiembre de 2026";
+        public const string FechaUltimaActualizacion = "28 de septiembre de 2026";
     }
 }

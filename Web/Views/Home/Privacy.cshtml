@@ -18,8 +18,8 @@
     está escrito desde esa posición.
 
     Todo lo que se afirma acá es verificable en el código (entidades, hash
-    BCrypt, contenedores de Azure, cascadas de borrado, ausencia de borrado de
-    facturas). Si el modelo de datos cambia, este texto cambia con él: una
+    BCrypt, contenedores de Azure, cascadas de borrado, anonimización de
+    clientes, ausencia de borrado de facturas). Si el modelo de datos cambia, este texto cambia con él: una
     política que describe algo que la app ya no hace es peor que no tener
     política. Los plazos de conservación y respuesta son compromisos
     operativos: si se cambian acá, hay que cambiarlos también en los Términos.
@@ -389,9 +389,26 @@
                 exista en el sistema. No hay borrado automático por antigüedad.
             </li>
             <li>
-                <strong>Eliminar un cliente o un proveedor</strong> no existe como función en la
-                aplicación: solo se puede <strong>desactivar</strong>. El registro permanece en el
-                sistema, marcado como inactivo, junto con todo su historial.
+                <strong>Eliminar un cliente</strong> no borra la fila, pero sí existe una vía para
+                borrar sus datos personales. La aplicación ofrece dos operaciones distintas:
+                <strong>desactivar</strong>, que deja el registro y su historial intactos marcados
+                como inactivos; y <strong>anonimizar</strong>, que sobrescribe de forma
+                irreversible el nombre, la cédula, la dirección, el correo y el teléfono con
+                valores genéricos que no identifican a nadie, dejando el registro en estado
+                &laquo;Anonimizado&raquo;. Después de anonimizar solo subsiste el vínculo numérico
+                con las órdenes, los detalles y los pagos de esa persona, sin ningún dato que
+                permita reconocerla. Es la vía prevista para atender el derecho de cancelación de
+                la Ley 172-13 sin destruir el historial contable que la normativa tributaria obliga
+                a conservar. La operación es <strong>irreversible</strong> &mdash;no existe
+                &laquo;desanonimizar&raquo;, y ese cliente ya no se puede editar ni reactivar&mdash;
+                y hoy es una operación <strong>exclusiva del Administrador, sin pantalla propia en
+                la aplicación</strong> (ver sección 12).
+            </li>
+            <li>
+                <strong>Eliminar un proveedor</strong> no existe como función en la aplicación: solo
+                se puede <strong>desactivar</strong>. El registro permanece en el sistema, marcado
+                como inactivo, junto con todo su historial. Un pedido de cancelación sobre los datos
+                de contacto de un proveedor se atiende por el correo de la sección 16.
             </li>
             <li>
                 <strong>Eliminar un usuario</strong> tampoco borra la fila: es un borrado
@@ -399,7 +416,7 @@
                 pagos. Es intencional: un borrado físico arrastraría en cascada las órdenes, los
                 detalles y los pagos de ese vendedor.
             </li>
-            <li>El cliente reservado &laquo;Consumidor Final&raquo; no se puede eliminar.</li>
+            <li>El cliente reservado &laquo;Consumidor Final&raquo; no se puede editar, desactivar ni anonimizar.</li>
             <li>Las imágenes de producto se eliminan del almacenamiento cuando se elimina el producto.</li>
             <li>
                 <strong>Las facturas en PDF ya generadas se pueden eliminar de forma manual</strong>
@@ -454,6 +471,18 @@
                 de trabajo del producto.
             </li>
             <li>
+                <strong>La anonimización de un cliente no tiene pantalla propia.</strong> Hoy solo
+                puede ejecutarla el Administrador por la interfaz de programación del sistema.
+                Procedimiento vigente: el negocio o la persona titular escribe a
+                <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a> identificando el
+                cliente; el Proveedor ejecuta la anonimización <strong>dentro de los 10 días
+                hábiles</strong> y confirma por escrito. Tenga en cuenta que anonimizar el registro
+                <strong>no modifica las facturas en PDF ya emitidas</strong>, que conservan el
+                nombre y la cédula: si también quiere que se eliminen, indíquelo en el mismo pedido
+                y se atiende por el procedimiento del punto anterior. Agregar la pantalla es parte
+                del plan de trabajo del producto.
+            </li>
+            <li>
                 <strong>No existe todavía un registro de auditoría consultable desde la
                 aplicación</strong> (quién consultó qué y cuándo). Las operaciones sensibles quedan
                 en los registros técnicos del servidor, no en una pantalla; el Proveedor puede
@@ -489,8 +518,10 @@
             <li>
                 <strong>Si usted es cliente o proveedor de un negocio que usa ProductApp</strong>:
                 lo más rápido es pedírselo directamente a ese negocio, que puede consultar,
-                corregir, desactivar o eliminar su registro desde las pantallas de Clientes o
-                Proveedores. Si no obtiene respuesta, puede escribir al Proveedor a
+                corregir y desactivar su registro desde las pantallas de Clientes o Proveedores.
+                Si además quiere que se borren sus datos personales y usted es cliente, el
+                administrador puede pedir la <strong>anonimización</strong> del registro
+                (secciones 11 y 12). Si no obtiene respuesta, puede escribir al Proveedor a
                 <a href="mailto:eithanread1@gmail.com">eithanread1@gmail.com</a>: como los datos
                 están alojados en su infraestructura, el Proveedor tramitará su pedido junto con el
                 negocio y le responderá dentro de los <strong>diez (10) días hábiles</strong>.
