@@ -11,15 +11,15 @@ namespace ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Usuario
     public interface IValidatorBusinessUsuario
     {
          Task<OperationResult> ValidarCreateUsuarioAsync(CreateUsuarioDto dto);
-        Task<OperationResult> ValidarUpdateUsuarioAsync(UpdateUsuarioDto dto);
+        Task<OperationResult> ValidarUpdateUsuarioAsync(UpdateUsuarioDto dto, Usuario usuario);
         Task<OperationResult> ValidarActualizarMiPerfilAsync(ActualizarMiPerfilDto dto, int usuarioId);
          Task<OperationResult> ValidarDeleteUsuarioAsync(Usuario usuario);
         Task<OperationResult> ValidarBorradoFisicoUsuarioAsync(Usuario usuario);
 
         Task<OperationResult> ValidarCambiarPasswordUsuario(ChangePasswordDto dto, Usuario usuario);
-        Task<OperationResult> ValidarResetearPassword (ResetearPasswordDto dto);
+        Task<OperationResult> ValidarResetearPassword (ResetearPasswordDto dto, Usuario usuario);
 
-        Task<OperationResult> ValidarCambiarRol (CambiarRolDto dto);
+        Task<OperationResult> ValidarCambiarRol (CambiarRolDto dto, Usuario usuario);
 
         Task<OperationResult> ValidarAceptacionDocumentosLegales(AceptarDocumentosLegalesDto dto);
 

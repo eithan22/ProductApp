@@ -26,7 +26,11 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
 
             var totalCount = await query.CountAsync();
 
+            // Sin OrderBy, SQL Server no garantiza el orden entre páginas: un registro de
+            // inventario podría repetirse o desaparecer al paginar. Inventario no tiene nombre
+            // propio, así que se ordena por el nombre del producto que ya viene incluido.
             var items = await query
+                .OrderBy(i => i.Producto.Nombre)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

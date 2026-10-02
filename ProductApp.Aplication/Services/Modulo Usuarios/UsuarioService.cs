@@ -114,7 +114,7 @@ namespace ProductApp.Aplication.Services
             if (usuario == null)
                 return OperationResultD<bool>.Failure("Usuario no encontrado");
 
-            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarResetearPassword(dto);
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarResetearPassword(dto, usuario);
             if (!validatorBusinessResult.IsSuccess)
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
 
@@ -140,7 +140,7 @@ namespace ProductApp.Aplication.Services
             if (usuario == null)
                 return OperationResultD<bool>.Failure("Usuario no encontrado");
 
-            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarCambiarRol(dto);
+            var validatorBusinessResult = await _validatorBusinessUsuarios.ValidarCambiarRol(dto, usuario);
             if (!validatorBusinessResult.IsSuccess)
                 return OperationResultD<bool>.Failure(validatorBusinessResult.Message);
 
@@ -270,7 +270,7 @@ namespace ProductApp.Aplication.Services
             if (usuario == null)
                 return OperationResultD<UsuarioResponseDto>.Failure("Usuario no encontrado");
 
-            var businessValidationResult = await _validatorBusinessUsuarios.ValidarUpdateUsuarioAsync(dto);
+            var businessValidationResult = await _validatorBusinessUsuarios.ValidarUpdateUsuarioAsync(dto, usuario);
             if (!businessValidationResult.IsSuccess)
                 return OperationResultD<UsuarioResponseDto>.Failure(businessValidationResult.Message);
 
