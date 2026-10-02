@@ -146,9 +146,12 @@ namespace ProductApp.Tests.Integration
             AlmacenamientoImagenesFake? almacenamientoImagenes = null,
             GestorTransaccionesFake? gestorTransacciones = null,
             IInventarioRepository? inventarioRepository = null)
-            => new(
+        {
+            var almacenamiento = almacenamientoImagenes ?? new AlmacenamientoImagenesFake();
+
+            return new(
                 new ProductoRepository(context),
-                new ProductoMapper(),
+                new ProductoMapper(almacenamiento),
                 new CreateProductoValidator(),
                 new UpdateProductoValidator(),
                 new SubirImagenProductoValidator(),
@@ -158,9 +161,10 @@ namespace ProductApp.Tests.Integration
                     new ProveedorRepository(context)),
                 inventarioRepository ?? new InventarioRepository(context),
                 new ConfiguracionSistemaRepository(context),
-                almacenamientoImagenes ?? new AlmacenamientoImagenesFake(),
+                almacenamiento,
                 gestorTransacciones ?? new GestorTransaccionesFake(),
                 NullLogger<ProductoServices>.Instance);
+        }
 
         // Orden del constructor verificado contra UsuarioService.cs: validatorBusinessUsuarios
         // va 5º, antes de los 4 validators de password/rol/perfil restantes.

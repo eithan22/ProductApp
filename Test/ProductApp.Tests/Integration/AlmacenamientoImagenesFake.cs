@@ -15,5 +15,7 @@ namespace ProductApp.Tests.Integration
         }
 
         public Task EliminarAsync(string imagenUrl, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public string ObtenerUrlConSas(string imagenUrl) => imagenUrl;
     }
 }
