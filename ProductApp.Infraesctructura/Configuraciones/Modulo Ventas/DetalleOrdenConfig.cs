@@ -12,7 +12,8 @@ namespace ProductApp.Infraesctructura.Persistencia.Configuraciones
         {
                 builder.HasOne(x => x.Producto)
                        .WithMany()
-                       .HasForeignKey(x => x.ProductId);
+                       .HasForeignKey(x => x.ProductId)
+                       .OnDelete(DeleteBehavior.Restrict);
 
                 builder.HasOne(x => x.Orden)
                        .WithMany(x => x.Detalles)

@@ -12,7 +12,9 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
     public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
 
-        //Aun no comprendi la inyeccion de el context para los demas repositorios
+        // Los repositorios específicos (ProductoRepository, OrdenRepository, etc.) heredan de
+        // GenericRepository<T> y reciben este mismo _context por constructor: así todas las
+        // operaciones de una misma petición comparten el mismo DbContext y el mismo SaveChangesAsync.
         protected readonly AppDbContext _context;
         protected  DbSet<T> Entity => _context.Set<T>();
 
@@ -60,19 +62,20 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository.GeneryRepos
             }
         }
 
-        //aun no lo entiendo . 
+        // Lectura completa sin paginar (ej. combos de categorías). Excluye siempre los soft-deleted.
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await Entity
+                .AsNoTracking()
                 .Where(x => !x.EstaEliminado)
                 .ToListAsync();
         }
 
-        //aun no lo entiendo.
-
+        // Versión paginada de GetAllAsync: devuelve la página pedida junto con el total de
+        // registros, que la capa de arriba usa para calcular TotalPages.
         public async Task<(List<T> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
         {
-            var query = Entity.Where(x => !x.EstaEliminado);
+            var query = Entity.AsNoTracking().Where(x => !x.EstaEliminado);
 
             var totalCount = await query.CountAsync();
 

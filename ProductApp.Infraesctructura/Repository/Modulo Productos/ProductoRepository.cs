@@ -61,6 +61,7 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
         public async Task<(List<Producto> Items, int TotalCount)> GetAllConCategoriaAsync(bool incluirInactivos, int pageNumber, int pageSize)
         {
             var query = _context.Productos
+                .AsNoTracking()
                 .Include(p => p.Categoria)
                 .Include(p => p.Inventario)
                 .Include(p => p.Proveedor)
