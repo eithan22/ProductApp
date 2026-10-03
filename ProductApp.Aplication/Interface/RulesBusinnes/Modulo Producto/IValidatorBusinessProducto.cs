@@ -16,5 +16,10 @@ namespace ProductApp.Aplication.Interface.RulesBusinnes.Modulo_Producto
         Task<OperationResult> ValidarUpdateProductoAsync(UpdateProductoDto dto, Producto producto);
 
         Task<OperationResult> ValidarDisableProductoAsync(Producto producto);
+
+        // Regla propia del borrado físico: la FK de OrdenDetalle está en Restrict, así que
+        // borrar un producto con ventas asociadas reventaría a nivel de base. Se valida
+        // antes para responder con un mensaje entendible.
+        Task<OperationResult> ValidarBorradoFisicoProductoAsync(Producto producto);
     }
 }

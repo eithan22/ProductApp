@@ -72,11 +72,14 @@ namespace ProductApp.Aplication.Services
 
 
         // DEUDA TÉCNICA — no exponer este método en el controller sin agregarle antes un
-        // validador de negocio. Es borrado FÍSICO y las FK Inventarios→Productos y
-        // DetalleOrden→Productos están en cascada: borrar un producto se lleva su inventario
-        // y las líneas de las órdenes donde se vendió, alterando ventas ya cerradas. Es la
-        // misma razón por la que A5 convirtió el borrado de Usuario en lógico. Hoy no es
-        // alcanzable: ProductoController solo publica DisableProducto/EnableProducto.
+        // validador de negocio. Es borrado FÍSICO. La FK DetalleOrden→Productos está en
+        // Restrict (antes era cascada por convención: borrar un producto se llevaba las
+        // líneas de las órdenes donde se vendió, alterando ventas ya cerradas), así que acá
+        // se valida antes de intentar el borrado para responder con un mensaje entendible en
+        // vez de dejar que reviente con un error de FK crudo. La FK Inventario→Producto sigue
+        // en cascada a propósito: el inventario es un dato propio del producto, no historial
+        // compartido, así que es correcto que se borre junto con él. Hoy no es alcanzable:
+        // ProductoController solo publica DisableProducto/EnableProducto.
         public async Task<OperationResultD<bool>> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -89,6 +92,12 @@ namespace ProductApp.Aplication.Services
             if(result == null)
             {
                 return OperationResultD<bool>.Failure("El producto no fue encontrado");
+            }
+
+            var validationResult = await _validatorBusinessProducto.ValidarBorradoFisicoProductoAsync(result);
+            if (!validationResult.IsSuccess)
+            {
+                return OperationResultD<bool>.Failure(validationResult.Message);
             }
 
             await _productorepository.DeleteAsync(id);

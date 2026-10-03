@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using ProductApp.Aplication.Dtos.Modulo_Ventas.DetalleOrdenDto;
+using ProductApp.Aplication.Dtos.OrdenDto;
 using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Domian.Common.Exceptions;
 using ProductApp.Domian.Common.Exceptions.ExceptionsProducto;
@@ -630,10 +632,10 @@ namespace ProductApp.Tests.Integration
         // DeleteAsync
         // ---------------------------------------------------------------
 
-        // DeleteAsync es borrado físico (no soft delete) y hoy no tiene ninguna regla de
-        // negocio que lo frene, ni siquiera si el producto tiene inventario o ventas.
+        // DeleteAsync es borrado físico (no soft delete). Sin ventas asociadas sigue
+        // permitido: nada lo frena porque no hay nada que proteger.
         [Fact]
-        public async Task DeleteAsync_BorraElProductoFisicamente()
+        public async Task DeleteAsync_SinVentasAsociadas_BorraElProductoFisicamente()
         {
             using var context = IntegrationTestFactory.CrearContexto();
             var categoria = await SembrarCategoriaAsync(context);
@@ -644,6 +646,40 @@ namespace ProductApp.Tests.Integration
 
             resultado.IsSuccess.Should().BeTrue(resultado.Message);
             (await context.Productos.CountAsync()).Should().Be(0);
+        }
+
+        // Regresión directa del fix de la FK DetalleOrden->Producto (de Cascade a Restrict):
+        // antes este borrado se llevaba por delante la línea de la orden; ahora la regla de
+        // negocio lo frena con un mensaje entendible antes de llegar a la base.
+        [Fact]
+        public async Task DeleteAsync_ConVentasAsociadas_DevuelveFailureYNoBorraNiElProductoNiElDetalle()
+        {
+            using var context = IntegrationTestFactory.CrearContexto();
+            var (_, producto, _) = await IntegrationTestFactory.SembrarProductoConInventarioAsync(context, cantidadActual: 10);
+            var cliente = await IntegrationTestFactory.SembrarClienteAsync(context);
+            var usuario = await IntegrationTestFactory.SembrarUsuarioAsync(context);
+
+            var ordenServices = IntegrationTestFactory.CrearOrdenServices(context);
+            var detalleService = IntegrationTestFactory.CrearDetalleOrdenService(context);
+
+            var crear = await ordenServices.CrearOrden(new CreateOrdenDto { ClienteId = cliente.Id }, usuario.Id);
+            crear.IsSuccess.Should().BeTrue(crear.Message);
+
+            var detalle = await detalleService.AgregarProductoAsync(new CreateDetalleOrdenDto
+            {
+                OrdenId = crear.Data!.Id,
+                ProductId = producto.Id,
+                Cantidad = 1
+            }, usuario.Id, esAdministrador: false);
+            detalle.IsSuccess.Should().BeTrue(detalle.Message);
+
+            var service = IntegrationTestFactory.CrearProductoServices(context);
+            var resultado = await service.DeleteAsync(producto.Id);
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("venta(s) asociada(s)");
+            (await context.Productos.CountAsync()).Should().Be(1);
+            (await context.DetalleOrden.CountAsync()).Should().Be(1);
         }
 
         // ---------------------------------------------------------------

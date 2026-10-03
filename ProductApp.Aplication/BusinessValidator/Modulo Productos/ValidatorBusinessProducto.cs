@@ -48,6 +48,20 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Productos
             return OperationResult.Success();
         }
 
+        // Regla propia del borrado físico: la FK de OrdenDetalle está en Restrict, así que
+        // borrar un producto con ventas asociadas reventaría a nivel de base. Se valida
+        // antes para responder con un mensaje entendible.
+        public async Task<OperationResult> ValidarBorradoFisicoProductoAsync(Producto producto)
+        {
+            var ventasAsociadas = await _productoRepository.ContarOrdenDetallesAsociadosAsync(producto.Id);
+
+            if (ventasAsociadas > 0)
+                return OperationResult.Failure(
+                    $"No se puede eliminar el producto porque tiene {ventasAsociadas} venta(s) asociada(s). Desactívalo en su lugar.");
+
+            return OperationResult.Success();
+        }
+
         // Categoría y proveedor se comprueban contra la base ANTES de que el mapper toque la
         // entidad: un id inexistente reventaría recién en SaveChanges como error de FK (500)
         // en vez de salir como Failure con un mensaje entendible. GetByIdAsync ya filtra

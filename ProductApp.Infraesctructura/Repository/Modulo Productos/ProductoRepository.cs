@@ -92,6 +92,15 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
                 .Include(p => p.Inventario)
                 .FirstOrDefaultAsync(p => !p.EstaEliminado && p.Id == id);
         }
+
+        // Sin filtrar EstaEliminado a propósito: OrdenDetalle no usa soft delete (se borra
+        // físico al quitar una línea de una orden pendiente), así que cualquier fila que
+        // quede es una referencia real en la base. Lo que importa acá es si la FK va a
+        // rechazar el borrado, no el estado lógico de la línea.
+        public Task<int> ContarOrdenDetallesAsociadosAsync(int productoId)
+        {
+            return _context.DetalleOrden.CountAsync(d => d.ProductId == productoId);
+        }
     }
 }
 

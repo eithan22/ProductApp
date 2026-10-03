@@ -207,5 +207,33 @@ namespace ProductApp.Tests.BusinessValidator.Modulo_Productos
 
             repo.Verify(r => r.ExisteAsync(It.IsAny<Expression<Func<Producto, bool>>>()), Times.Never);
         }
+
+        // ---------------------------------------------------------------
+        // ValidarBorradoFisicoProductoAsync
+        // ---------------------------------------------------------------
+
+        [Fact]
+        public async Task ValidarBorradoFisicoProductoAsync_ConVentasAsociadas_DevuelveFailureConLaCantidad()
+        {
+            var (validator, repo) = Crear(existe: false);
+            repo.Setup(r => r.ContarOrdenDetallesAsociadosAsync(It.IsAny<int>())).ReturnsAsync(2);
+
+            var resultado = await validator.ValidarBorradoFisicoProductoAsync(CrearProducto());
+
+            resultado.IsSuccess.Should().BeFalse();
+            resultado.Message.Should().Contain("2");
+            resultado.Message.Should().Contain("Desactívalo");
+        }
+
+        [Fact]
+        public async Task ValidarBorradoFisicoProductoAsync_SinVentasAsociadas_DevuelveSuccess()
+        {
+            var (validator, repo) = Crear(existe: false);
+            repo.Setup(r => r.ContarOrdenDetallesAsociadosAsync(It.IsAny<int>())).ReturnsAsync(0);
+
+            var resultado = await validator.ValidarBorradoFisicoProductoAsync(CrearProducto());
+
+            resultado.IsSuccess.Should().BeTrue(resultado.Message);
+        }
     }
 }
