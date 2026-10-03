@@ -1,205 +1,146 @@
 # ProductApp 🛒
 
-A multi-layered **Sales Management REST API** built with **ASP.NET Core 10** following **Clean Architecture** principles. Manages products, categories, users, and clients with business validation, secure authentication, and strict separation of concerns across four independent layers.
+Sistema de gestión comercial (ventas, inventario y clientes) construido como **API REST en ASP.NET Core 10** bajo **Clean Architecture**, con una capa web MVC que la consume por HTTP. Incluye autenticación JWT, control de inventario, cobros con pagos parciales, generación de facturas en PDF, reportes exportables y una suite de más de 500 pruebas automatizadas.
 
 ---
 
-## 📋 Description
+## 📋 Descripción
 
-ProductApp is a backend system providing a RESTful API to automate and optimize commercial business processes. It implements domain-driven design with explicit separation between domain rules, application logic, infrastructure, and the API surface.
+ProductApp automatiza el ciclo completo de una operación de ventas: catálogo de productos y categorías, control de inventario con umbrales mínimos configurables, gestión de proveedores, órdenes con pagos parciales, facturación en PDF, reportes de negocio y administración de usuarios con roles.
 
-The system handles full product and category lifecycle management, user authentication with BCrypt password hashing, client management, and enforces business rules through a dedicated validation layer before any persistence operation.
-
----
-
-## ✨ Features
-
-- 🔐 **User Authentication** — Login with BCrypt password hashing, forced password change on first login, and soft-delete support
-- 📦 **Product Management** — Create, update, and disable products with duplicate-name/description validation
-- 🗂️ **Category Management** — Full category lifecycle with business rule enforcement
-- 👥 **Client Management** — Client registration with existence validation
-- 🧪 **OperationResult Pattern** — All business operations return structured success/failure results
-- ♻️ **Soft Delete** — Records disabled via IsDisable flag, never permanently deleted
-- 📄 **Swagger UI** — Interactive API documentation via OpenAPI
+La arquitectura separa estrictamente dominio, aplicación, infraestructura y presentación. Las entidades de dominio tienen encapsulación estricta (propiedades `private set`, invariantes validadas en el constructor, mutación solo por métodos explícitos) y las reglas de negocio se validan en una capa dedicada antes de tocar la base de datos.
 
 ---
 
-## 🛠️ Technologies
+## ✨ Módulos
 
-| Layer | Technology |
-|-------|-----------|
-| Language | C# 12 |
-| Framework | ASP.NET Core 8 Web API |
-| Architecture | Clean Architecture |
-| Security | BCrypt.Net (password hashing) |
-| API Docs | Swagger / OpenAPI |
-| DI Container | .NET 8 Built-in DI |
-| Pattern | Repository Pattern |
+| Módulo | Qué hace |
+|---|---|
+| 🔐 **Usuarios y Roles** | Autenticación JWT, cambio de contraseña obligatorio en el primer login, revocación de sesión inmediata al desactivar/eliminar un usuario o cambiarle el rol (re-verificación contra la base de datos en cada request), rate limiting de login (5 intentos por minuto por IP) |
+| 📦 **Productos y Categorías** | Alta, edición y baja lógica de productos y categorías, validación de nombres/descripciones duplicados, importación y exportación masiva por CSV |
+| 📊 **Inventario** | Control de stock por producto, cantidad mínima configurable, ajustes manuales auditados |
+| 🚚 **Proveedores** | Registro y administración de proveedores asociados a productos |
+| 🧾 **Órdenes** | Ciclo de vida de una orden con máquina de estados explícita (transiciones inválidas rechazadas) |
+| 💳 **Pagos** | Pagos parciales (1:N contra una orden) dentro de una transacción serializable: el cobro, el cambio de estado de la orden y el descuento de inventario se aplican atómicamente o no se aplican |
+| 📄 **Facturación PDF** | Generación de la factura de la orden en PDF con QuestPDF, emitida después del commit del cobro |
+| 📈 **Reportes** | Ventas por fecha/producto/vendedor, inventario actual, productos más vendidos, ingresos totales — exportables a CSV |
+| ⚙️ **Configuración** | Parámetros editables en caliente: nombre de la empresa, moneda, duración del JWT, cantidad mínima de inventario por defecto |
+| 🔔 **Notificaciones** | Notificaciones in-app para eventos relevantes del sistema |
 
 ---
 
-## 🏗️ Architecture
+## 🛠️ Stack Tecnológico
+
+| Capa | Tecnología |
+|---|---|
+| Lenguaje | C# / .NET 10 |
+| Framework API | ASP.NET Core 10 Web API |
+| Frontend | ASP.NET Core MVC (capa `Web`, consume la API por HTTP) |
+| ORM | Entity Framework Core (SQL Server) |
+| Autenticación | JWT Bearer, hashing de contraseñas con BCrypt |
+| Validación | FluentValidation (forma del DTO) + validadores de negocio dedicados |
+| PDF | QuestPDF (facturas) |
+| Logging | Serilog (consola + archivo con rotación diaria, 30 días de retención) |
+| Testing | xUnit — **583 pruebas** automatizadas (unitarias + integración) |
+| CI/CD | GitHub Actions — build, test y despliegue automático a Azure App Service (API y Web) en cada push a `master` |
+
+---
+
+## 🏗️ Arquitectura
+
+Solución .NET 10 con 5 proyectos:
 
 ```
-ProductApp/
-├── Domian.ProductApp/            Domain Layer
-│   ├── Entities/                 Producto, Categoria, Usuario, Cliente
-│   └── Interfaces/               IProductoRepository, IUsuarioRepository
-│
-├── ProductApp.Aplication/        Application Layer
-│   ├── BusinessValidator/
-│   │   ├── Modulo Productos/     ValidatorBusinessProducto, ValidatorBusinessCategoria
-│   │   └── Modulo Usuarios/      ValidatorBusinessAuth, ValidatorBusinessUsuarios
-│   ├── Dtos/                     CreateDto, UpdateDto, ResponseDto per entity
-│   ├── Helper/                   PasswordHelper (BCrypt wrapper)
-│   ├── Result/                   OperationResult pattern
-│   └── Services/                 Application services
-│
-├── ProductApp.Infraestructure/   Infrastructure Layer
-│   └── Persistencia/             DbContext, repository implementations
-│
-└── ProductApp.Api/               Presentation Layer
-    ├── Controllers/              HTTP endpoints
-    ├── Program.cs                DI registration, middleware pipeline
-    └── appsettings.json          Configuration
+ProductApp.Domian          → Domain Layer        (entidades, interfaces, enums, excepciones de dominio)
+ProductApp.Aplication      → Application Layer   (DTOs, servicios, validadores de negocio, mappers)
+ProductApp.Infraesctructura → Infrastructure      (EF Core, repositorios, migraciones)
+ProductApp (Api)           → API REST            (controllers, inyección de dependencias, Program.cs)
+Web                         → MVC Frontend        (consume la API por HTTP)
 ```
 
----
+Flujo de una petición en la API:
 
-## 🔑 Key Design Patterns
+```
+Controller → Service → [Validación FluentValidation + Reglas de negocio] → Repository → EF Core → SQL Server
+```
 
-| Pattern | Implementation |
-|---------|----------------|
-| Repository Pattern | IProductoRepository, IUsuarioRepository abstract all data access |
-| Business Validator Pattern | Dedicated validator per module enforces rules before persistence |
-| OperationResult Pattern | Returns Success() or Failure("reason") instead of throwing exceptions |
-| DTO Pattern | Separate CreateDto, UpdateDto, ResponseDto per entity |
-| Dependency Injection | All services and repositories injected via constructor |
+Las excepciones de dominio burbujean sin captura local hasta un `GlobalExceptionHandler` centralizado: una excepción de dominio responde 400 con el mensaje real, cualquier otra responde 500 sin filtrar detalles internos. Los controllers no tienen bloques try/catch.
 
 ---
 
-## 📦 Business Rules Enforced
+## 🔒 Seguridad
 
-### Authentication
-- Passwords must match confirmation on register
-- Duplicate email or username rejected
-- Login validates existence, active status, and BCrypt password hash
-- Disabled users cannot authenticate
-
-### Products
-- Duplicate name rejected on create and update
-- Duplicate description rejected
-- Cannot disable an already-disabled product
+- **JWT con fail-fast** — si falta la llave JWT o la cadena de conexión al arrancar, la aplicación falla de inmediato con un mensaje explicando qué configurar, en vez de un error críptico más adelante.
+- **Sesión re-verificada en cada petición** — no hay denylist de tokens ni refresh tokens; en su lugar, cada request autenticado reconfirma contra la base de datos que el usuario sigue activo y que su rol no cambió, por lo que desactivar o eliminar una cuenta tiene efecto inmediato aunque el JWT siga técnicamente vigente.
+- **Rate limiting en login** — máximo 5 intentos por minuto por IP, sin cola de espera.
+- **Cambio de contraseña obligatorio** — se activa al crear un usuario, resetear su contraseña o marcarla como temporal; bloquea con 403 cualquier otro endpoint hasta que se cumple.
+- **Auditoría** — operaciones administrativas sensibles (cambio de rol, reseteo de contraseña, registro de pago, cancelación de orden, ajuste de inventario) quedan registradas con el id del usuario que las ejecutó.
+- **Transacciones serializables** — el cobro de una orden (pago + cambio de estado + descuento de inventario) corre en una única transacción; dos peticiones simultáneas sobre la misma orden no pueden cobrarla dos veces.
 
 ---
 
-## 🚀 Installation
+## 🚀 Instalación
 
-Prerequisites: .NET 8 SDK · SQL Server · Visual Studio 2022
+Requisitos: .NET 10 SDK · SQL Server
 
 ```bash
 git clone https://github.com/Eithan22/ProductApp.git
 cd ProductApp
-dotnet restore
-dotnet ef database update --project ProductApp.Infraestructure --startup-project ProductApp.Api
-dotnet run --project ProductApp.Api
+dotnet restore ProductApp.sln
+
+# Migraciones (desde la raíz de la solución)
+dotnet ef database update --project ProductApp.Infraesctructura --startup-project ProductApp
+
+# Correr la API
+dotnet run --project ProductApp/ProductApp.Api.csproj
+
+# Correr la capa Web (en otra terminal)
+dotnet run --project Web/Web.csproj
 ```
 
-Swagger available at: `https://localhost:{port}/swagger`
+Swagger disponible en: `https://localhost:{puerto}/swagger`
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Configuración
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=ProductAppDb;Trusted_Connection=True;"
-  }
-}
-```
-
-The JWT signing key is not stored in `appsettings.json`. Set it locally with the .NET Secret Manager before running the API:
+La configuración sensible (llave JWT, cadena de conexión, credenciales del admin inicial) no se guarda en `appsettings.json`. En desarrollo se configura con el Secret Manager de .NET:
 
 ```bash
 dotnet user-secrets init --project ProductApp/ProductApp.Api.csproj
-dotnet user-secrets set "Jwt:Key" "<random-key-at-least-32-characters>" --project ProductApp/ProductApp.Api.csproj
+dotnet user-secrets set "Jwt:Key" "<llave-aleatoria-de-al-menos-32-caracteres>" --project ProductApp/ProductApp.Api.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<tu-connection-string>" --project ProductApp/ProductApp.Api.csproj
 ```
 
-On first run, if the `Usuarios` table is empty, the API seeds an initial Administrador using the following configuration keys (also set via Secret Manager):
-
-```bash
-dotnet user-secrets set "Seed:AdminUsername" "admin" --project ProductApp/ProductApp.Api.csproj
-dotnet user-secrets set "Seed:AdminEmail" "admin@example.com" --project ProductApp/ProductApp.Api.csproj
-dotnet user-secrets set "Seed:AdminPassword" "<a-secure-password>" --project ProductApp/ProductApp.Api.csproj
-```
-
-The seeded admin is created with a temporary password flag, so it must be changed via `/api/Usuario/CambiarPassword` on first login.
-
----
-
-## 🌐 Variables de entorno para producción
-
-En un servidor real esta configuración nunca va en un archivo commiteado — se configura como variables de entorno, ya sea en el panel de configuración del proveedor de hosting (por ejemplo, Azure App Service → Configuration → Application settings) o directamente en el sistema operativo del servidor. ASP.NET Core las lee automáticamente reemplazando `:` por `__` (doble guion bajo):
+En producción se configuran como variables de entorno (Azure App Service → Configuration, u otro proveedor), reemplazando `:` por `__`:
 
 ```
 ConnectionStrings__DefaultConnection
 Jwt__Key
 Jwt__Issuer
 Jwt__Audience
-Jwt__ExpireMinutes
-Seed__AdminUsername
-Seed__AdminEmail
-Seed__AdminPassword
 ```
 
-Si falta `ConnectionStrings__DefaultConnection` o `Jwt__Key`, la aplicación falla al arrancar con un mensaje explicando qué variable configurar, en vez de fallar más adelante con un error críptico.
+La duración del JWT y la cantidad mínima de inventario por defecto ya no son valores fijos: se leen de `ConfiguracionSistema` en base de datos y son editables desde la propia aplicación.
 
 ---
 
-## 📡 API Endpoints
+## 🧪 Testing y CI/CD
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/login | Authenticate and validate credentials |
-| GET | /api/productos | List all products |
-| POST | /api/productos | Create a new product |
-| PUT | /api/productos/{id} | Update a product |
-| PATCH | /api/productos/{id}/disable | Soft-delete a product |
-| GET | /api/categorias | List all categories |
-| GET | /api/clientes | List all clients |
+```bash
+dotnet test ProductApp.sln
+```
+
+La suite cubre entidades de dominio, servicios de aplicación, validadores de negocio e integración. Cada push dispara el workflow de GitHub Actions (`.github/workflows/ci.yml`): restaura, compila y corre toda la suite; en `master`, si todo pasa, despliega automáticamente la API y la capa Web a Azure App Service.
 
 ---
 
-## 💡 Skills Demonstrated
+## 👨‍💻 Autor
 
-- ✅ **Clean Architecture** — 4 independent project layers with zero circular dependencies
-- ✅ **SOLID Principles** — Single Responsibility in validators, Open/Closed via interfaces
-- ✅ **Repository Pattern** — Complete data access abstraction
-- ✅ **Security** — BCrypt password hashing, soft delete, status validation
-- ✅ **RESTful API Design** — Proper HTTP methods and status codes
-- ✅ **ASP.NET Core 8** — Modern LTS framework with built-in DI and Swagger
-
----
-
-## 🔮 Future Improvements
-
-- [ ] JWT Bearer token authentication
-- [ ] EF Core migrations
-- [ ] Unit tests for business validators
-- [ ] Pagination on list endpoints
-- [ ] FluentValidation for DTO validation
-
----
-
-## 👨‍💻 Author
-
-**Eithan** — Backend Developer · Santo Domingo, Dominican Republic 🇩🇴  
-🎓 Software Development @ ITLA · 📧 eithanread1@gmail.com  
+**Eithan** — Santo Domingo, República Dominicana 🇩🇴
+🎓 Desarrollo de Software @ ITLA · 📧 eithanread1@gmail.com
 [LinkedIn](https://linkedin.com/in/eithan-r) · [GitHub](https://github.com/Eithan22)
 
 ---
 
 *MIT License*
-
-<!-- cache-refresh-marker 2026-07-06 12:15 -->

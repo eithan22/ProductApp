@@ -2,7 +2,7 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
-using ProductApp.Domian.Interfaces;
+using ProductApp.Aplication.Interface;
 
 namespace ProductApp.Infraesctructura.Persistencia.Almacenamiento
 {

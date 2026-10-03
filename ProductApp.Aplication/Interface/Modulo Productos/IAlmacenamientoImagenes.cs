@@ -1,4 +1,4 @@
-namespace ProductApp.Domian.Interfaces
+namespace ProductApp.Aplication.Interface
 {
     public interface IAlmacenamientoImagenes
     {

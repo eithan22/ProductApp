@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.ClienteDto;
 using ProductApp.Aplication.Interface;

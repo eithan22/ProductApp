@@ -1,4 +1,4 @@
-using ProductApp.Domian.Interfaces;
+using ProductApp.Aplication.Interface;
 
 namespace ProductApp.Tests.Integration
 {

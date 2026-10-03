@@ -1,8 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.Json;
-using ProductApp.Aplication.Dtos.ProductoDto;
+﻿using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Interface.IMappers.Modulos_Productos;
+using ProductApp.Aplication.Interface;
 using ProductApp.Domian.Entitis;
-using ProductApp.Domian.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;

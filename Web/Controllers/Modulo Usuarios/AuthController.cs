@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Web.Models.Modelo_Usuarios.UsuarioModels.AuthModel;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Configuracion;
 using Web.Services.Interfaces.ServicesHttp.Modulo_Usuarios;

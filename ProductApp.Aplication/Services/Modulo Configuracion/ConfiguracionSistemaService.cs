@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.Extensions.Logging;
 using ProductApp.Aplication.Common;
 using ProductApp.Aplication.Dtos.Modulo_Configuracion;
+using ProductApp.Aplication.Interface;
 using ProductApp.Aplication.Interface.IMappers.Modulo_Configuracion;
 using ProductApp.Aplication.Interface.Servicios.Modulo_Configuracion;
 using ProductApp.Aplication.Result.OperationResult;
