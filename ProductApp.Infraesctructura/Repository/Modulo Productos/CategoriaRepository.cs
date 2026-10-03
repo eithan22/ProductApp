@@ -34,7 +34,10 @@ namespace ProductApp.Infraesctructura.Persistencia.Repository
 
             var totalCount = await query.CountAsync();
 
+            // Sin OrderBy, SQL Server no garantiza el orden entre páginas: una categoría
+            // podría repetirse o desaparecer al paginar.
             var items = await query
+                .OrderBy(c => c.Nombre)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

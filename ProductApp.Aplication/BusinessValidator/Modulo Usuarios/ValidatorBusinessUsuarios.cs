@@ -28,12 +28,27 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success();
         }
 
-        public async Task<OperationResult> ValidarUpdateUsuarioAsync(UpdateUsuarioDto dto)
+        public async Task<OperationResult> ValidarUpdateUsuarioAsync(UpdateUsuarioDto dto, Usuario usuario)
         {
             var existe = await _usuarioRepository.ExisteAsync(
                 x => (x.Email == dto.Email || x.Username == dto.UserName) && x.Id != dto.Id);
             if (existe)
                 return OperationResult.Failure("El email o nombre de usuario ya está en uso por otro usuario.");
+
+            // Misma regla que ValidarCambiarRol: UsuarioMapper.MapUpdate también cambia el rol
+            // (CambiarRol), así que esta puerta necesita la misma protección contra dejar el
+            // sistema sin ningún administrador activo.
+            if (!Enum.TryParse<RolUsuario>(dto.RolUsuario, true, out var nuevoRol))
+                return OperationResult.Failure("El rol indicado no es válido.");
+
+            if (usuario.RolUsuario == RolUsuario.Administrador && nuevoRol != RolUsuario.Administrador)
+            {
+                var administradoresActivos = await _usuarioRepository.ObtenerIdsAdministradoresActivosAsync();
+
+                if (administradoresActivos.Count == 1 && administradoresActivos.Contains(usuario.Id))
+                    return OperationResult.Failure(
+                        "No se puede quitar el rol de Administrador: es el último administrador activo del sistema.");
+            }
 
             return OperationResult.Success();
         }
@@ -88,21 +103,16 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             return OperationResult.Success("Contraseña válida para cambio.");
         }
 
-        public async Task<OperationResult> ValidarResetearPassword(ResetearPasswordDto dto)
+        // La existencia del usuario ya la confirmó el servicio antes de llamar acá; no hay otra
+        // regla de negocio que validar para resetear una contraseña. Task.FromResult en vez de
+        // async sin await, mismo criterio que ValidarAceptacionDocumentosLegales.
+        public Task<OperationResult> ValidarResetearPassword(ResetearPasswordDto dto, Usuario usuario)
         {
-            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
-            if (usuario == null)
-                return OperationResult.Failure("Usuario no encontrado.");
-
-            return OperationResult.Success("Usuario encontrado para resetear contraseña.");
+            return Task.FromResult(OperationResult.Success("Usuario encontrado para resetear contraseña."));
         }
 
-        public async Task<OperationResult> ValidarCambiarRol(CambiarRolDto dto)
+        public async Task<OperationResult> ValidarCambiarRol(CambiarRolDto dto, Usuario usuario)
         {
-            var usuario = await _usuarioRepository.GetByIdAsync(dto.Id);
-            if (usuario == null)
-                return OperationResult.Failure("Usuario no encontrado.");
-
             if (!Enum.TryParse<RolUsuario>(dto.NuevoRol, true, out var nuevoRol))
                 return OperationResult.Failure("El rol indicado no es válido.");
 

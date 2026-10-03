@@ -34,6 +34,7 @@ namespace ProductApp.Aplication.Mappers
             var rol = Enum.Parse<RolUsuario>(dto.RolUsuario, true);
             usuario.CambiarNombre(dto.Nombre);
             usuario.CambiarEmail(dto.Email);
+            usuario.CambiarUsername(dto.UserName);
             usuario.CambiarRol(rol);
             usuario.EstablecerFechaNacimiento(dto.FechaNacimiento);
         }

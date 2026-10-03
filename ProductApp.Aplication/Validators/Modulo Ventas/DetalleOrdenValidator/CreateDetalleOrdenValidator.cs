@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.Identity.Client;
 using ProductApp.Aplication.Dtos.Modulo_Ventas.DetalleOrdenDto;
 using System;
 using System.Collections.Generic;

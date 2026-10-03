@@ -1,4 +1,4 @@
-using ProductApp.Domian.Interfaces;
+using ProductApp.Aplication.Interface;
 
 namespace ProductApp.Tests.Integration
 {
@@ -15,5 +15,7 @@ namespace ProductApp.Tests.Integration
         }
 
         public Task EliminarAsync(string imagenUrl, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public string ObtenerUrlConSas(string imagenUrl) => imagenUrl;
     }
 }

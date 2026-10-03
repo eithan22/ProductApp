@@ -95,6 +95,13 @@ namespace ProductApp.Domian.Entitis
             ActualizarFechaModificacion();
         }
 
+        public void CambiarUsername(string username)
+        {
+            ValidarUsername(username);
+            Username = username;
+            ActualizarFechaModificacion();
+        }
+
         public void EstablecerFechaNacimiento(DateTime? fechaNacimiento)
         {
             FechaNacimiento = fechaNacimiento;

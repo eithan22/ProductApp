@@ -401,7 +401,8 @@ namespace ProductApp.Aplication.Services
             var imagenAnterior = producto.ImagenUrl;
 
             // Se sube con la extensión y el Content-Type que salieron de la firma real, no con los
-            // declarados: el contenedor es de lectura pública y el blob debe servirse como imagen.
+            // declarados: el blob debe servirse como imagen con el Content-Type correcto sin importar
+            // qué haya declarado el cliente.
             var nombreNormalizado = Path.ChangeExtension(dto.NombreArchivo, formato.Extension);
 
             var nuevaUrl = await _almacenamientoImagenes.SubirAsync(dto.Contenido, nombreNormalizado, formato.ContentType);

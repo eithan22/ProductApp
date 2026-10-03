@@ -48,6 +48,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("El cliente ya está inactivo.");
 
+            if (cliente.Estado == EstadoCliente.Anonimizado)
+                return OperationResult.Failure("El cliente ya está anonimizado, no se puede desactivar.");
+
             return OperationResult.Success("Validacion Correcta");
         }
 
@@ -71,6 +74,9 @@ namespace ProductApp.Aplication.BusinessValidator.Modulo_Usuarios
 
             if (cliente.Estado == EstadoCliente.Inactivo)
                 return OperationResult.Failure("No se puede actualizar un cliente inactivo.");
+
+            if (cliente.Estado == EstadoCliente.Anonimizado)
+                return OperationResult.Failure("No se puede actualizar un cliente anonimizado.");
 
             if (cliente.Correo != dto.Correo && await _clienteRepository.ExisteAsync(c => c.Correo == dto.Correo))
                 return OperationResult.Failure("El correo ya está registrado por otro cliente.");

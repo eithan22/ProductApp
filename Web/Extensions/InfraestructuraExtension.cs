@@ -11,7 +11,7 @@ namespace Web.Extensions
             {
                 var baseUrl = configuration["ApiSettings:BaseUrl"];
                 client.BaseAddress = new Uri(baseUrl!);
-                client.Timeout = TimeSpan.FromSeconds(30);
+                client.Timeout = TimeSpan.FromSeconds(100);
             });
 
             services.AddHttpContextAccessor();

@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.Json;
-using ProductApp.Aplication.Dtos.ProductoDto;
+﻿using ProductApp.Aplication.Dtos.ProductoDto;
 using ProductApp.Aplication.Interface.IMappers.Modulos_Productos;
+using ProductApp.Aplication.Interface;
 using ProductApp.Domian.Entitis;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,13 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
 {
     public class ProductoMapper : IMapperProducto
     {
+        private readonly IAlmacenamientoImagenes _almacenamientoImagenes;
+
+        public ProductoMapper(IAlmacenamientoImagenes almacenamientoImagenes)
+        {
+            _almacenamientoImagenes = almacenamientoImagenes;
+        }
+
         public Producto MapToCreateProducto(CreateProductoDto dto)
         {
             var producto = new Producto(
@@ -43,7 +50,9 @@ namespace ProductApp.Aplication.Mappers.Modulo_Producto
                 Costo = producto.Costo,
                 Estado = producto.Estado.ToString(),
                 Categoria = producto.Categoria?.Nombre,
-                ImagenUrl = producto.ImagenUrl,
+                ImagenUrl = string.IsNullOrWhiteSpace(producto.ImagenUrl)
+                    ? producto.ImagenUrl
+                    : _almacenamientoImagenes.ObtenerUrlConSas(producto.ImagenUrl),
                 ProveedorId = producto.ProveedorId,
                 Proveedor = producto.Proveedor?.Nombre,
                 StockActual = producto.Inventario?.CantidadActual,
